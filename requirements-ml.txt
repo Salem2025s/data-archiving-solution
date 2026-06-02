@@ -1,0 +1,15 @@
+# Dépendances supplémentaires pour les notebooks d'expérimentation ML/DL
+# et les scripts d'annotation LLM (LLM/). Non requises par le pipeline src/.
+#
+# Installation : pip install -r requirements.txt -r requirements-ml.txt
+
+matplotlib>=3.8.0      # visualisations des notebooks (benchmark, EDA)
+lightgbm>=4.0.0        # modèle comparé dans le benchmark
+xgboost>=2.0.0         # modèle comparé dans le benchmark
+requests>=2.31.0       # appels HTTP vers l'annotateur LLM (Ollama)
+
+# Dashboard interactif (app/streamlit_dashboard.py)
+streamlit>=1.30.0      # embarque altair pour les graphiques
+
+# Optionnel — piste embeddings (reportée v2), à décommenter si besoin :
+# sentence-transformers>=2.2.0

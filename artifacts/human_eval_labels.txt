@@ -1,0 +1,13 @@
+Valeurs autorisées pour la colonne 'human_label' :
+  - Finance & Contrôle
+  - RH
+  - IT & Sécurité
+  - Achats & Fournisseurs
+  - Supply Chain / Logistique / Production
+  - Ventes & Clients
+  - Other
+  - Ambigu/Inconnu   (si réellement indécidable)
+
+Consigne : ignore la colonne 'business_domain_predicted' (c'est la prédiction
+du modèle à évaluer), juge le domaine d'après technical_name / source_ref /
+column_names / column_semantics,

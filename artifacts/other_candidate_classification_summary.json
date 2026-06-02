@@ -1,0 +1,44 @@
+﻿{
+    "total_other":  2321,
+    "assigned_count":  1436,
+    "unassigned_count":  885,
+    "assigned_pct_of_other":  61.8699,
+    "counts_by_candidate_class":  [
+                                      {
+                                          "class":  "Plateforme_Referentiels",
+                                          "count":  551,
+                                          "pct_of_other":  23.7398,
+                                          "pct_of_assigned":  38.3705
+                                      },
+                                      {
+                                          "class":  "Projets_Contrats",
+                                          "count":  304,
+                                          "pct_of_other":  13.0978,
+                                          "pct_of_assigned":  21.1699
+                                      },
+                                      {
+                                          "class":  "Operations_Maintenance",
+                                          "count":  238,
+                                          "pct_of_other":  10.2542,
+                                          "pct_of_assigned":  16.5738
+                                      },
+                                      {
+                                          "class":  "Achats_Encheres_Catalogue",
+                                          "count":  142,
+                                          "pct_of_other":  6.1181,
+                                          "pct_of_assigned":  9.8886
+                                      },
+                                      {
+                                          "class":  "Actifs_Immobilier",
+                                          "count":  120,
+                                          "pct_of_other":  5.1702,
+                                          "pct_of_assigned":  8.3565
+                                      },
+                                      {
+                                          "class":  "Campus_Education",
+                                          "count":  81,
+                                          "pct_of_other":  3.4899,
+                                          "pct_of_assigned":  5.6407
+                                      }
+                                  ]
+}

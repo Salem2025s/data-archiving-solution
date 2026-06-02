@@ -1,0 +1,54 @@
+[32m2026-06-01 12:34:44[0m | [1mINFO    [0m | __main__:train_production_classifier:278 - [1mLoading gold dataset: exports\dataset_asset_ml_run_5_for_labeling_sample_20000_enriched_business_domain_v4.csv[0m
+[32m2026-06-01 12:34:45[0m | [1mINFO    [0m | __main__:train_production_classifier:295 - [1mGold size = 18473 (consensus >= 0.7)[0m
+[32m2026-06-01 12:34:45[0m | [1mINFO    [0m | __main__:train_production_classifier:296 - [1mClass distribution:
+business_domain
+Finance & Contrôle                        7033
+IT & Sécurité                             4913
+Other                                     2238
+Achats & Fournisseurs                     2018
+Supply Chain / Logistique / Production    1235
+RH                                         754
+Ventes & Clients                           282[0m
+[32m2026-06-01 12:34:46[0m | [1mINFO    [0m | src.connectors.postgres_client:_build_engine:81 - [1mBuilding PostgreSQL engine — host=localhost db=pfe_data_ia[0m
+[32m2026-06-01 12:34:47[0m | [1mINFO    [0m | __main__:train_production_classifier:327 - [1mHuman (fixed test CSV): 1130 train (weight=10.0) / 150 test[0m
+[32m2026-06-01 12:34:47[0m | [1mINFO    [0m | __main__:train_production_classifier:352 - [1mClasses (7): [np.str_('Achats & Fournisseurs'), np.str_('Finance & Contrôle'), np.str_('IT & Sécurité'), np.str_('Other'), np.str_('RH'), np.str_('Supply Chain / Logistique / Production'), np.str_('Ventes & Clients')][0m
+[32m2026-06-01 12:34:47[0m | [1mINFO    [0m | __main__:train_production_classifier:353 - [1mNumeric feature count = 129[0m
+[32m2026-06-01 12:34:47[0m | [1mINFO    [0m | __main__:train_production_classifier:365 - [1mHoldout split: 15702 train / 2771 holdout[0m
+C:\Users\Salem\Desktop\Projets\pfe\Projet\.venv\Lib\site-packages\sklearn\svm\_base.py:1258: ConvergenceWarning: Liblinear failed to converge, increase the number of iterations.
+  warnings.warn(
+[32m2026-06-01 12:35:56[0m | [1mINFO    [0m | __main__:train_production_classifier:378 - [1mHoldout — macro-F1=0.8918 weighted-F1=0.9234[0m
+[32m2026-06-01 12:35:56[0m | [1mINFO    [0m | __main__:train_production_classifier:379 - [1m
+                                        precision    recall  f1-score   support
+
+                 Achats & Fournisseurs     0.9458    0.9208    0.9331       303
+                    Finance & Contrôle     0.9637    0.9555    0.9595      1055
+                         IT & Sécurité     0.9170    0.9294    0.9232       737
+                                 Other     0.8254    0.8720    0.8480       336
+                                    RH     0.9579    0.8053    0.8750       113
+Supply Chain / Logistique / Production     0.8925    0.8973    0.8949       185
+                      Ventes & Clients     0.7660    0.8571    0.8090        42
+
+                              accuracy                         0.9231      2771
+                             macro avg     0.8954    0.8911    0.8918      2771
+                          weighted avg     0.9245    0.9231    0.9234      2771
+[0m
+[32m2026-06-01 12:35:56[0m | [1mINFO    [0m | __main__:train_production_classifier:391 - [1mFinal training set: 19603 rows (gold 18473 + human_train 1130 @ weight 10.0)[0m
+[32m2026-06-01 12:36:07[0m | [1mINFO    [0m | __main__:train_production_classifier:399 - [1mFull feature matrix: (19603, 64697)[0m
+C:\Users\Salem\Desktop\Projets\pfe\Projet\.venv\Lib\site-packages\sklearn\svm\_base.py:1258: ConvergenceWarning: Liblinear failed to converge, increase the number of iterations.
+  warnings.warn(
+[32m2026-06-01 12:37:14[0m | [1mINFO    [0m | __main__:train_production_classifier:406 - [1mCalibrating (Platt / sigmoid, cv=5)[0m
+C:\Users\Salem\Desktop\Projets\pfe\Projet\.venv\Lib\site-packages\sklearn\svm\_base.py:1258: ConvergenceWarning: Liblinear failed to converge, increase the number of iterations.
+  warnings.warn(
+C:\Users\Salem\Desktop\Projets\pfe\Projet\.venv\Lib\site-packages\sklearn\svm\_base.py:1258: ConvergenceWarning: Liblinear failed to converge, increase the number of iterations.
+  warnings.warn(
+C:\Users\Salem\Desktop\Projets\pfe\Projet\.venv\Lib\site-packages\sklearn\svm\_base.py:1258: ConvergenceWarning: Liblinear failed to converge, increase the number of iterations.
+  warnings.warn(
+C:\Users\Salem\Desktop\Projets\pfe\Projet\.venv\Lib\site-packages\sklearn\svm\_base.py:1258: ConvergenceWarning: Liblinear failed to converge, increase the number of iterations.
+  warnings.warn(
+C:\Users\Salem\Desktop\Projets\pfe\Projet\.venv\Lib\site-packages\sklearn\svm\_base.py:1258: ConvergenceWarning: Liblinear failed to converge, increase the number of iterations.
+  warnings.warn(
+[32m2026-06-01 12:42:29[0m | [1mINFO    [0m | __main__:train_production_classifier:461 - [1mSaved versioned artifact: LLM\artifacts_business_domain\production_pipeline_v3.4-human_20260601_104226.joblib[0m
+[32m2026-06-01 12:42:29[0m | [1mINFO    [0m | __main__:train_production_classifier:468 - [1mNot promoted (latest untouched). Use --promote-latest to deploy.[0m
+[32m2026-06-01 12:42:30[0m | [1mINFO    [0m | __main__:train_production_classifier:486 - [1mHUMAN TEST (150 rows) — NEW v3.4-human_20260601_104226: {'n': 150, 'accuracy': 0.7467, 'f1_macro': 0.655, 'f1_weighted': 0.7623, 'kappa': 0.6975}[0m
+[32m2026-06-01 12:42:30[0m | [1mINFO    [0m | __main__:train_production_classifier:494 - [1mHUMAN TEST (150 rows) — BASELINE v3.3-human_20260601_065456: {'n': 150, 'accuracy': 0.6133, 'f1_macro': 0.5825, 'f1_weighted': 0.652, 'kappa': 0.5488}[0m
+[32m2026-06-01 12:42:31[0m | [1mINFO    [0m | __main__:main:541 - [1mTraining complete: {'artifact_path': 'LLM\\artifacts_business_domain\\production_pipeline_v3.4-human_20260601_104226.joblib', 'promoted_latest': False, 'model_version': 'v3.4-human_20260601_104226', 'gold_size': 18473, 'holdout_macro_f1': 0.8918211165073869, 'holdout_weighted_f1': 0.9234150599558123, 'classes': [np.str_('Achats & Fournisseurs'), np.str_('Finance & Contrôle'), np.str_('IT & Sécurité'), np.str_('Other'), np.str_('RH'), np.str_('Supply Chain / Logistique / Production'), np.str_('Ventes & Clients')], 'numeric_features': 129, 'total_features': 64697, 'human_test_n': 150, 'human_test_new': {'n': 150, 'accuracy': 0.7467, 'f1_macro': 0.655, 'f1_weighted': 0.7623, 'kappa': 0.6975}, 'human_test_baseline': {'n': 150, 'accuracy': 0.6133, 'f1_macro': 0.5825, 'f1_weighted': 0.652, 'kappa': 0.5488}}[0m

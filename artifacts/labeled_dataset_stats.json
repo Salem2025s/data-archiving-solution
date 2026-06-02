@@ -1,0 +1,23 @@
+{
+  "input_path": "exports\\dataset_asset_ml_run_5_for_labeling_sample_1200_labeled.csv",
+  "output_path": "artifacts\\labeled_dataset_clean.csv",
+  "label_column_detected": "business_domain_label",
+  "rows_initial": 1200,
+  "rows_retained": 1183,
+  "rows_dropped": 17,
+  "normalized_label_distribution": {
+    "Finance": 967,
+    "Technique": 204,
+    "RH": 10,
+    "Achats": 2
+  },
+  "target_labels": [
+    "RH",
+    "Finance",
+    "Paie",
+    "Achats",
+    "Technique",
+    "Inconnu"
+  ],
+  "retention_rule": "Conserve uniquement RH/Finance/Paie/Achats/Technique; exclut Inconnu."
+}

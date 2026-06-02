@@ -1,0 +1,8 @@
+Rang,Modèle,Famille,Macro-F1 (CV),Macro-F1 (Holdout),Weighted-F1 (Holdout),Accuracy,Temps CV (s)
+1,LightGBM,Gradient Boosting,0.8671 ± 0.0107,0.8854,0.9230,0.9223,1019.6
+2,LinearSVC + Platt,Linéaire,0.8691 ± 0.0093,0.8846,0.9151,0.9150,326.6
+3,"MLP-Shallow (128, 64)",Deep Learning,0.8356 ± 0.0000,0.8806,N/A,N/A,607.5
+4,MLP (Deep Learning),Deep Learning,0.8533 ± 0.0123,0.8793,0.9065,0.9064,1250.0
+5,XGBoost,Gradient Boosting,0.8452 ± 0.0121,0.8614,0.8981,0.8969,3470.9
+6,LogisticRegression,Linéaire,0.8301 ± 0.0070,0.8567,0.8909,0.8880,413.1
+7,Random Forest,Ensemble,0.8049 ± 0.0089,0.8102,0.8525,0.8479,110.8

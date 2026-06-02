@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-04-21T11:15:24.670951",
+  "n_rows": 20000,
+  "pred_distribution": {
+    "Finance & Contr\u00f4le": 0.3687,
+    "IT & S\u00e9curit\u00e9": 0.2674,
+    "Other": 0.1289,
+    "Achats & Fournisseurs": 0.1092,
+    "Supply Chain / Logistique / Production": 0.07,
+    "RH": 0.0404,
+    "Ventes & Clients": 0.0154
+  },
+  "mean_confidence": 0.9087783100000001,
+  "low_confidence_pct": 0.0077,
+  "alerts": [],
+  "status": "OK"
+}

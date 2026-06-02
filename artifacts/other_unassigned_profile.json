@@ -1,0 +1,334 @@
+﻿{
+    "total_other":  2321,
+    "assigned_count":  1436,
+    "unassigned_count":  885,
+    "top25_unassigned_prefixes":  [
+                                      {
+                                          "prefix":  "EX",
+                                          "count":  20,
+                                          "pct_of_unassigned":  2.2599
+                                      },
+                                      {
+                                          "prefix":  "BI",
+                                          "count":  15,
+                                          "pct_of_unassigned":  1.6949
+                                      },
+                                      {
+                                          "prefix":  "PTLT",
+                                          "count":  15,
+                                          "pct_of_unassigned":  1.6949
+                                      },
+                                      {
+                                          "prefix":  "UPG",
+                                          "count":  15,
+                                          "pct_of_unassigned":  1.6949
+                                      },
+                                      {
+                                          "prefix":  "BU",
+                                          "count":  14,
+                                          "pct_of_unassigned":  1.5819
+                                      },
+                                      {
+                                          "prefix":  "BUS",
+                                          "count":  14,
+                                          "pct_of_unassigned":  1.5819
+                                      },
+                                      {
+                                          "prefix":  "EOEC",
+                                          "count":  13,
+                                          "pct_of_unassigned":  1.4689
+                                      },
+                                      {
+                                          "prefix":  "TD",
+                                          "count":  11,
+                                          "pct_of_unassigned":  1.2429
+                                      },
+                                      {
+                                          "prefix":  "EN",
+                                          "count":  10,
+                                          "pct_of_unassigned":  1.1299
+                                      },
+                                      {
+                                          "prefix":  "EOTR",
+                                          "count":  10,
+                                          "pct_of_unassigned":  1.1299
+                                      },
+                                      {
+                                          "prefix":  "POS",
+                                          "count":  10,
+                                          "pct_of_unassigned":  1.1299
+                                      },
+                                      {
+                                          "prefix":  "PTSF",
+                                          "count":  10,
+                                          "pct_of_unassigned":  1.1299
+                                      },
+                                      {
+                                          "prefix":  "DR",
+                                          "count":  9,
+                                          "pct_of_unassigned":  1.0169
+                                      },
+                                      {
+                                          "prefix":  "EXP",
+                                          "count":  9,
+                                          "pct_of_unassigned":  1.0169
+                                      },
+                                      {
+                                          "prefix":  "EOEP",
+                                          "count":  8,
+                                          "pct_of_unassigned":  0.904
+                                      },
+                                      {
+                                          "prefix":  "PTPPB",
+                                          "count":  8,
+                                          "pct_of_unassigned":  0.904
+                                      },
+                                      {
+                                          "prefix":  "RTBL",
+                                          "count":  8,
+                                          "pct_of_unassigned":  0.904
+                                      },
+                                      {
+                                          "prefix":  "SDN",
+                                          "count":  8,
+                                          "pct_of_unassigned":  0.904
+                                      },
+                                      {
+                                          "prefix":  "CNAO",
+                                          "count":  7,
+                                          "pct_of_unassigned":  0.791
+                                      },
+                                      {
+                                          "prefix":  "EOEW",
+                                          "count":  7,
+                                          "pct_of_unassigned":  0.791
+                                      },
+                                      {
+                                          "prefix":  "IN",
+                                          "count":  7,
+                                          "pct_of_unassigned":  0.791
+                                      },
+                                      {
+                                          "prefix":  "PTAI",
+                                          "count":  7,
+                                          "pct_of_unassigned":  0.791
+                                      },
+                                      {
+                                          "prefix":  "UA",
+                                          "count":  7,
+                                          "pct_of_unassigned":  0.791
+                                      },
+                                      {
+                                          "prefix":  "CM",
+                                          "count":  6,
+                                          "pct_of_unassigned":  0.678
+                                      },
+                                      {
+                                          "prefix":  "EG",
+                                          "count":  6,
+                                          "pct_of_unassigned":  0.678
+                                      }
+                                  ],
+    "top40_unassigned_tokens":  [
+                                    {
+                                        "token":  "PS",
+                                        "count":  1321,
+                                        "pct_of_unassigned":  149.2655
+                                    },
+                                    {
+                                        "token":  "CD",
+                                        "count":  466,
+                                        "pct_of_unassigned":  52.6554
+                                    },
+                                    {
+                                        "token":  "SYSADM",
+                                        "count":  428,
+                                        "pct_of_unassigned":  48.3616
+                                    },
+                                    {
+                                        "token":  "DESCR",
+                                        "count":  386,
+                                        "pct_of_unassigned":  43.6158
+                                    },
+                                    {
+                                        "token":  "ID",
+                                        "count":  368,
+                                        "pct_of_unassigned":  41.5819
+                                    },
+                                    {
+                                        "token":  "SETID",
+                                        "count":  303,
+                                        "pct_of_unassigned":  34.2373
+                                    },
+                                    {
+                                        "token":  "LANGUAGE",
+                                        "count":  302,
+                                        "pct_of_unassigned":  34.1243
+                                    },
+                                    {
+                                        "token":  "TBL",
+                                        "count":  258,
+                                        "pct_of_unassigned":  29.1525
+                                    },
+                                    {
+                                        "token":  "LANG",
+                                        "count":  241,
+                                        "pct_of_unassigned":  27.2316
+                                    },
+                                    {
+                                        "token":  "LNG",
+                                        "count":  230,
+                                        "pct_of_unassigned":  25.9887
+                                    },
+                                    {
+                                        "token":  "TYPE",
+                                        "count":  195,
+                                        "pct_of_unassigned":  22.0339
+                                    },
+                                    {
+                                        "token":  "EFFDT",
+                                        "count":  145,
+                                        "pct_of_unassigned":  16.3842
+                                    },
+                                    {
+                                        "token":  "DESCRSHORT",
+                                        "count":  135,
+                                        "pct_of_unassigned":  15.2542
+                                    },
+                                    {
+                                        "token":  "NAME",
+                                        "count":  121,
+                                        "pct_of_unassigned":  13.6723
+                                    },
+                                    {
+                                        "token":  "UNIT",
+                                        "count":  107,
+                                        "pct_of_unassigned":  12.0904
+                                    },
+                                    {
+                                        "token":  "CODE",
+                                        "count":  105,
+                                        "pct_of_unassigned":  11.8644
+                                    },
+                                    {
+                                        "token":  "PTP",
+                                        "count":  103,
+                                        "pct_of_unassigned":  11.6384
+                                    },
+                                    {
+                                        "token":  "SEQ",
+                                        "count":  90,
+                                        "pct_of_unassigned":  10.1695
+                                    },
+                                    {
+                                        "token":  "NUM",
+                                        "count":  86,
+                                        "pct_of_unassigned":  9.7175
+                                    },
+                                    {
+                                        "token":  "GRP",
+                                        "count":  76,
+                                        "pct_of_unassigned":  8.5876
+                                    },
+                                    {
+                                        "token":  "UPG",
+                                        "count":  75,
+                                        "pct_of_unassigned":  8.4746
+                                    },
+                                    {
+                                        "token":  "PTLT",
+                                        "count":  73,
+                                        "pct_of_unassigned":  8.2486
+                                    },
+                                    {
+                                        "token":  "STATUS",
+                                        "count":  73,
+                                        "pct_of_unassigned":  8.2486
+                                    },
+                                    {
+                                        "token":  "BUSINESS",
+                                        "count":  69,
+                                        "pct_of_unassigned":  7.7966
+                                    },
+                                    {
+                                        "token":  "GROUP",
+                                        "count":  64,
+                                        "pct_of_unassigned":  7.2316
+                                    },
+                                    {
+                                        "token":  "SET",
+                                        "count":  58,
+                                        "pct_of_unassigned":  6.5537
+                                    },
+                                    {
+                                        "token":  "NBR",
+                                        "count":  56,
+                                        "pct_of_unassigned":  6.3277
+                                    },
+                                    {
+                                        "token":  "BU",
+                                        "count":  51,
+                                        "pct_of_unassigned":  5.7627
+                                    },
+                                    {
+                                        "token":  "FILE",
+                                        "count":  50,
+                                        "pct_of_unassigned":  5.6497
+                                    },
+                                    {
+                                        "token":  "HDR",
+                                        "count":  50,
+                                        "pct_of_unassigned":  5.6497
+                                    },
+                                    {
+                                        "token":  "DESCRLONG",
+                                        "count":  49,
+                                        "pct_of_unassigned":  5.5367
+                                    },
+                                    {
+                                        "token":  "EOEC",
+                                        "count":  49,
+                                        "pct_of_unassigned":  5.5367
+                                    },
+                                    {
+                                        "token":  "DESCR254",
+                                        "count":  47,
+                                        "pct_of_unassigned":  5.3107
+                                    },
+                                    {
+                                        "token":  "PTSF",
+                                        "count":  47,
+                                        "pct_of_unassigned":  5.3107
+                                    },
+                                    {
+                                        "token":  "PRODUCT",
+                                        "count":  45,
+                                        "pct_of_unassigned":  5.0847
+                                    },
+                                    {
+                                        "token":  "TD",
+                                        "count":  43,
+                                        "pct_of_unassigned":  4.8588
+                                    },
+                                    {
+                                        "token":  "EX",
+                                        "count":  42,
+                                        "pct_of_unassigned":  4.7458
+                                    },
+                                    {
+                                        "token":  "SDN",
+                                        "count":  42,
+                                        "pct_of_unassigned":  4.7458
+                                    },
+                                    {
+                                        "token":  "DEFN",
+                                        "count":  41,
+                                        "pct_of_unassigned":  4.6328
+                                    },
+                                    {
+                                        "token":  "EFF",
+                                        "count":  41,
+                                        "pct_of_unassigned":  4.6328
+                                    }
+                                ]
+}

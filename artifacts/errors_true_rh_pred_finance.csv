@@ -1,0 +1,2 @@
+asset_id,technical_name,source_ref,asset_type,label_normalized,predicted_label,text_combined,field_count,nullable_field_count,non_nullable_field_count,numeric_field_count,date_field_count,text_field_count,large_text_field_count,avg_data_length,max_data_length,row_count,size_bytes,size_mb,has_profile_data,label_normalized_clean,label_raw,is_correct
+1004393,SYSADM.PS_ACTN_REASON_TBL,PS_ACTN_REASON_TBL,oracle_table,RH,Finance,SYSADM.PS_ACTN_REASON_TBL PS_ACTN_REASON_TBL oracle_table,16,0,16,0,1,15,0,4.75,30.0,156.0,10920.0,0.0104141235351562,VRAI,RH,HR,False

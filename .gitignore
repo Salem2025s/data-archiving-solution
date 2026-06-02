@@ -1,0 +1,28 @@
+# ---- Secrets ----
+.env
+*.env
+!.env.example
+
+# ---- Python ----
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# ---- Données de travail volumineuses (non versionnées) ----
+exports/
+LLM/catboost_info/
+# Gros dumps de scoring régénérables (sorties de notebooks)
+LLM/artifacts_business_domain/full_scored_predictions.csv
+LLM/artifacts_business_domain/dataset_scored_full.csv
+
+# ---- Modèles & figures régénérables ----
+*.joblib
+artifacts/*.png
+
+# ---- Outils locaux ----
+
+# ---- OS ----
+Thumbs.db
+.DS_Store

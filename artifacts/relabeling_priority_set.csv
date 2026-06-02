@@ -1,0 +1,54 @@
+asset_id,technical_name,source_ref,asset_type,label_normalized,predicted_label,review_priority,text_combined,field_count,nullable_field_count,non_nullable_field_count,numeric_field_count,date_field_count,text_field_count,large_text_field_count,avg_data_length,max_data_length,row_count,size_bytes,size_mb,y_true,y_pred,label_normalized_clean,source_system,has_profile_data,label_raw
+1004570,SYSADM.PS_AE_SECTION_TMP,PS_AE_SECTION_TMP,oracle_table,Technique,Finance,high,SYSADM.PS_AE_SECTION_TMP PS_AE_SECTION_TMP oracle_table,10,0,10,1,1,8,0,6.5,30.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004624,SYSADM.PS_AGC_NOTIFY_AET,PS_AGC_NOTIFY_AET,oracle_table,Technique,Finance,high,SYSADM.PS_AGC_NOTIFY_AET PS_AGC_NOTIFY_AET oracle_table,7,0,7,1,0,6,0,47.0,254.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004342,SYSADM.PSACECUBECOLMAP,PSACECUBECOLMAP,oracle_table,Technique,Finance,high,SYSADM.PSACECUBECOLMAP PSACECUBECOLMAP oracle_table,0,0,0,0,0,0,0,,,171.0,14022.0,0.0133724212646484,Technique,Finance,Technique,,,
+1004587,SYSADM.PS_AE_TREURODL_AET,PS_AE_TREURODL_AET,oracle_table,Technique,Finance,high,SYSADM.PS_AE_TREURODL_AET PS_AE_TREURODL_AET oracle_table,5,0,5,2,0,3,0,8.6,15.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004528,SYSADM.PS_AE_AMGRPCON_AET,PS_AE_AMGRPCON_AET,oracle_table,Technique,Finance,high,SYSADM.PS_AE_AMGRPCON_AET PS_AE_AMGRPCON_AET oracle_table,108,11,97,18,11,79,0,9.296296296296296,30.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004583,SYSADM.PS_AE_SYNCGEN_AET,PS_AE_SYNCGEN_AET,oracle_table,Technique,Finance,high,SYSADM.PS_AE_SYNCGEN_AET PS_AE_SYNCGEN_AET oracle_table,6,0,6,2,0,4,0,14.5,30.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004401,SYSADM.PS_ACV_NODE_TEMPL,PS_ACV_NODE_TEMPL,oracle_table,Technique,Finance,high,SYSADM.PS_ACV_NODE_TEMPL PS_ACV_NODE_TEMPL oracle_table,7,0,7,0,0,7,0,10.285714285714285,30.0,1.0,40.0,3.81469726562e-05,Technique,Finance,Technique,,,
+1004477,SYSADM.PSADSSQLREF,PSADSSQLREF,oracle_table,Technique,Finance,high,SYSADM.PSADSSQLREF PSADSSQLREF oracle_table,0,0,0,0,0,0,0,,,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004476,SYSADM.PSADS_REQUEST,PSADS_REQUEST,oracle_table,Technique,Finance,high,SYSADM.PSADS_REQUEST PSADS_REQUEST oracle_table,0,0,0,0,0,0,0,,,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004627,SYSADM.PS_AGC_SRCHKEY_FLD,PS_AGC_SRCHKEY_FLD,oracle_table,Technique,Finance,high,SYSADM.PS_AGC_SRCHKEY_FLD PS_AGC_SRCHKEY_FLD oracle_table,5,0,5,1,0,4,0,7.6,18.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004275,SYSADM.MV_CAPABILITIES_TABLE,MV_CAPABILITIES_TABLE,oracle_table,Technique,Finance,high,SYSADM.MV_CAPABILITIES_TABLE MV_CAPABILITIES_TABLE oracle_table,0,0,0,0,0,0,0,,,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004475,SYSADM.PSADSRELPROP,PSADSRELPROP,oracle_table,Technique,Finance,high,SYSADM.PSADSRELPROP PSADSRELPROP oracle_table,0,0,0,0,0,0,0,,,276.0,30084.0,0.0286903381347656,Technique,Finance,Technique,,,
+1004402,SYSADM.PS_ACV_NODE_VIEW,PS_ACV_NODE_VIEW,oracle_table,Technique,Finance,high,SYSADM.PS_ACV_NODE_VIEW PS_ACV_NODE_VIEW oracle_table,4,0,4,0,0,4,0,13.75,30.0,4.0,152.0,0.0001449584960937,Technique,Finance,Technique,,,
+1004353,SYSADM.PSACETREE,PSACETREE,oracle_table,Technique,Finance,high,SYSADM.PSACETREE PSACETREE oracle_table,0,0,0,0,0,0,0,,,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004545,SYSADM.PS_AEDAEMONMGR_AET,PS_AEDAEMONMGR_AET,oracle_table,Technique,Finance,high,SYSADM.PS_AEDAEMONMGR_AET PS_AEDAEMONMGR_AET oracle_table,6,0,6,3,0,3,0,7.5,12.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004461,SYSADM.PSADSGROUPLANG,PSADSGROUPLANG,oracle_table,Technique,Finance,high,SYSADM.PSADSGROUPLANG PSADSGROUPLANG oracle_table,0,0,0,0,0,0,0,,,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004557,SYSADM.PS_AE_PTTSUNDO_AET,PS_AE_PTTSUNDO_AET,oracle_table,Technique,Finance,high,SYSADM.PS_AE_PTTSUNDO_AET PS_AE_PTTSUNDO_AET oracle_table,29,1,28,6,1,22,0,45.93103448275863,254.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004586,SYSADM.PS_AE_TIMINGS_LG,PS_AE_TIMINGS_LG,oracle_table,Technique,Finance,high,SYSADM.PS_AE_TIMINGS_LG PS_AE_TIMINGS_LG oracle_table,11,2,9,6,2,3,0,17.18181818181818,30.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004607,SYSADM.PS_AGC_CAT_NOT_TYP,PS_AGC_CAT_NOT_TYP,oracle_table,Technique,Finance,high,SYSADM.PS_AGC_CAT_NOT_TYP PS_AGC_CAT_NOT_TYP oracle_table,6,0,6,0,1,5,0,9.666666666666666,30.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004343,SYSADM.PSACECUBEDIMS,PSACECUBEDIMS,oracle_table,Technique,Finance,high,SYSADM.PSACECUBEDIMS PSACECUBEDIMS oracle_table,0,0,0,0,0,0,0,,,173.0,7612.0,0.0072593688964843,Technique,Finance,Technique,,,
+1004544,SYSADM.PS_AE_CV8_PAIR_TBL,PS_AE_CV8_PAIR_TBL,oracle_table,Technique,Finance,high,SYSADM.PS_AE_CV8_PAIR_TBL PS_AE_CV8_PAIR_TBL oracle_table,4,0,4,0,0,4,0,9.5,18.0,9.0,207.0,0.000197410583496,Technique,Finance,Technique,,,
+1004538,SYSADM.PSAEAPPLSTATE,PSAEAPPLSTATE,oracle_table,Technique,Finance,high,SYSADM.PSAEAPPLSTATE PSAEAPPLSTATE oracle_table,0,0,0,0,0,0,0,,,6192.0,167184.0,0.1594390869140625,Technique,Finance,Technique,,,
+1004459,SYSADM.PSADSEXCLUSIONS,PSADSEXCLUSIONS,oracle_table,Technique,Finance,high,SYSADM.PSADSEXCLUSIONS PSADSEXCLUSIONS oracle_table,0,0,0,0,0,0,0,,,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004574,SYSADM.PS_AE_STEP_TBL,PS_AE_STEP_TBL,oracle_table,Technique,Finance,high,SYSADM.PS_AE_STEP_TBL PS_AE_STEP_TBL oracle_table,24,1,23,1,1,22,0,4.5,30.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004350,SYSADM.PSACEORGANIZER,PSACEORGANIZER,oracle_table,Technique,Finance,high,SYSADM.PSACEORGANIZER PSACEORGANIZER oracle_table,0,0,0,0,0,0,0,,,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004346,SYSADM.PSACEEXPSET,PSACEEXPSET,oracle_table,Technique,Finance,high,SYSADM.PSACEEXPSET PSACEEXPSET oracle_table,0,0,0,0,0,0,0,,,4.0,84.0,8.01086425781e-05,Technique,Finance,Technique,,,
+1004597,SYSADM.PS_AGC_CAT_CTX,PS_AGC_CAT_CTX,oracle_table,Technique,Finance,high,SYSADM.PS_AGC_CAT_CTX PS_AGC_CAT_CTX oracle_table,14,0,14,1,1,12,0,33.5,254.0,4.0,320.0,0.00030517578125,Technique,Finance,Technique,,,
+1004539,SYSADM.PS_AE_APPL_TBL,PS_AE_APPL_TBL,oracle_table,Technique,Finance,high,SYSADM.PS_AE_APPL_TBL PS_AE_APPL_TBL oracle_table,25,3,22,3,3,19,0,8.12,30.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004584,SYSADM.PS_AETEMPTBLMGR,PS_AETEMPTBLMGR,oracle_table,Technique,Finance,high,SYSADM.PS_AETEMPTBLMGR PS_AETEMPTBLMGR oracle_table,10,1,9,4,1,5,0,13.0,30.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004517,SYSADM.PS_AE_AMALLOC_AET1,PS_AE_AMALLOC_AET1,oracle_table,Technique,Finance,high,SYSADM.PS_AE_AMALLOC_AET1 PS_AE_AMALLOC_AET1 oracle_table,29,2,27,5,2,22,0,11.206896551724135,28.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004283,SYSADM.PSACCESSPRFL,PSACCESSPRFL,oracle_table,Technique,Finance,high,SYSADM.PSACCESSPRFL PSACCESSPRFL oracle_table,0,0,0,0,0,0,0,,,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004521,SYSADM.PS_AE_AMDPCLOS_AET,PS_AE_AMDPCLOS_AET,oracle_table,Technique,Finance,high,SYSADM.PS_AE_AMDPCLOS_AET PS_AE_AMDPCLOS_AET oracle_table,100,8,92,24,8,68,0,11.32,254.0,0.0,0.0,0.0,Technique,Finance,Technique,,,
+1004393,SYSADM.PS_ACTN_REASON_TBL,PS_ACTN_REASON_TBL,oracle_table,RH,Finance,high,SYSADM.PS_ACTN_REASON_TBL PS_ACTN_REASON_TBL oracle_table,16,0,16,0,1,15,0,4.75,30.0,156.0,10920.0,0.0104141235351562,RH,Finance,RH,,,
+1004288,SYSADM.PS_ACCOMP_TBL,PS_ACCOMP_TBL,oracle_table,RH,,high,,18,1,17,3,1,14,0,9.777777777777777,90.0,225.0,14400.0,0.01373291015625,,,,oracle,VRAI,HR
+1004290,SYSADM.PS_ACCOMP_TST_UPG,PS_ACCOMP_TST_UPG,oracle_table,RH,,high,,2,0,2,0,0,2,0,8.0,8.0,0.0,0.0,0.0,,,,oracle,VRAI,HR
+1004289,SYSADM.PS_ACCOMP_TBL_LANG,PS_ACCOMP_TBL_LANG,oracle_table,RH,,high,,5,0,5,0,0,5,0,28.2,90.0,0.0,0.0,0.0,,,,oracle,VRAI,HR
+1004287,SYSADM.PS_ACCOMPLISHMENTS,PS_ACCOMPLISHMENTS,oracle_table,RH,RH,high,,45,7,38,4,7,34,0,8.57777777777778,50.0,359.0,38772.0,0.0369758605957031,,,,oracle,VRAI,HR
+1004286,SYSADM.PS_ACCOMPLISH_LANG,PS_ACCOMPLISH_LANG,oracle_table,RH,,high,,12,1,11,0,1,11,0,19.33333333333333,50.0,0.0,0.0,0.0,,,,oracle,VRAI,HR
+1004285,SYSADM.PS_ACCOMP_DEG_UPG,PS_ACCOMP_DEG_UPG,oracle_table,RH,,high,,2,0,2,0,0,2,0,5.5,8.0,0.0,0.0,0.0,,,,oracle,VRAI,HR
+1004383,SYSADM.PS_ACTION_TBL,PS_ACTION_TBL,oracle_table,RH,,high,,15,2,13,1,2,12,0,9.266666666666666,30.0,26.0,2314.0,0.002206802368164,,,,oracle,VRAI,HR
+1004395,SYSADM.PS_ACTN_RSN_LANG,PS_ACTN_RSN_LANG,oracle_table,RH,,high,,6,0,6,0,1,5,0,9.83333333333333,30.0,0.0,0.0,0.0,,,,oracle,VRAI,HR
+1004394,SYSADM.PS_ACTNREASONT_UPG,PS_ACTNREASONT_UPG,oracle_table,RH,,high,,10,1,9,0,2,8,0,11.8,30.0,0.0,0.0,0.0,,,,oracle,VRAI,HR
+1004592,SYSADM.PS_AFFL_VENDOR_PH,PS_AFFL_VENDOR_PH,oracle_table,Achats,,high,,6,0,6,0,0,6,0,8.666666666666666,24.0,3.0,90.0,8.58306884765e-05,,,,oracle,VRAI,Procurement
+1004591,SYSADM.PS_AFFL_VENDOR,PS_AFFL_VENDOR,oracle_table,Achats,,high,,24,0,24,0,0,24,0,27.58333333333333,130.0,3.0,387.0,0.0003690719604492,,,,oracle,VRAI,Procurement
+1004598,SYSADM.PS_AGC_CAT_CTXD,PS_AGC_CAT_CTXD,oracle_table,Technique,Technique,medium,SYSADM.PS_AGC_CAT_CTXD PS_AGC_CAT_CTXD oracle_table,10,0,10,0,1,9,1,29.0,127.0,0.0,0.0,0.0,Technique,Technique,Technique,,,
+1004614,SYSADM.PS_AGC_CAT_STEPLNG,PS_AGC_CAT_STEPLNG,oracle_table,Technique,Technique,medium,SYSADM.PS_AGC_CAT_STEPLNG PS_AGC_CAT_STEPLNG oracle_table,8,3,5,0,1,7,2,21.625,100.0,0.0,0.0,0.0,Technique,Technique,Technique,,,
+1004281,SYSADM.PS_ACCESS_GRP_TBL,PS_ACCESS_GRP_TBL,oracle_table,Technique,Technique,medium,SYSADM.PS_ACCESS_GRP_TBL PS_ACCESS_GRP_TBL oracle_table,3,1,2,0,0,3,1,16.666666666666664,30.0,525.0,40425.0,0.0385522842407226,Technique,Technique,Technique,,,
+1004609,SYSADM.PS_AGC_CAT_STEP,PS_AGC_CAT_STEP,oracle_table,Technique,Technique,medium,SYSADM.PS_AGC_CAT_STEP PS_AGC_CAT_STEP oracle_table,36,1,35,0,1,35,2,35.25,127.0,9.0,3132.0,0.0029869079589843,Technique,Technique,Technique,,,
+1004618,SYSADM.PS_AGC_CTXDTA_LNG,PS_AGC_CTXDTA_LNG,oracle_table,Technique,Technique,medium,SYSADM.PS_AGC_CTXDTA_LNG PS_AGC_CTXDTA_LNG oracle_table,5,1,4,0,0,5,1,26.6,100.0,0.0,0.0,0.0,Technique,Technique,Technique,,,
+1004582,SYSADM.PS_AE_STMT_TMP,PS_AE_STMT_TMP,oracle_table,Technique,Technique,medium,SYSADM.PS_AE_STMT_TMP PS_AE_STMT_TMP oracle_table,11,1,10,1,1,9,1,748.4545454545455,8192.0,0.0,0.0,0.0,Technique,Technique,Technique,,,
+1004642,SYSADM.PS_AGC_TMPL_LNG,PS_AGC_TMPL_LNG,oracle_table,Technique,Technique,medium,SYSADM.PS_AGC_TMPL_LNG PS_AGC_TMPL_LNG oracle_table,6,2,4,0,1,5,2,20.0,100.0,0.0,0.0,0.0,Technique,Technique,Technique,,,
+1004534,SYSADM.PS_AE_AM_UPG_AET,PS_AE_AM_UPG_AET,oracle_table,Technique,Technique,medium,SYSADM.PS_AE_AM_UPG_AET PS_AE_AM_UPG_AET oracle_table,63,4,59,9,3,51,1,84.14285714285714,4000.0,0.0,0.0,0.0,Technique,Technique,Technique,,,
+1004578,SYSADM.PS_AE_STMT_COMPILE,PS_AE_STMT_COMPILE,oracle_table,Technique,Technique,medium,SYSADM.PS_AE_STMT_COMPILE PS_AE_STMT_COMPILE oracle_table,10,2,8,1,1,8,1,823.2,8192.0,0.0,0.0,0.0,Technique,Technique,Technique,,,

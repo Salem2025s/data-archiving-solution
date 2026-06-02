@@ -1,0 +1,1166 @@
+﻿{
+    "total_other":  2321,
+    "generated_at":  "2026-04-24T14:51:58.6531780Z",
+    "prefixes":  [
+                     {
+                         "prefix":  "GM",
+                         "count":  112,
+                         "avg_field_count":  7.5,
+                         "avg_numeric_field_count":  0.55,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_GM_ADD_INFO_LNG",
+                                                        "SYSADM.PS_GM_AGENT_LNG",
+                                                        "SYSADM.PS_GM_ATTCH_TP_LNG",
+                                                        "SYSADM.PS_GM_ATTR_CODE",
+                                                        "SYSADM.PS_GM_AWD_COMMENT",
+                                                        "SYSADM.PS_GM_AWD_MILE_CNT",
+                                                        "SYSADM.PS_GM_CERTREP_LNG",
+                                                        "SYSADM.PS_GM_COM_ADMN_LNG"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "BUSINESS",
+                                                       "count":  50
+                                                   },
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  50
+                                                   },
+                                                   {
+                                                       "token":  "UNIT",
+                                                       "count":  49
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  47
+                                                   },
+                                                   {
+                                                       "token":  "EFFDT",
+                                                       "count":  46
+                                                   },
+                                                   {
+                                                       "token":  "PCL",
+                                                       "count":  42
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  38
+                                                   },
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  38
+                                                   },
+                                                   {
+                                                       "token":  "CODE",
+                                                       "count":  26
+                                                   },
+                                                   {
+                                                       "token":  "SUB",
+                                                       "count":  26
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "PC",
+                         "count":  75,
+                         "avg_field_count":  6.41,
+                         "avg_numeric_field_count":  0.69,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_PC_ACT_PERCENT",
+                                                        "SYSADM.PS_PC_ACT_TYPE_SCH",
+                                                        "SYSADM.PS_PC_AM_ANTYP_TMP",
+                                                        "SYSADM.PS_PC_AM_FLTR_LNG",
+                                                        "SYSADM.PS_PC_ANLANL_GRP",
+                                                        "SYSADM.PS_PC_CAL_DEFN_LNG",
+                                                        "SYSADM.PS_PC_CHC_CFG",
+                                                        "SYSADM.PS_PC_CPY_ALOC_TAO"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "BUSINESS",
+                                                       "count":  46
+                                                   },
+                                                   {
+                                                       "token":  "UNIT",
+                                                       "count":  46
+                                                   },
+                                                   {
+                                                       "token":  "PROJECT",
+                                                       "count":  39
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  29
+                                                   },
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  25
+                                                   },
+                                                   {
+                                                       "token":  "SCH",
+                                                       "count":  21
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  18
+                                                   },
+                                                   {
+                                                       "token":  "DATE",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "VAL",
+                                                       "count":  16
+                                                   },
+                                                   {
+                                                       "token":  "CHC",
+                                                       "count":  15
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "RS",
+                         "count":  69,
+                         "avg_field_count":  5.13,
+                         "avg_numeric_field_count":  1.22,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_RS_ASSGN_LASTID",
+                                                        "SYSADM.PS_RS_BU_OPT_MGREM",
+                                                        "SYSADM.PS_RS_BU_OPT_MGRGR",
+                                                        "SYSADM.PS_RS_BU_OPT_RESEM",
+                                                        "SYSADM.PS_RS_CLUSTER_COMP",
+                                                        "SYSADM.PS_RS_DF_AVA_SDT_W",
+                                                        "SYSADM.PS_RS_DF_RR_FAC",
+                                                        "SYSADM.PS_RS_DF_WEIGHT_W"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  35
+                                                   },
+                                                   {
+                                                       "token":  "SCP",
+                                                       "count":  27
+                                                   },
+                                                   {
+                                                       "token":  "DSPL",
+                                                       "count":  25
+                                                   },
+                                                   {
+                                                       "token":  "BUSINESS",
+                                                       "count":  21
+                                                   },
+                                                   {
+                                                       "token":  "UNIT",
+                                                       "count":  21
+                                                   },
+                                                   {
+                                                       "token":  "FACTOR",
+                                                       "count":  15
+                                                   },
+                                                   {
+                                                       "token":  "SRCH",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "STR",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "STS",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "DATE",
+                                                       "count":  9
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "WM",
+                         "count":  66,
+                         "avg_field_count":  7.18,
+                         "avg_numeric_field_count":  0.88,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_WM_AUTOSRCH_TLS",
+                                                        "SYSADM.PS_WM_BU_OPT_RESEM",
+                                                        "SYSADM.PS_WM_CAUSE_LG",
+                                                        "SYSADM.PS_WM_CINQ_WO_PR",
+                                                        "SYSADM.PS_WM_CLAIM_CAUSAL",
+                                                        "SYSADM.PS_WM_CLAIM_LASTID",
+                                                        "SYSADM.PS_WM_CREW_DEFN",
+                                                        "SYSADM.PS_WM_CREWSCHD_REQ"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "UNIT",
+                                                       "count":  45
+                                                   },
+                                                   {
+                                                       "token":  "BUSINESS",
+                                                       "count":  41
+                                                   },
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  40
+                                                   },
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  26
+                                                   },
+                                                   {
+                                                       "token":  "ASSET",
+                                                       "count":  24
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  21
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  18
+                                                   },
+                                                   {
+                                                       "token":  "NBR",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "RDG",
+                                                       "count":  16
+                                                   },
+                                                   {
+                                                       "token":  "LAST",
+                                                       "count":  13
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "FO",
+                         "count":  62,
+                         "avg_field_count":  6.94,
+                         "avg_numeric_field_count":  0.82,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_FO_ACT_CSF_HDR",
+                                                        "SYSADM.PS_FO_APP_BRANCHES",
+                                                        "SYSADM.PS_FO_APP_REF_SEQ",
+                                                        "SYSADM.PS_FO_ASGN_CNV_UPG",
+                                                        "SYSADM.PS_FO_ASGN_TMT_DTL",
+                                                        "SYSADM.PS_FO_ATTACH_TYPE",
+                                                        "SYSADM.PS_FO_BRANCH_TBL",
+                                                        "SYSADM.PS_FO_BRNCH_FO_UPG"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  28
+                                                   },
+                                                   {
+                                                       "token":  "TEMPLATE",
+                                                       "count":  26
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  23
+                                                   },
+                                                   {
+                                                       "token":  "SRCH",
+                                                       "count":  21
+                                                   },
+                                                   {
+                                                       "token":  "EOTF",
+                                                       "count":  18
+                                                   },
+                                                   {
+                                                       "token":  "STR",
+                                                       "count":  18
+                                                   },
+                                                   {
+                                                       "token":  "BUSINESS",
+                                                       "count":  15
+                                                   },
+                                                   {
+                                                       "token":  "EFFDT",
+                                                       "count":  15
+                                                   },
+                                                   {
+                                                       "token":  "NUM",
+                                                       "count":  15
+                                                   },
+                                                   {
+                                                       "token":  "UNIT",
+                                                       "count":  15
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "AUC",
+                         "count":  61,
+                         "avg_field_count":  8.31,
+                         "avg_numeric_field_count":  2.62,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_AUC_ADDRESS_HDR",
+                                                        "SYSADM.PS_AUC_BIDDER_VAT",
+                                                        "SYSADM.PS_AUC_CATEGRY_HDR",
+                                                        "SYSADM.PS_AUC_CONST_ATTLS",
+                                                        "SYSADM.PS_AUC_CONSTRAINTS",
+                                                        "SYSADM.PS_AUC_DISP_ADDR",
+                                                        "SYSADM.PS_AUC_DIVPER_CHRT",
+                                                        "SYSADM.PS_AUC_EVENT_EXT"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "AUC",
+                                                       "count":  164
+                                                   },
+                                                   {
+                                                       "token":  "NBR",
+                                                       "count":  40
+                                                   },
+                                                   {
+                                                       "token":  "VERSION",
+                                                       "count":  36
+                                                   },
+                                                   {
+                                                       "token":  "UNIT",
+                                                       "count":  31
+                                                   },
+                                                   {
+                                                       "token":  "BUSINESS",
+                                                       "count":  30
+                                                   },
+                                                   {
+                                                       "token":  "CONST",
+                                                       "count":  28
+                                                   },
+                                                   {
+                                                       "token":  "ROUND",
+                                                       "count":  28
+                                                   },
+                                                   {
+                                                       "token":  "BID",
+                                                       "count":  21
+                                                   },
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  19
+                                                   },
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  18
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "CA",
+                         "count":  46,
+                         "avg_field_count":  6.43,
+                         "avg_numeric_field_count":  1.39,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_CA_BI_FF_TA5",
+                                                        "SYSADM.PS_CA_BINOTE_TA1",
+                                                        "SYSADM.PS_CA_BU_XS_DEF",
+                                                        "SYSADM.PS_CA_CHG_RSN_TBL",
+                                                        "SYSADM.PS_CA_CHG_TYPE_LNG",
+                                                        "SYSADM.PS_CA_CHG_TYPE_TBL",
+                                                        "SYSADM.PS_CA_CONSTPL_LANG",
+                                                        "SYSADM.PS_CA_DETAIL_PROJ"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "NUM",
+                                                       "count":  38
+                                                   },
+                                                   {
+                                                       "token":  "CONTRACT",
+                                                       "count":  33
+                                                   },
+                                                   {
+                                                       "token":  "SEQ",
+                                                       "count":  24
+                                                   },
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  20
+                                                   },
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  18
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  15
+                                                   },
+                                                   {
+                                                       "token":  "NBR",
+                                                       "count":  14
+                                                   },
+                                                   {
+                                                       "token":  "LINE",
+                                                       "count":  13
+                                                   },
+                                                   {
+                                                       "token":  "MESSAGE",
+                                                       "count":  12
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "RE",
+                         "count":  46,
+                         "avg_field_count":  8.78,
+                         "avg_numeric_field_count":  2.09,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_RE_ABST_SECT",
+                                                        "SYSADM.PS_RE_AM_LRDEF_TBL",
+                                                        "SYSADM.PS_RE_AM_LTDEF_TBL",
+                                                        "SYSADM.PS_RE_CLAUSE_TYPE",
+                                                        "SYSADM.PS_RE_CLSSTYPE_LG",
+                                                        "SYSADM.PS_RE_LSETYP_LG",
+                                                        "SYSADM.PS_RE_LS_EXT_PARTY",
+                                                        "SYSADM.PS_RE_LS_PRFCTG"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "SITE",
+                                                       "count":  28
+                                                   },
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  22
+                                                   },
+                                                   {
+                                                       "token":  "PROPERTY",
+                                                       "count":  21
+                                                   },
+                                                   {
+                                                       "token":  "INSTANCE",
+                                                       "count":  20
+                                                   },
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  19
+                                                   },
+                                                   {
+                                                       "token":  "BUSINESS",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "UNIT",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "STATUS",
+                                                       "count":  15
+                                                   },
+                                                   {
+                                                       "token":  "EFFDT",
+                                                       "count":  14
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "EOCM",
+                         "count":  43,
+                         "avg_field_count":  8.23,
+                         "avg_numeric_field_count":  1.53,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_EOCM_CATALOG_CH",
+                                                        "SYSADM.PS_EOCM_CATEGORY_H",
+                                                        "SYSADM.PS_EOCM_DO_SRC",
+                                                        "SYSADM.PS_EOCM_EXFZ_ELM",
+                                                        "SYSADM.PS_EOCM_FUZ_ELM_C",
+                                                        "SYSADM.PS_EOCM_MAP_DFN",
+                                                        "SYSADM.PS_EOCM_NEW_OFFCAT",
+                                                        "SYSADM.PS_EOCM_SOFF_ATTCH"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "EOCM",
+                                                       "count":  328
+                                                   },
+                                                   {
+                                                       "token":  "FLD",
+                                                       "count":  218
+                                                   },
+                                                   {
+                                                       "token":  "CH1",
+                                                       "count":  90
+                                                   },
+                                                   {
+                                                       "token":  "CH2",
+                                                       "count":  34
+                                                   },
+                                                   {
+                                                       "token":  "NU1",
+                                                       "count":  29
+                                                   },
+                                                   {
+                                                       "token":  "CH3",
+                                                       "count":  28
+                                                   },
+                                                   {
+                                                       "token":  "FLAG",
+                                                       "count":  23
+                                                   },
+                                                   {
+                                                       "token":  "IMPORT",
+                                                       "count":  23
+                                                   },
+                                                   {
+                                                       "token":  "COL",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "TARGET",
+                                                       "count":  12
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "AM",
+                         "count":  42,
+                         "avg_field_count":  6.93,
+                         "avg_numeric_field_count":  1.1,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_AM_AREA_LANG",
+                                                        "SYSADM.PS_AM_AREA_TBL",
+                                                        "SYSADM.PS_AM_ASSET_SD",
+                                                        "SYSADM.PS_AM_CEDT_SSRC",
+                                                        "SYSADM.PS_AM_CGU_DTL",
+                                                        "SYSADM.PS_AM_CGU_FLD_VAL",
+                                                        "SYSADM.PS_AM_CRIT_LVL",
+                                                        "SYSADM.PS_AM_CRIT_LVL_LNG"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "ASSET",
+                                                       "count":  24
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  20
+                                                   },
+                                                   {
+                                                       "token":  "IOT",
+                                                       "count":  14
+                                                   },
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  13
+                                                   },
+                                                   {
+                                                       "token":  "UNIT",
+                                                       "count":  13
+                                                   },
+                                                   {
+                                                       "token":  "BUSINESS",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "INT",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "TEXT20",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "TEXT4",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  9
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "FS",
+                         "count":  42,
+                         "avg_field_count":  5.64,
+                         "avg_numeric_field_count":  1.05,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_FS_CF_LANG_REC",
+                                                        "SYSADM.PS_FS_CF_RECFIELDS",
+                                                        "SYSADM.PS_FS_CR_CARD_TYPE",
+                                                        "SYSADM.PS_FS_MAP_CI_TRAN",
+                                                        "SYSADM.PS_FS_MAP_CP_TRAN",
+                                                        "SYSADM.PS_FS_MAP_CS_TRAN",
+                                                        "SYSADM.PS_FS_MAP_DCC_TBL",
+                                                        "SYSADM.PS_FS_MAP_DTL_TBL"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "MAP",
+                                                       "count":  125
+                                                   },
+                                                   {
+                                                       "token":  "FLD",
+                                                       "count":  26
+                                                   },
+                                                   {
+                                                       "token":  "SEQ",
+                                                       "count":  18
+                                                   },
+                                                   {
+                                                       "token":  "TRG",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "RECNAME",
+                                                       "count":  15
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  11
+                                                   },
+                                                   {
+                                                       "token":  "GROUP",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "NAME",
+                                                       "count":  9
+                                                   },
+                                                   {
+                                                       "token":  "PROMPT",
+                                                       "count":  9
+                                                   },
+                                                   {
+                                                       "token":  "PAD",
+                                                       "count":  8
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "PROJ",
+                         "count":  41,
+                         "avg_field_count":  6.93,
+                         "avg_numeric_field_count":  0.51,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_PROJ_ACT_LANG",
+                                                        "SYSADM.PS_PROJ_ANTYPE_LNG",
+                                                        "SYSADM.PS_PROJ_BU_CALC",
+                                                        "SYSADM.PS_PROJ_CATG_TBL",
+                                                        "SYSADM.PS_PROJ_CAT_SUB",
+                                                        "SYSADM.PS_PROJ_CAT_SUB_LG",
+                                                        "SYSADM.PS_PROJ_CHECKLIST",
+                                                        "SYSADM.PS_PROJ_DOCUMENT"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  32
+                                                   },
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  29
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  27
+                                                   },
+                                                   {
+                                                       "token":  "RESOURCE",
+                                                       "count":  27
+                                                   },
+                                                   {
+                                                       "token":  "PROJECT",
+                                                       "count":  23
+                                                   },
+                                                   {
+                                                       "token":  "EFFDT",
+                                                       "count":  21
+                                                   },
+                                                   {
+                                                       "token":  "STATUS",
+                                                       "count":  16
+                                                   },
+                                                   {
+                                                       "token":  "BUSINESS",
+                                                       "count":  13
+                                                   },
+                                                   {
+                                                       "token":  "UNIT",
+                                                       "count":  13
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  12
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "CS",
+                         "count":  38,
+                         "avg_field_count":  6.74,
+                         "avg_numeric_field_count":  1.05,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_CS_CLS_CLASS",
+                                                        "SYSADM.PS_CS_CLS_CLASSLNG",
+                                                        "SYSADM.PS_CS_CLSCLASSLNG2",
+                                                        "SYSADM.PS_CS_CONFIG_TBL",
+                                                        "SYSADM.PS_CS_DOC_ATTH_SRC",
+                                                        "SYSADM.PS_CS_DOC_COLFSHST",
+                                                        "SYSADM.PS_CS_DOC_RELATED",
+                                                        "SYSADM.PS_CS_DOC_UFLD_HST"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  26
+                                                   },
+                                                   {
+                                                       "token":  "DOC",
+                                                       "count":  22
+                                                   },
+                                                   {
+                                                       "token":  "DESCR60",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "FLG",
+                                                       "count":  11
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  11
+                                                   },
+                                                   {
+                                                       "token":  "CHAR",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "INT",
+                                                       "count":  8
+                                                   },
+                                                   {
+                                                       "token":  "DATE",
+                                                       "count":  7
+                                                   },
+                                                   {
+                                                       "token":  "VERSION",
+                                                       "count":  7
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "PV",
+                         "count":  36,
+                         "avg_field_count":  4.11,
+                         "avg_numeric_field_count":  0.36,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_PV_ACTIONS_LANG",
+                                                        "SYSADM.PS_PV_ADM_PROJ_LTB",
+                                                        "SYSADM.PS_PV_ADM_PROJ_TBL",
+                                                        "SYSADM.PS_PV_ATT_COMP_DIR",
+                                                        "SYSADM.PS_PV_ATTR_IMPORT",
+                                                        "SYSADM.PS_PV_CAT_ATTR_TBL",
+                                                        "SYSADM.PS_PV_CATTREE_FLAT",
+                                                        "SYSADM.PS_PV_CATTREE_F_LN"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "CATEGORY",
+                                                       "count":  30
+                                                   },
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "NAME",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  9
+                                                   },
+                                                   {
+                                                       "token":  "UNIT",
+                                                       "count":  8
+                                                   },
+                                                   {
+                                                       "token":  "MEASURE",
+                                                       "count":  7
+                                                   },
+                                                   {
+                                                       "token":  "DESCR254",
+                                                       "count":  6
+                                                   },
+                                                   {
+                                                       "token":  "TREE",
+                                                       "count":  6
+                                                   },
+                                                   {
+                                                       "token":  "ATTRNAME",
+                                                       "count":  4
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "BI",
+                         "count":  32,
+                         "avg_field_count":  11.12,
+                         "avg_numeric_field_count":  0.91,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_BI_BECFG_HDR",
+                                                        "SYSADM.PS_BI_BECFG_LIN_LG",
+                                                        "SYSADM.PS_BI_CYCLE_PARM",
+                                                        "SYSADM.PS_BI_DISC_SUR_LNG",
+                                                        "SYSADM.PS_BI_FLD_DESCR",
+                                                        "SYSADM.PS_BI_INSTALL_PCT",
+                                                        "SYSADM.PS_BI_LNFLD_CFG",
+                                                        "SYSADM.PS_BI_SGRP_TYP_LNG"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "TAB",
+                                                       "count":  30
+                                                   },
+                                                   {
+                                                       "token":  "CSW",
+                                                       "count":  26
+                                                   },
+                                                   {
+                                                       "token":  "HSW",
+                                                       "count":  26
+                                                   },
+                                                   {
+                                                       "token":  "GRPBX",
+                                                       "count":  24
+                                                   },
+                                                   {
+                                                       "token":  "CHKBX",
+                                                       "count":  20
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  18
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  14
+                                                   },
+                                                   {
+                                                       "token":  "ADDR",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "TYPE",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "BILL",
+                                                       "count":  10
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "EX",
+                         "count":  32,
+                         "avg_field_count":  7.75,
+                         "avg_numeric_field_count":  1.12,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_EX_ADV_SRC_LNG",
+                                                        "SYSADM.PS_EX_BNCHMRKSETID",
+                                                        "SYSADM.PS_EX_CATEGORY_TBL",
+                                                        "SYSADM.PS_EX_LOCATION_TAO",
+                                                        "SYSADM.PS_EX_LOC_GRP_LNG",
+                                                        "SYSADM.PS_EX_LOC_GRP_TBL",
+                                                        "SYSADM.PS_EX_MC3_MS_TA3",
+                                                        "SYSADM.PS_EX_MERCHANT_TBL"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  20
+                                                   },
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  19
+                                                   },
+                                                   {
+                                                       "token":  "EFFDT",
+                                                       "count":  13
+                                                   },
+                                                   {
+                                                       "token":  "NBR",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "DESCRSHORT",
+                                                       "count":  9
+                                                   },
+                                                   {
+                                                       "token":  "CAR",
+                                                       "count":  8
+                                                   },
+                                                   {
+                                                       "token":  "DATE",
+                                                       "count":  7
+                                                   },
+                                                   {
+                                                       "token":  "END",
+                                                       "count":  7
+                                                   },
+                                                   {
+                                                       "token":  "LOCATION",
+                                                       "count":  7
+                                                   },
+                                                   {
+                                                       "token":  "SHEET",
+                                                       "count":  7
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "SCD",
+                         "count":  31,
+                         "avg_field_count":  6.35,
+                         "avg_numeric_field_count":  1.13,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_SCD_BLDSCT_LNG",
+                                                        "SYSADM.PS_SCD_KPI_CAT",
+                                                        "SYSADM.PS_SCD_KPI_DEF_LNG",
+                                                        "SYSADM.PS_SCD_KPIEVAL_LNG",
+                                                        "SYSADM.PS_SCD_KPIEVMAP_DT",
+                                                        "SYSADM.PS_SCD_QST_GRP_LNG",
+                                                        "SYSADM.PS_SCD_QUEST_GRPS",
+                                                        "SYSADM.PS_SCD_QUESTN_LNG"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "SCD",
+                                                       "count":  163
+                                                   },
+                                                   {
+                                                       "token":  "KPI",
+                                                       "count":  30
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  19
+                                                   },
+                                                   {
+                                                       "token":  "NBR",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "SECTION",
+                                                       "count":  17
+                                                   },
+                                                   {
+                                                       "token":  "TEMPLATE",
+                                                       "count":  14
+                                                   },
+                                                   {
+                                                       "token":  "DEF",
+                                                       "count":  13
+                                                   },
+                                                   {
+                                                       "token":  "DESC",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "QUESTION",
+                                                       "count":  11
+                                                   },
+                                                   {
+                                                       "token":  "NAME",
+                                                       "count":  10
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "DP",
+                         "count":  28,
+                         "avg_field_count":  16.36,
+                         "avg_numeric_field_count":  4.54,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_DP_ADJ_REASONS",
+                                                        "SYSADM.PS_DP_CALENDARS",
+                                                        "SYSADM.PS_DP_CONFIGVIEWS",
+                                                        "SYSADM.PS_DP_CONFIGVW_LNG",
+                                                        "SYSADM.PS_DP_FLD_XREF",
+                                                        "SYSADM.PS_DP_INTUPD_SPECS",
+                                                        "SYSADM.PS_DP_IPFLDSEL_LNG",
+                                                        "SYSADM.PS_DP_LIFEPROFILES"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "CAPTION",
+                                                       "count":  79
+                                                   },
+                                                   {
+                                                       "token":  "INUSE",
+                                                       "count":  40
+                                                   },
+                                                   {
+                                                       "token":  "DDH",
+                                                       "count":  14
+                                                   },
+                                                   {
+                                                       "token":  "CONFIGVIEW",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "SEQ",
+                                                       "count":  8
+                                                   },
+                                                   {
+                                                       "token":  "DESCRIPTION",
+                                                       "count":  7
+                                                   },
+                                                   {
+                                                       "token":  "FIELDID",
+                                                       "count":  6
+                                                   },
+                                                   {
+                                                       "token":  "PSFIELD",
+                                                       "count":  6
+                                                   },
+                                                   {
+                                                       "token":  "FCAST01",
+                                                       "count":  5
+                                                   },
+                                                   {
+                                                       "token":  "FCAST02",
+                                                       "count":  5
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "EODI",
+                         "count":  27,
+                         "avg_field_count":  4.04,
+                         "avg_numeric_field_count":  1.04,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_EODI_APTGRP_LNG",
+                                                        "SYSADM.PS_EODI_CHART_DAT",
+                                                        "SYSADM.PS_EODI_CHART_SER",
+                                                        "SYSADM.PS_EODI_DYN_COLUMN",
+                                                        "SYSADM.PS_EODI_DYN_DROPS",
+                                                        "SYSADM.PS_EODI_DYN_FLDLNG",
+                                                        "SYSADM.PS_EODI_DYN_LNG",
+                                                        "SYSADM.PS_EODI_DYN_XFR"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "EODI",
+                                                       "count":  68
+                                                   },
+                                                   {
+                                                       "token":  "DYN",
+                                                       "count":  22
+                                                   },
+                                                   {
+                                                       "token":  "XFR",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  9
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  7
+                                                   },
+                                                   {
+                                                       "token":  "APT",
+                                                       "count":  6
+                                                   },
+                                                   {
+                                                       "token":  "FIELDNAME",
+                                                       "count":  6
+                                                   },
+                                                   {
+                                                       "token":  "FLG",
+                                                       "count":  5
+                                                   },
+                                                   {
+                                                       "token":  "PROC",
+                                                       "count":  5
+                                                   },
+                                                   {
+                                                       "token":  "SERIES",
+                                                       "count":  5
+                                                   }
+                                               ]
+                     },
+                     {
+                         "prefix":  "CP",
+                         "count":  26,
+                         "avg_field_count":  5.46,
+                         "avg_numeric_field_count":  0.46,
+                         "sample_technical_names":  [
+                                                        "SYSADM.PS_CP_CONFIG",
+                                                        "SYSADM.PS_CP_CONFIG_DETL",
+                                                        "SYSADM.PS_CP_CONFIG_TEMP",
+                                                        "SYSADM.PS_CP_CONFIG_TEMP2",
+                                                        "SYSADM.PS_CP_CONSTANT_LNG",
+                                                        "SYSADM.PS_CP_GBL_VAR",
+                                                        "SYSADM.PS_CP_MATRIX_DETL",
+                                                        "SYSADM.PS_CP_MULTOP_DETL"
+                                                    ],
+                         "top_column_tokens":  [
+                                                   {
+                                                       "token":  "VALUE",
+                                                       "count":  19
+                                                   },
+                                                   {
+                                                       "token":  "SETID",
+                                                       "count":  18
+                                                   },
+                                                   {
+                                                       "token":  "DESCR",
+                                                       "count":  15
+                                                   },
+                                                   {
+                                                       "token":  "VARIABLE",
+                                                       "count":  12
+                                                   },
+                                                   {
+                                                       "token":  "CODE",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "KEY",
+                                                       "count":  10
+                                                   },
+                                                   {
+                                                       "token":  "CONFIG",
+                                                       "count":  9
+                                                   },
+                                                   {
+                                                       "token":  "FLG",
+                                                       "count":  9
+                                                   },
+                                                   {
+                                                       "token":  "LANGUAGE",
+                                                       "count":  8
+                                                   },
+                                                   {
+                                                       "token":  "LASTUPDDTTM",
+                                                       "count":  8
+                                                   }
+                                               ]
+                     }
+                 ]
+}
