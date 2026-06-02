@@ -23,6 +23,7 @@ ALLOWED_TABLES: frozenset[str] = frozenset(
         "table_catalog",
         "column_catalog",
         "index_catalog",
+        "segment_access",
     }
 )
 
@@ -245,6 +246,10 @@ class RawOracleLoader:
     def load_index_catalog(self, rows: list[dict[str, Any]], run_id: int) -> int:
         """Load rows into ``raw_oracle.index_catalog`` (idempotent by run_id)."""
         return self.replace_rows("index_catalog", rows, run_id)
+
+    def load_segment_access(self, rows: list[dict[str, Any]], run_id: int) -> int:
+        """Load rows into ``raw_oracle.segment_access`` (idempotent; may be empty)."""
+        return self.replace_rows("segment_access", rows, run_id)
 
 
 def load_all_raw_oracle(

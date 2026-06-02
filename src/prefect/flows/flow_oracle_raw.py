@@ -11,6 +11,7 @@ from src.connectors.postgres_client import PostgresClient
 from src.extract.oracle.extract_column_catalog import extract_column_catalog
 from src.extract.oracle.extract_index_catalog import extract_index_catalog
 from src.extract.oracle.extract_record_catalog import extract_record_catalog
+from src.extract.oracle.extract_segment_access import extract_segment_access
 from src.extract.oracle.extract_table_catalog import extract_table_catalog
 from src.load.load_raw_oracle import RawOracleLoader
 from src.utils.logging_utils import configure_logging
@@ -97,6 +98,9 @@ def flow_oracle_raw(run_id: int, resume: bool = True) -> int:
         loaded_record = loader.load_record_catalog(rows=extract_record_catalog(), run_id=run_id)
         loaded_table = loader.load_table_catalog(rows=extract_table_catalog(), run_id=run_id)
         loaded_index = loader.load_index_catalog(rows=extract_index_catalog(), run_id=run_id)
+        # Optional read-access signal (V$SEGMENT_STATISTICS). Returns [] and stays
+        # inert if SYSADM lacks the grant — never blocks the run.
+        loaded_access = loader.load_segment_access(rows=extract_segment_access(owner=owner), run_id=run_id)
 
         # 2) Column catalog — paginated, idempotent & resumable per recname prefix.
         recname_prefixes = fetch_recname_prefixes(settings_owner=owner)
@@ -140,7 +144,7 @@ def flow_oracle_raw(run_id: int, resume: bool = True) -> int:
                 )
                 failed_prefixes.append(prefix)
 
-        total_loaded = loaded_record + loaded_table + column_catalog_total + loaded_index
+        total_loaded = loaded_record + loaded_table + column_catalog_total + loaded_index + loaded_access
 
         if failed_prefixes:
             raise RuntimeError(

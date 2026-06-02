@@ -35,9 +35,14 @@ Le score est faussé par `term_count = 0` (composante +25 constante) et `lineage
 | **Ancienneté** | `GREATEST(fact_asset_profile.last_analyzed, table_catalog.last_modified)` | 109 107 assets datés |
 | **Sensibilité** | `dataset_asset_ml.column_value_semantics_text` | 10 134 PII + 23 662 financiers |
 | **Dépendances (hiérarchie)** | `features_asset.lineage_out_count` | 4 590 arêtes ps_parent_record |
-| **Références (objets stockés)** | `table_catalog.referenced_by_count` → `is_orphan` | ⏳ actif à la prochaine extraction VPN |
+| **Références (objets stockés)** | `table_catalog.referenced_by_count` → `is_orphan` | ✅ actif (run 6) |
+| **Accès (lectures réelles)** | `raw_oracle.segment_access.logical_reads` (V$SEGMENT_STATISTICS) → `access_band` | 🔒 prêt mais inactif (grant DBA requis — voir ci-dessous) |
 
-> **Fréquence d'accès :** Oracle n'expose pas de compteur de **lecture** par table (cela nécessiterait AWR/Diagnostics Pack ou l'audit des SELECT). On utilise donc l'**activité d'écriture/analyse** comme proxy.
+> **Fréquence d'accès — verdict sondé (2026-06).** Oracle n'expose pas de compteur de **lecture** accessible à SYSADM. Probe direct sur EP92U038 : **toutes** les vues de stats par segment renvoient `ORA-00942` pour SYSADM — `V$SEGMENT_STATISTICS`, `V$SEGSTAT`, `SYS.V_$SEGMENT_STATISTICS`, `DBA_HIST_SEG_STAT` (AWR). Ce n'est donc **pas un manque d'implémentation** mais un **blocage de permissions**. Un **extracteur défensif** (`extract_segment_access.py`) et une **6ᵉ dimension** (`access_band`) sont déjà branchés ; ils restent **inertes** (signal `inconnu`) tant que le grant n'est pas accordé, et s'activent automatiquement ensuite — **sans toucher au code**. Pour activer un vrai signal de lecture (sans licence Diagnostics Pack), un DBA doit exécuter :
+> ```sql
+> GRANT SELECT ON SYS.V_$SEGMENT_STATISTICS TO SYSADM;
+> ```
+> À défaut, on retombe sur l'**activité d'écriture/analyse** (`last_analyzed`/`last_modified`) comme proxy.
 
 ### ⚠️ Sonde Oracle (2026-05-29) — ce qui existe réellement
 
@@ -47,6 +52,7 @@ Deux signaux Oracle ont été ajoutés à l'extraction ([extract_table_catalog.p
 |---|---|---|
 | `last_modified` | `ALL_TAB_MODIFICATIONS` | ❌ **Quasi inexistant** : 47 tables / 79 633 (0,06 %), absent des plus grosses. Oracle vide l'entrée après collecte de stats → **pas un signal d'âge fiable**. On garde `last_analyzed`. |
 | `referenced_by_count` | `ALL_DEPENDENCIES` | ✅ **Riche** : 80 294 dépendances, 7 210 tables référencées (1 à 3 206 réf.). Signal exploitable. |
+| `logical_reads` (accès) | `V$SEGMENT_STATISTICS` | 🔒 **Inaccessible** (`ORA-00942`) : SYSADM n'a aucun droit sur les vues `V$`/`DBA_*` de stats segment (sondé 2026-06). Extracteur prêt, activable par grant DBA (signal `inconnu` sinon). |
 
 **Statut : ACTIVÉ sur run_id=6** (ré-extraction Oracle complète via `flow_oracle_only`). `referenced_by_count` peuplé pour 109 775 assets, `is_orphan` = 95 867, **piliers ≥ 20 réf. = 1 256**. (`last_modified` : 29 seulement → confirmé inexploitable, l'âge retombe sur `last_analyzed`.)
 
@@ -136,6 +142,9 @@ CASE
     WHEN sensitivity = 'HAUTE'                                  THEN 'CONSERVATION_SECURISEE'
     -- DOMAINE = INPUT : réglementé + encore dans la fenêtre légale (âge inconnu = prudence)
     WHEN regulated AND (age_days IS NULL OR age_days < min_retention_years*365) THEN 'CONSERVATION_REGLEMENTAIRE'
+    -- ACCÈS = 6e dimension (NULL-safe) : table encore LUE -> conserver. access_band
+    -- = 'inconnu' tant que le grant DBA est absent -> cette règle reste inerte.
+    WHEN access_band = 'actif'                                  THEN 'CONSERVATION'  -- lue (V$SEGMENT_STATISTICS)
     WHEN age = 'tres_ancien'                                    THEN 'ARCHIVAGE_FROID'
     WHEN is_orphan AND age IN ('ancien','moyen') AND size_mb>0  THEN 'ARCHIVAGE_FROID'  -- orphelin + inactif
     WHEN age = 'inconnu' AND size_mb >= 50                      THEN 'A_EVALUER'
@@ -257,7 +266,7 @@ GROUP BY domain_label ORDER BY 2 DESC;
 |---|---|
 | ~~Classification non décisionnelle~~ | ✅ **Corrigé** : le domaine pilote la rétention (`CONSERVATION_REGLEMENTAIRE`) |
 | ~~Périmètre pollué par 150 k objets logiques~~ | ✅ **Corrigé** : MV recentrée sur les tables physiques |
-| Fréquence d'accès = proxy `last_analyzed` (écriture/analyse, pas lecture) | Activer l'audit Oracle pour un vrai compteur d'accès |
+| Signal d'accès (lecture) indisponible pour SYSADM (`ORA-00942`, sondé) | ✅ **Prêt à activer** : extracteur `segment_access` + 6ᵉ dimension `access_band` branchés (inertes) ; un `GRANT SELECT ON SYS.V_$SEGMENT_STATISTICS TO SYSADM` les active sans modif de code |
 | `purge_event_count = 0` (MongoDB hors scope) | Connecter `raw_mongo.archlog_purge` → signal d'usage |
 | Planchers de rétention codés par défaut (FR) | Externaliser dans une table éditable (par juridiction) |
 | Âge = inactivité de la table, pas âge de la donnée | `age_days` proxy : une table active peut contenir de la donnée hors rétention (et inversement) |

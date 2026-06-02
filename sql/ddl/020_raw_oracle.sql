@@ -74,8 +74,25 @@ CREATE TABLE IF NOT EXISTS raw_oracle.index_catalog (
     PRIMARY KEY (run_id, recname, indexid, field_position, fieldname)
 );
 
+-- Signal d'ACCÈS (lectures) par segment, issu de V$SEGMENT_STATISTICS.
+-- OPTIONNEL : peuplé uniquement si un DBA accorde SELECT sur la vue à SYSADM.
+-- Sans ce grant, l'extraction renvoie 0 ligne → signal "inconnu" → règles inertes
+-- (même pattern NULL-safe que referenced_by_count). Voir docs/D_regles_archivage.
+CREATE TABLE IF NOT EXISTS raw_oracle.segment_access (
+    run_id INTEGER NOT NULL,
+    owner TEXT,
+    table_name TEXT,
+    logical_reads BIGINT,
+    physical_reads BIGINT,
+    row_hash VARCHAR(64),
+    loaded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (run_id, owner, table_name)
+);
+
 CREATE INDEX IF NOT EXISTS idx_raw_oracle_record_run_id
     ON raw_oracle.record_catalog (run_id);
+CREATE INDEX IF NOT EXISTS idx_raw_oracle_segment_access_run
+    ON raw_oracle.segment_access (run_id, table_name);
 CREATE INDEX IF NOT EXISTS idx_raw_oracle_record_parentrecname
     ON raw_oracle.record_catalog (run_id, parentrecname);
 CREATE INDEX IF NOT EXISTS idx_raw_oracle_table_run_id

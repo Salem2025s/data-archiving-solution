@@ -378,7 +378,8 @@ base AS (
         ml.column_value_semantics_text,
         coalesce(dr.min_retention_years, 3) AS min_retention_years,
         coalesce(dr.regulated, false)       AS regulated,
-        dr.retention_basis
+        dr.retention_basis,
+        sa.logical_reads                    AS access_reads
     FROM latest
     JOIN processed.dim_asset da
       ON da.run_id = latest.run_id
@@ -399,6 +400,10 @@ base AS (
      AND tcx.table_name = da.source_ref
     LEFT JOIN serving.dim_domain_retention dr
       ON dr.domain_label = p.business_domain_predicted
+    LEFT JOIN raw_oracle.segment_access sa
+      ON sa.run_id     = da.run_id
+     AND sa.owner      = da.owner_name
+     AND sa.table_name = da.source_ref
     -- Recentrage économique : ne conserver que les actifs PHYSIQUES (qui occupent
     -- réellement du stockage). Écarte les ~150k records logiques PeopleSoft (vues,
     -- sous-records, records de travail) sans donnée physique, hors périmètre de
@@ -427,7 +432,14 @@ dims AS (
             WHEN column_value_semantics_text IS NOT NULL AND column_value_semantics_text <> ''
                 THEN 'FAIBLE'
             ELSE 'AUCUNE'
-        END AS sensitivity_level
+        END AS sensitivity_level,
+        -- Bande d'accès (lectures V$SEGMENT_STATISTICS). 'inconnu' = signal absent
+        -- (pas de grant DBA) -> les règles d'accès restent inertes.
+        CASE
+            WHEN access_reads IS NULL THEN 'inconnu'
+            WHEN access_reads = 0     THEN 'froid'
+            ELSE 'actif'
+        END AS access_band
     FROM base
 )
 SELECT
@@ -449,6 +461,10 @@ SELECT
         -- -> prudence = conserver. C'est le seuil d'archivabilité qui dépend du domaine.
         WHEN regulated AND (age_days IS NULL OR age_days < min_retention_years * 365)
             THEN 'CONSERVATION_REGLEMENTAIRE'
+        -- 6e dimension (NULL-safe) : une table encore LUE (signal d'accès réel) ne doit
+        -- pas être archivée, même ancienne. access_band='inconnu' (pas de grant) -> inerte.
+        WHEN access_band = 'actif'
+            THEN 'CONSERVATION'
         WHEN age_band = 'tres_ancien'
             THEN 'ARCHIVAGE_FROID'
         WHEN is_orphan AND age_band IN ('ancien', 'moyen') AND size_mb > 0
@@ -470,6 +486,8 @@ SELECT
         CASE WHEN sensitivity_level = 'MOYENNE' THEN 'donnees_financieres' END,
         CASE WHEN regulated AND (age_days IS NULL OR age_days < min_retention_years * 365)
              THEN 'retention_legale_' || min_retention_years || 'ans' END,
+        CASE WHEN access_band = 'actif' THEN 'lu_depuis_demarrage(' || access_reads || ')' END,
+        CASE WHEN access_band = 'froid' THEN 'jamais_lu_depuis_demarrage' END,
         CASE WHEN lineage_out_count >= 10 THEN 'fortement_reference(' || lineage_out_count || '_dependants)' END,
         CASE WHEN lineage_out_count = 0 AND size_mb > 0 THEN 'aucune_dependance_sortante' END
     ], NULL), '; ') AS rationale
