@@ -1,7 +1,14 @@
 # pfe-data-ia — Pipeline de gouvernance des données
 
-Classification automatique des actifs de données Oracle PeopleSoft EP92U038
-et MongoDB DDTMdbDemo par domaine métier, avec scoring ML et couche serving PostgreSQL.
+Classification des actifs de données Oracle PeopleSoft EP92U038 par domaine métier
+(**justesse réelle ~75 %, validée humainement** — pas le 89 % d'accord avec le LLM),
+règles d'archivage **pilotées par le domaine** (rétention légale), et KPI/coûts sur
+une couche serving PostgreSQL. Extracteurs MongoDB présents mais hors périmètre du run courant.
+
+> **Nature & portée :** prototype data-driven de bout en bout. La valeur vient des
+> **règles + supervision humaine** (le LLM n'est qu'une amorce d'annotation). Pour la
+> lecture honnête (valeur réelle, proxys, limites), voir
+> [docs/INDEX.md → Lecture critique](docs/INDEX.md#lecture-critique--valeur-réelle-proxys-et-portée).
 
 ---
 
