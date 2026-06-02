@@ -214,6 +214,10 @@ FROM domain_assets
 GROUP BY domain_label
 WITH NO DATA;
 
+-- Graphe des CLÉS MÉTIER PARTAGÉES entre domaines (vocabulaire commun), PAS des
+-- dépendances référentielles : PeopleSoft ne déclare aucune FK. Une arête = deux
+-- domaines utilisant le même nom de champ en clé primaire (ex. SETID). Nom d'objet
+-- conservé (`mv_domain_dependency`) pour compatibilité, mais sémantique = clés partagées.
 CREATE MATERIALIZED VIEW IF NOT EXISTS serving.mv_domain_dependency AS
 WITH latest AS (
     SELECT MAX(run_id) AS run_id FROM processed.dim_asset

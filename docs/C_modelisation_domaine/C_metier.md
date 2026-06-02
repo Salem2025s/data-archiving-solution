@@ -7,9 +7,9 @@
 
 ## Qu'est-ce qu'on fait dans cette section ?
 
-À partir de la classification (section B), on **organise les données par domaine métier** et on **cartographie les relations entre ces domaines**.
+À partir de la classification (section B), on **organise les données par domaine métier** et on **cartographie les clés métier partagées entre ces domaines**.
 
-Concrètement : on sait maintenant que Finance a 74 401 tables, que ces tables partagent des clés avec Achats, et qu'archiver Finance sans tenir compte d'Achats pourrait casser des relations importantes.
+Concrètement : on sait maintenant que Finance a 74 401 tables, et que certains champs-clés (comme `SETID`, `BUSINESS_UNIT`) sont employés à la fois par Finance et Achats — un **couplage de vocabulaire à examiner** avant d'archiver (sans présumer pour autant d'une dépendance technique entre les deux).
 
 ---
 
@@ -38,15 +38,17 @@ Pour chaque domaine, on calcule :
 | Assets sans description | Indicateur de gouvernance |
 | Niveau de risque | HIGH / MEDIUM / LOW selon les dépendances |
 
-### 3. La carte des dépendances inter-domaines (`mv_domain_dependency`)
+### 3. La carte des **clés métier partagées** entre domaines (`mv_domain_dependency`)
 
-**531 relations identifiées** entre les 7 domaines, via les champs partagés en clé primaire.
+> ⚠️ **Ce qu'elle est (et n'est pas).** PeopleSoft ne déclare pas de clés étrangères. Cette carte repère les domaines qui **utilisent le même nom de champ-clé** (ex. `SETID`, `BUSINESS_UNIT`). C'est un indicateur de **vocabulaire commun / couplage potentiel**, **pas** une dépendance référentielle prouvée : partager le nom `SETID` ne signifie pas qu'archiver un domaine casse l'autre.
+
+**531 liens de clés partagées** identifiés entre les 7 domaines.
 
 Exemple de ce qu'on découvre :
-- Finance et Achats partagent **SETID** (432 records) et **BUSINESS_UNIT** → ces deux domaines sont fortement couplés
-- Finance et RH partagent **DESCR** et **SETID** → il faut coordonner leur archivage
+- Finance et Achats partagent **SETID** et **BUSINESS_UNIT** → vocabulaire de paramétrage commun
+- Finance et RH partagent **DESCR** et **SETID** → champs transverses, à interpréter avec prudence
 
-Cette carte est essentielle pour **définir l'ordre sécurisé d'archivage** : on n'archive pas un domaine sans vérifier que ses dépendants ne seront pas cassés.
+Utilité : **signaler les couplages à examiner** avant d'archiver (un même identifiant peut être utilisé de part et d'autre), sans surinterpréter ces liens comme des dépendances dures.
 
 ### 4. Le classement des candidats par domaine (`v_archivability_by_domain`)
 
@@ -62,7 +64,7 @@ Pour chaque domaine, les **20 meilleures tables à archiver en premier**, class�
 
 ### Après la modélisation
 
-> « Finance a 74 401 tables pour 535 Mo. Les 20 meilleures candidates à l'archivage dans ce domaine sont listées. Avant d'archiver Finance, il faut noter que ce domaine est lié à Achats (via SETID, 432 records partagés) et à RH (via DESCR). »
+> « Finance a 74 401 tables pour 535 Mo. Les 20 meilleures candidates à l'archivage dans ce domaine sont listées. Finance utilise des champs-clés communs avec Achats (`SETID`) et RH (`DESCR`) — couplages de vocabulaire à vérifier, sans dépendance technique présumée. »
 
 ---
 
@@ -71,7 +73,7 @@ Pour chaque domaine, les **20 meilleures tables à archiver en premier**, class�
 | Feuille | Utilisation |
 |---|---|
 | **Domain Profile** | Vue d'ensemble : quel domaine est le plus volumineux, lequel a le plus de candidats ? |
-| **Domain Dependencies** | Quelles paires de domaines sont liées et par quel champ ? |
+| **Domain Shared Keys** | Quelles paires de domaines partagent un même champ-clé (vocabulaire commun) ? |
 | **Top Archival Candidates** | Quelles tables précises archiver en priorité dans chaque domaine ? |
 | **Metadata** | Date de génération, run_id, compteurs de contrôle |
 
@@ -86,6 +88,8 @@ Pour chaque domaine, les **20 meilleures tables à archiver en premier**, class�
 | **LOW** | < 3 dépendances sortantes | Archivage plus sûr — peu de tables dépendantes |
 
 Sur le run_id=5, tous les domaines sont en **LOW** car la majorité des assets sont des "feuilles" dans la hiérarchie PeopleSoft (peu de dépendants directs en moyenne).
+
+> Ici, « dépendances sortantes » = la **hiérarchie de records PeopleSoft** (`parentrecname`, record parent→enfant) — un lien structurel réel, à ne pas confondre avec le **graphe de clés partagées** ci-dessus (simple vocabulaire commun). C'est aussi cette hiérarchie, et non un vrai lignage de flux de données, que matérialise `fact_lineage_edge`.
 
 ---
 

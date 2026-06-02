@@ -1,7 +1,7 @@
 # C — Modélisation logique par objet métier : Fiche Technique
 
 > **Statut :** ✅ Complet  
-> **Résultats run_id=5 :** 7 profils de domaine, 531 arêtes inter-domaines, 142 candidats d'archivage listés
+> **Résultats run_id=5 :** 7 profils de domaine, 531 liens de **clés métier partagées** (vocabulaire, non des dépendances FK), 142 candidats d'archivage listés
 
 ---
 
@@ -105,7 +105,9 @@ python -m src.transform.build_serving_domain_model
 
 ---
 
-## 4. `serving.mv_domain_dependency` — Graphe inter-domaines
+## 4. `serving.mv_domain_dependency` — Graphe des clés métier partagées (vocabulaire)
+
+> ⚠️ **Sémantique honnête :** PeopleSoft ne déclare aucune clé étrangère. Ce graphe relie deux domaines qui **emploient le même nom de champ en clé primaire** (ex. `SETID`). C'est un signal de **vocabulaire commun / couplage potentiel**, **pas** une dépendance référentielle prouvée. Le nom d'objet `mv_domain_dependency` est conservé (compatibilité), mais il s'agit bien de **clés partagées**.
 
 ### Algorithme de construction
 
@@ -185,7 +187,7 @@ Durée : ~4 secondes sur run_id=5.
 | Feuille | Contenu | Nb lignes run5 |
 |---|---|---|
 | Domain Profile | `mv_domain_profile` complet | 7 |
-| Domain Dependencies | `mv_domain_dependency` complet | 531 |
+| Domain Shared Keys | `mv_domain_dependency` complet (clés partagées) | 531 |
 | Top Archival Candidates | `v_archivability_by_domain` (top 20/domaine) | 142 |
 | Metadata | run_id, date export, compteurs | 6 |
 

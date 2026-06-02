@@ -3,7 +3,7 @@
 Lance une démo web lisant directement les vues `serving.*` :
     streamlit run app/streamlit_dashboard.py
 
-Sections : Vue d'ensemble · Domaines · Dépendances · Archivage · Coûts & ROI.
+Sections : Vue d'ensemble · Domaines · Clés partagées · Archivage · Coûts & ROI.
 Aucune écriture en base — lecture seule.
 """
 
@@ -105,7 +105,7 @@ section = st.sidebar.radio(
     [
         "Vue d'ensemble",
         "Domaines",
-        "Dépendances",
+        "Clés partagées",
         "Archivage",
         "Coûts & ROI",
         "🚀 Pipelines",
@@ -172,7 +172,7 @@ elif section == "Domaines":
         st.subheader("Score d'archivage moyen")
         st.bar_chart(profile.set_index("domain_label")["avg_archival_score"], horizontal=True)
     with col_b:
-        st.subheader("Niveau de risque (dépendances)")
+        st.subheader("Niveau de risque (hiérarchie de records PeopleSoft)")
         risk = profile[["domain_label", "avg_lineage_out", "risk_level"]].copy()
         st.dataframe(risk, width="stretch", hide_index=True)
 
@@ -182,11 +182,13 @@ elif section == "Domaines":
 
 
 # ===========================================================================
-# 3. DÉPENDANCES INTER-DOMAINES
+# 3. CLÉS MÉTIER PARTAGÉES ENTRE DOMAINES (vocabulaire, pas des FK)
 # ===========================================================================
-elif section == "Dépendances":
-    st.title("Graphe des dépendances inter-domaines")
-    st.caption("Champs (bridge keys) partagés en clé primaire entre domaines.")
+elif section == "Clés partagées":
+    st.title("Graphe des clés métier partagées entre domaines")
+    st.caption("Domaines employant le même nom de champ-clé (ex. SETID). Signal de "
+               "vocabulaire commun / couplage potentiel — PeopleSoft ne déclare pas de "
+               "clés étrangères, ce ne sont donc pas des dépendances prouvées.")
 
     dep = safe_query("SELECT * FROM serving.mv_domain_dependency ORDER BY shared_asset_count DESC")
     if dep.empty:
@@ -196,7 +198,7 @@ elif section == "Dépendances":
     pick = st.selectbox("Filtrer par domaine", ["(tous)"] + domains)
     view = dep if pick == "(tous)" else dep[(dep["source_domain"] == pick) | (dep["target_domain"] == pick)]
 
-    st.metric("Arêtes inter-domaines", len(view))
+    st.metric("Liens (clés partagées)", len(view))
     top = view.head(20).copy()
     top["paire"] = top["source_domain"] + " ↔ " + top["target_domain"] + " (" + top["bridge_field"] + ")"
     st.subheader("Top 20 liens (nb records partagés)")

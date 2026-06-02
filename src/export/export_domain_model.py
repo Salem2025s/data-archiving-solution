@@ -2,7 +2,7 @@
 
 Reads three serving-layer objects (all on MAX run_id):
   - serving.mv_domain_profile      → sheet "Domain Profile"
-  - serving.mv_domain_dependency   → sheet "Domain Dependencies"
+  - serving.mv_domain_dependency   → sheet "Domain Shared Keys"
   - serving.v_archivability_by_domain → sheet "Top Archival Candidates"
 
 Output: exports/domain_model_run<N>.xlsx  (N = current MAX run_id)
@@ -184,8 +184,8 @@ _SHEET_HEADERS: dict[str, list[str]] = {
         "Dépendances sortantes moy.", "Ratio nullables moyen",
         "Assets sans description", "Niveau de risque",
     ],
-    "Domain Dependencies": [
-        "Domaine source", "Domaine cible", "Champ bridge", "Nb assets partagés",
+    "Domain Shared Keys": [
+        "Domaine source", "Domaine cible", "Champ-clé partagé", "Nb assets partagés",
     ],
     "Top Archival Candidates": [
         "Domaine", "Nom technique", "Nom métier", "Système source",
@@ -418,10 +418,10 @@ def export_domain_model(output_path: str | None = None) -> str:
         ],
     )
 
-    ws_dep = wb.create_sheet("Domain Dependencies")
+    ws_dep = wb.create_sheet("Domain Shared Keys")
     _write_sheet(
         ws=ws_dep,
-        headers=_SHEET_HEADERS["Domain Dependencies"],
+        headers=_SHEET_HEADERS["Domain Shared Keys"],
         rows=dependency_rows,
         col_keys=["source_domain", "target_domain", "bridge_field", "shared_asset_count"],
     )
