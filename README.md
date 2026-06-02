@@ -54,6 +54,18 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Tests
+
+Socle de tests unitaires (sans base de données — rapides, déterministes) couvrant
+les briques à risque : feature-builders de scoring (+ **régression** sur le bug
+train/inférence), loader Oracle, settings, base de termes, évaluation humaine,
+extracteur d'accès.
+
+```bash
+pip install -r requirements-dev.txt
+pytest                     # 35 tests, ~3 s
+```
+
 ---
 
 ## 2. Base de données PostgreSQL (Docker)

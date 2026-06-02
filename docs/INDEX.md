@@ -49,7 +49,7 @@
 - **Sources MongoDB hors périmètre** du run courant → pas de lignage/purges réels.
 
 ### Ce qui reste à durcir
-Tests automatisés · vrai signal d'accès (grant DBA) · E2/E3 en vrais modèles (snapshots historiques + projection statistique).
+**Socle de tests en place** (35 tests unitaires sans DB, `pytest` — feature-builders de scoring + régression train/inférence, loader, settings, base de termes, éval humaine, extracteur d'accès). Reste : tests d'intégration DB · vrai signal d'accès (grant DBA) · E2/E3 en vrais modèles (snapshots historiques + projection statistique).
 
 ---
 
