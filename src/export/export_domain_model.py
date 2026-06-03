@@ -144,13 +144,14 @@ ROI_PROJECTION_SQL = """
 SELECT
     year_offset,
     volume_no_action_gb,
-    cost_no_action_usd,
     cumul_cost_no_action_usd,
     total_volume_with_archiving_gb,
-    cost_with_archiving_usd,
     cumul_cost_with_archiving_usd,
-    net_savings_usd,
-    breakeven
+    net_savings_p10_usd,
+    net_savings_p50_usd,
+    net_savings_p90_usd,
+    breakeven_probability,
+    growth_mean_pct
 FROM serving.v_roi_projection_summary
 ORDER BY year_offset
 """
@@ -218,10 +219,10 @@ _SHEET_HEADERS: dict[str, list[str]] = {
         "Coût N-1 ($/an)", "Coût N ($/an)", "Surcoût ($/an)", "Taux croissance %",
     ],
     "ROI Projection": [
-        "Année", "Volume sans action (Go)", "Coût sans action ($/an)",
-        "Coût cumulé sans action ($)", "Volume avec archivage (Go)",
-        "Coût avec archivage ($/an)", "Coût cumulé avec archivage ($)",
-        "Économie nette cumulée ($)", "Rentable",
+        "Année", "Volume sans action (Go)", "Coût cumulé sans action ($)",
+        "Volume avec archivage (Go)", "Coût cumulé avec archivage ($)",
+        "Économie nette P10 ($)", "Économie nette P50 ($)", "Économie nette P90 ($)",
+        "P(rentable)", "Croissance % (hyp.)",
     ],
     "Archiving by Strategy": [
         "Stratégie", "Nb assets", "Volume (MB)",
@@ -302,13 +303,13 @@ def _build_dashboard(
     # 3. Courbe — projection ROI sur 5 ans (sans action vs avec archivage)
     if roi_n > 0:
         line = LineChart()
-        line.title = "Projection coût 5 ans : sans action vs avec archivage ($/an)"
+        line.title = "Projection coût cumulé 5 ans : sans action vs avec archivage ($)"
         line.height = 8
         line.width = 15
-        line.y_axis.title = "$/an"
+        line.y_axis.title = "$ cumulé"
         line.x_axis.title = "Année (N+k)"
         cats = Reference(roi_ws, min_col=1, min_row=2, max_row=1 + roi_n)
-        for col in (3, 6):  # cost_no_action_usd, cost_with_archiving_usd
+        for col in (3, 5):  # cumul_cost_no_action_usd, cumul_cost_with_archiving_usd
             data = Reference(roi_ws, min_col=col, min_row=1, max_row=1 + roi_n)
             line.add_data(data, titles_from_data=True)
         line.set_categories(cats)
@@ -509,10 +510,10 @@ def export_domain_model(output_path: str | None = None) -> str:
         headers=_SHEET_HEADERS["ROI Projection"],
         rows=roi_rows,
         col_keys=[
-            "year_offset", "volume_no_action_gb", "cost_no_action_usd",
-            "cumul_cost_no_action_usd", "total_volume_with_archiving_gb",
-            "cost_with_archiving_usd", "cumul_cost_with_archiving_usd",
-            "net_savings_usd", "breakeven",
+            "year_offset", "volume_no_action_gb", "cumul_cost_no_action_usd",
+            "total_volume_with_archiving_gb", "cumul_cost_with_archiving_usd",
+            "net_savings_p10_usd", "net_savings_p50_usd", "net_savings_p90_usd",
+            "breakeven_probability", "growth_mean_pct",
         ],
     )
 

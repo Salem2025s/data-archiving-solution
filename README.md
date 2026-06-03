@@ -59,11 +59,11 @@ pip install -r requirements.txt
 Socle de tests unitaires (sans base de données — rapides, déterministes) couvrant
 les briques à risque : feature-builders de scoring (+ **régression** sur le bug
 train/inférence), loader Oracle, settings, base de termes, évaluation humaine,
-extracteur d'accès.
+extracteur d'accès, **projection Monte-Carlo / estimateur de croissance (E3)**.
 
 ```bash
 pip install -r requirements-dev.txt
-pytest                     # 35 tests, ~3 s
+pytest                     # 46 tests, ~3 s
 ```
 
 ---
