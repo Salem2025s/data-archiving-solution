@@ -598,24 +598,43 @@ SELECT
                                                        AS savings_usd_per_tb_archived_year
 FROM serving.mv_cost_analysis;
 
--- E2 : comparaison N-1 simulée (taux de croissance appliqué à l'envers)
+-- E2 : snapshots de coût/volume par run — base d'une comparaison N-1 RÉELLE et
+-- d'une estimation de croissance observée. Peuplé par build_cost_analysis.py
+-- (run courant) + backfill des runs historiques depuis processed.features_asset.
+CREATE TABLE IF NOT EXISTS serving.fact_cost_snapshot (
+    run_id                INTEGER NOT NULL,
+    snapshot_ts           TIMESTAMPTZ NOT NULL DEFAULT now(),
+    domain_label          TEXT NOT NULL,          -- 'TOTAL' (global) ou un domaine
+    total_size_gb         NUMERIC,
+    current_cost_usd_year NUMERIC,
+    PRIMARY KEY (run_id, domain_label)
+);
+
+-- E2 : comparaison N-1 RÉELLE — dernier run vs run précédent, à partir des snapshots
+-- persistés (et non d'un taux simulé). Tant qu'un seul snapshot existe, les colonnes
+-- N-1 sont NULL (pas encore d'historique) : honnête, sans simulation.
 CREATE OR REPLACE VIEW serving.v_n1_comparison AS
-WITH params AS (
-    SELECT MAX(CASE WHEN param_name = 'data_growth_rate_pct_per_year' THEN param_value END) AS growth
-    FROM serving.dim_cost_params
-)
+WITH ranked AS (
+    SELECT s.*, ROW_NUMBER() OVER (PARTITION BY domain_label ORDER BY run_id DESC) AS rn
+    FROM serving.fact_cost_snapshot s
+),
+cur  AS (SELECT * FROM ranked WHERE rn = 1),
+prev AS (SELECT * FROM ranked WHERE rn = 2)
 SELECT
-    ca.domain_label,
-    ca.total_size_gb                                                   AS size_gb_n,
-    ROUND((ca.total_size_gb / (1 + p.growth/100))::numeric, 4)         AS size_gb_n1,
-    ROUND((ca.total_size_gb - ca.total_size_gb / (1 + p.growth/100))::numeric, 4) AS growth_gb,
-    ca.current_cost_usd_year                                           AS cost_n_usd,
-    ROUND((ca.current_cost_usd_year / (1 + p.growth/100))::numeric, 2) AS cost_n1_usd,
-    ROUND((ca.current_cost_usd_year - ca.current_cost_usd_year / (1 + p.growth/100))::numeric, 2) AS cost_increase_usd,
-    p.growth                                                           AS growth_rate_pct
-FROM serving.mv_cost_analysis ca
-CROSS JOIN params p
-ORDER BY ca.current_cost_usd_year DESC;
+    cur.domain_label,
+    cur.run_id                                                  AS run_n,
+    prev.run_id                                                 AS run_n1,
+    cur.total_size_gb                                           AS size_gb_n,
+    prev.total_size_gb                                          AS size_gb_n1,
+    ROUND((cur.total_size_gb - prev.total_size_gb)::numeric, 4) AS growth_gb,
+    cur.current_cost_usd_year                                   AS cost_n_usd,
+    prev.current_cost_usd_year                                  AS cost_n1_usd,
+    ROUND((cur.current_cost_usd_year - prev.current_cost_usd_year)::numeric, 2) AS cost_increase_usd,
+    ROUND((100.0 * (cur.total_size_gb - prev.total_size_gb)
+           / NULLIF(prev.total_size_gb, 0))::numeric, 1)        AS growth_rate_pct
+FROM cur
+LEFT JOIN prev USING (domain_label)
+ORDER BY (cur.domain_label = 'TOTAL') DESC, cur.current_cost_usd_year DESC NULLS LAST;
 
 -- E4 : répartition des coûts par domaine (+ Pareto + potentiel d'optimisation)
 CREATE OR REPLACE VIEW serving.v_cost_by_domain AS
@@ -666,18 +685,33 @@ CREATE TABLE IF NOT EXISTS serving.roi_projection (
     breakeven                     BOOLEAN
 );
 
+-- E3 : enrichissement Monte Carlo (incertitude). Les colonnes "médianes" réutilisent
+-- les colonnes existantes (net_savings_usd = P50) ; on ajoute les bornes + la proba.
+ALTER TABLE serving.roi_projection ADD COLUMN IF NOT EXISTS net_savings_p10_usd   NUMERIC;
+ALTER TABLE serving.roi_projection ADD COLUMN IF NOT EXISTS net_savings_p90_usd   NUMERIC;
+ALTER TABLE serving.roi_projection ADD COLUMN IF NOT EXISTS breakeven_probability NUMERIC;
+ALTER TABLE serving.roi_projection ADD COLUMN IF NOT EXISTS growth_mean_pct       NUMERIC;
+ALTER TABLE serving.roi_projection ADD COLUMN IF NOT EXISTS growth_std_pct        NUMERIC;
+ALTER TABLE serving.roi_projection ADD COLUMN IF NOT EXISTS growth_source         TEXT;
+ALTER TABLE serving.roi_projection ADD COLUMN IF NOT EXISTS n_simulations         INTEGER;
+
+-- DROP requis : le schéma de la vue change (nouvelles colonnes P10/P50/P90, ordre).
+DROP VIEW IF EXISTS serving.v_roi_projection_summary;
 CREATE OR REPLACE VIEW serving.v_roi_projection_summary AS
 SELECT
     year_offset,
     volume_no_action_gb,
-    cost_no_action_usd,
     cumul_cost_no_action_usd,
     ROUND((volume_active_gb + volume_cold_gb)::numeric, 4) AS total_volume_with_archiving_gb,
-    cost_with_archiving_usd,
     cumul_cost_with_archiving_usd,
-    net_savings_usd,
-    roi_pct,
-    breakeven
+    net_savings_p10_usd,
+    net_savings_usd                                        AS net_savings_p50_usd,
+    net_savings_p90_usd,
+    breakeven_probability,
+    growth_mean_pct,
+    growth_std_pct,
+    growth_source,
+    n_simulations
 FROM serving.roi_projection
 WHERE computed_at = (SELECT MAX(computed_at) FROM serving.roi_projection)
 ORDER BY year_offset;

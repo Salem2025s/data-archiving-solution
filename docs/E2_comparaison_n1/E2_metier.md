@@ -1,45 +1,39 @@
 # E2 — Comparaison N-1 : Fiche Métier
 
-> **Statut :** ✅ Complet (par simulation) · **Devise :** USD
+> **Statut :** ✅ Complet (réel, snapshots historiques) · **Devise :** USD
 
 ---
 
 ## Qu'est-ce qu'on fait dans cette section ?
 
-On compare la situation **actuelle (N)** avec celle d'**il y a un an (N-1)** pour mesurer la croissance des données et son coût.
+On compare la situation **actuelle (N)** avec celle du **run précédent (N-1)** pour mesurer comment le patrimoine de données — et son coût — évolue dans le temps, **domaine par domaine**.
 
 ---
 
-## La méthode
+## La méthode : une vraie photo d'archive, pas une estimation
 
-On ne dispose que d'un seul instantané de la base. On reconstruit donc le passé mathématiquement : si la base croît de 15 %/an, l'an dernier elle était plus petite de 15 %.
+À chaque analyse de coût, le système enregistre une **photo** (un « snapshot ») du volume et du coût de chaque domaine. Quand un nouveau run arrive, on compare les **deux dernières photos réelles**.
 
-```
-Patrimoine N-1 = Patrimoine actuel ÷ 1,15
-```
+> Avant, faute d'historique, on *reconstruisait* le passé en supposant +15 %/an. Maintenant, on compare **deux mesures réelles** : c'est factuel, vérifiable, et ça peut surprendre.
 
 ---
 
-## Résultat run_id=5
+## Résultat réel — run 6 vs run 5
 
-| | Volume | Coût annuel |
-|---|---|---|
-| N-1 (il y a 1 an, simulé) | 6,81 Go | 1,88 $/an |
-| N (aujourd'hui) | 7,84 Go | 2,16 $/an |
-| **Croissance** | **+1,02 Go** | **+0,28 $/an** |
+| | Volume N-1 (run 5) | Volume N (run 6) | Évolution |
+|---|---|---|---|
+| **Patrimoine total** | **11,76 Go** | **7,84 Go** | **−33 %** |
+| IT & Sécurité | 6,07 Go | 6,69 Go | +10 % |
+| Finance & Contrôle | 0,52 Go | 0,55 Go | +6 % |
 
-En un an, la base a gagné ~1 Go et son coût a augmenté de 0,28 $/an. À ce rythme, **sans archivage le coût croît de 15 % chaque année**.
-
----
-
-## Pourquoi c'est utile ?
-
-Cette comparaison montre une **dynamique**, pas juste une photo :
-
-> « Le patrimoine grossit de 15 %/an. Sans rien faire, le coût double tous les ~5 ans. L'archivage permet de casser cette courbe. »
+**Ce que ça raconte honnêtement :** entre les deux extractions, le volume total mesuré a **baissé**. Ce n'est pas que les données disparaissent : les deux runs n'ont pas couvert exactement le même périmètre. Une comparaison réelle **montre la vérité brute** — y compris quand elle est moins flatteuse qu'une jolie courbe à +15 %.
 
 ---
 
-## Évolution prévue
+## Pourquoi c'est important pour le PFE
 
-Aujourd'hui la comparaison est **simulée** (un seul snapshot). Dès qu'une deuxième extraction Oracle sera lancée (run_id=6), la comparaison deviendra **réelle et factuelle** — le pipeline conserve l'historique de tous les runs.
+C'est un **gage de sérieux** vis-à-vis du jury :
+
+> « Nous ne maquillons pas les chiffres. La comparaison N-1 s'appuie sur des mesures réelles conservées par le pipeline. Quand l'historique n'est pas encore un signal fiable, nous le disons — et notre projection ROI en tient compte plutôt que d'extrapoler une fausse tendance. »
+
+C'est exactement ce qui sépare une démo « vitrine » d'un outil de gouvernance crédible : **dès qu'un 3ᵉ, 4ᵉ run s'accumulera, la tendance se stabilisera toute seule**, sans changer une ligne de code.

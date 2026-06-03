@@ -21,6 +21,7 @@ LLM/artifacts_business_domain/dataset_scored_full.csv
 # ---- Modèles & figures régénérables ----
 *.joblib
 artifacts/*.png
+*.log
 
 # ---- Outils locaux ----
 

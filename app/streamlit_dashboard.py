@@ -297,32 +297,66 @@ elif section == "Coûts & ROI":
         st.dataframe(cost, width="stretch", hide_index=True)
 
     if not roi.empty:
-        st.subheader("Projection ROI sur 5 ans")
-        roi_long = roi.melt(
-            id_vars="year_offset",
-            value_vars=["cost_no_action_usd", "cost_with_archiving_usd"],
-            var_name="scénario",
-            value_name="coût_usd_an",
+        src = "observée" if (roi["growth_source"].iloc[0] == "observed") else "hypothèse"
+        st.subheader(
+            f"Projection ROI sur {int(roi['year_offset'].max())} ans "
+            f"— croissance {roi['growth_mean_pct'].iloc[0]}%/an ({src})"
         )
-        roi_long["scénario"] = roi_long["scénario"].map({
-            "cost_no_action_usd": "Sans archivage",
-            "cost_with_archiving_usd": "Avec archivage",
-        })
-        line = (
-            alt.Chart(roi_long)
-            .mark_line(point=True)
-            .encode(
-                x=alt.X("year_offset:O", title="Année (N+k)"),
-                y=alt.Y("coût_usd_an:Q", title="Coût $/an"),
-                color=alt.Color("scénario:N", title=None),
-                tooltip=["year_offset", "scénario", "coût_usd_an"],
+
+        cc1, cc2 = st.columns(2)
+        with cc1:
+            st.caption("Coût **cumulé** : sans action vs avec archivage")
+            roi_long = roi.melt(
+                id_vars="year_offset",
+                value_vars=["cumul_cost_no_action_usd", "cumul_cost_with_archiving_usd"],
+                var_name="scénario",
+                value_name="coût_cumulé_usd",
             )
-        )
-        st.altair_chart(line, width="stretch")
+            roi_long["scénario"] = roi_long["scénario"].map({
+                "cumul_cost_no_action_usd": "Sans archivage",
+                "cumul_cost_with_archiving_usd": "Avec archivage",
+            })
+            line = (
+                alt.Chart(roi_long)
+                .mark_line(point=True)
+                .encode(
+                    x=alt.X("year_offset:O", title="Année (N+k)"),
+                    y=alt.Y("coût_cumulé_usd:Q", title="Coût cumulé $"),
+                    color=alt.Color("scénario:N", title=None),
+                    tooltip=["year_offset", "scénario", "coût_cumulé_usd"],
+                )
+            )
+            st.altair_chart(line, width="stretch")
+        with cc2:
+            st.caption("Économie nette cumulée — médiane + intervalle P10–P90 (Monte Carlo)")
+            band = (
+                alt.Chart(roi)
+                .mark_area(opacity=0.25, color="#2e8b57")
+                .encode(
+                    x=alt.X("year_offset:O", title="Année (N+k)"),
+                    y=alt.Y("net_savings_p10_usd:Q", title="Économie nette cumulée $"),
+                    y2="net_savings_p90_usd:Q",
+                )
+            )
+            median = (
+                alt.Chart(roi)
+                .mark_line(point=True, color="#2e8b57")
+                .encode(
+                    x="year_offset:O",
+                    y="net_savings_p50_usd:Q",
+                    tooltip=[
+                        "year_offset", "net_savings_p10_usd",
+                        "net_savings_p50_usd", "net_savings_p90_usd",
+                        "breakeven_probability",
+                    ],
+                )
+            )
+            st.altair_chart(band + median, width="stretch")
+
         st.dataframe(roi, width="stretch", hide_index=True)
 
     if not n1.empty:
-        with st.expander("📉 Comparaison N-1 (simulée)"):
+        with st.expander("📉 Comparaison N-1 (réelle, snapshots historiques)"):
             st.dataframe(n1, width="stretch", hide_index=True)
 
 
@@ -424,7 +458,11 @@ elif section == "⚙️ Paramètres":
             st.success(
                 f"{'Réinitialisé' if reset else 'Enregistré'} & recalculé — "
                 f"patrimoine {res['total_gb']} Go, "
-                f"économie cumulée 5 ans = {res['cumulative_net_savings_usd']} $."
+                f"économie nette {res['projection_years']} ans (médiane) = "
+                f"{res['net_savings_p50_usd']} $ "
+                f"[P10 {res['net_savings_p10_usd']} – P90 {res['net_savings_p90_usd']}], "
+                f"P(rentable) = {res['breakeven_probability']}, "
+                f"croissance {res['growth_mean_pct']}%/an ({res['growth_source']})."
             )
         except Exception as exc:
             st.error(f"Échec : {exc}")

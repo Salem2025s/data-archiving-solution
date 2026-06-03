@@ -16,8 +16,8 @@
 | [C](C_modelisation_domaine/) | Modélisation logique par objet métier | ✅ Complet — graphe = **clés métier partagées** (vocabulaire), pas des dépendances FK |
 | [D](D_regles_archivage/) | Règles d'archivage data-driven | ✅ Complet — recentré tables physiques + **domaine décisionnel** (rétention légale) |
 | [E1](E1_gains_stockage/) | Gains de stockage et coût avant/après | ✅ Complet (échelle démo ~8 Go → montants illustratifs) |
-| [E2](E2_comparaison_n1/) | Comparaison N-1 | ⚠️ **Simulé** (taux de croissance inversé — pas d'historique réel) |
-| [E3](E3_projection_roi/) | Projection ROI multi-années | ⚠️ **Déterministe** (capitalisation à taux fixe — pas un modèle prédictif) |
+| [E2](E2_comparaison_n1/) | Comparaison N-1 | ✅ **Réel** (snapshots historiques par run — run 6 vs run 5) |
+| [E3](E3_projection_roi/) | Projection ROI multi-années | ✅ **Modèle statistique** (Monte-Carlo 2000 sim., P10/P50/P90, croissance observée→hypothèse) |
 | [E4](E4_repartition_couts/) | Répartition des coûts par objet métier | ✅ Complet |
 
 > 📌 **Lire avant la soutenance : [« Lecture critique »](#lecture-critique--valeur-réelle-proxys-et-portée) ci-dessous** — ce qui est solide, ce qui est un proxy, et où se situe la vraie valeur du projet.
@@ -44,12 +44,12 @@
 
 ### Portée prototype
 - **Échelle économique = démo** (~8 Go, ~14 $ d'économie sur 5 ans) : la **méthodologie** coût/ROI est valide, les **montants** sont illustratifs (à rejouer sur un volume de production).
-- **E2 (comparaison N-1) = simulée** (pas d'historique réel) ; **E3 (ROI) = déterministe** (pas un modèle prédictif).
+- **E2 (comparaison N-1) = réelle mais historique court** (2 runs) ; **E3 (ROI) = Monte-Carlo** dont la croissance repose actuellement sur l'**hypothèse** (15 %±5 %), faute d'un historique encore concluant — bascule automatique en « observé » dès que les runs s'accumuleront.
 - **Gold test humain mono-annotateur** (pas d'accord inter-annotateurs).
 - **Sources MongoDB hors périmètre** du run courant → pas de lignage/purges réels.
 
 ### Ce qui reste à durcir
-**Socle de tests en place** (35 tests unitaires sans DB, `pytest` — feature-builders de scoring + régression train/inférence, loader, settings, base de termes, éval humaine, extracteur d'accès). Reste : tests d'intégration DB · vrai signal d'accès (grant DBA) · E2/E3 en vrais modèles (snapshots historiques + projection statistique).
+**Socle de tests en place** (46 tests unitaires sans DB, `pytest` — feature-builders de scoring + régression train/inférence, loader, settings, base de termes, éval humaine, extracteur d'accès, **projection Monte-Carlo / estimateur de croissance**). Reste : tests d'intégration DB · vrai signal d'accès (grant DBA) · accumulation de runs pour faire passer E3 sur croissance **observée**.
 
 ---
 
