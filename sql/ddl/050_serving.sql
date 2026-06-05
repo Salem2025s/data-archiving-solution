@@ -339,12 +339,24 @@ CREATE TABLE IF NOT EXISTS serving.dim_archiving_policy (
 
 -- Rétention légale/métier par domaine : rend le DOMAINE acteur de la décision
 -- d'archivage (ex. Finance/RH réglementés ≠ IT). Peuplée par build_archiving_rules.py.
+-- jurisdiction : permet des planchers différents par pays/entité juridique.
+-- version / effective_from : toute modification est historisée et datée (auditabilité).
 CREATE TABLE IF NOT EXISTS serving.dim_domain_retention (
-    domain_label        TEXT PRIMARY KEY,
+    domain_label        TEXT    NOT NULL,
+    jurisdiction        TEXT    NOT NULL DEFAULT 'FR',
     min_retention_years INTEGER NOT NULL,
     regulated           BOOLEAN NOT NULL DEFAULT false,
-    retention_basis     TEXT
+    retention_basis     TEXT,
+    version             INTEGER NOT NULL DEFAULT 1,
+    effective_from      DATE    NOT NULL DEFAULT CURRENT_DATE,
+    validated_by        TEXT,
+    PRIMARY KEY (domain_label, jurisdiction)
 );
+-- Rétro-compatibilité : colonnes ajoutées sur l'ancienne table (si déjà créée sans elles).
+ALTER TABLE serving.dim_domain_retention ADD COLUMN IF NOT EXISTS jurisdiction   TEXT    NOT NULL DEFAULT 'FR';
+ALTER TABLE serving.dim_domain_retention ADD COLUMN IF NOT EXISTS version        INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE serving.dim_domain_retention ADD COLUMN IF NOT EXISTS effective_from DATE    NOT NULL DEFAULT CURRENT_DATE;
+ALTER TABLE serving.dim_domain_retention ADD COLUMN IF NOT EXISTS validated_by   TEXT;
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS serving.mv_archiving_recommendation AS
 WITH latest AS (
@@ -465,6 +477,11 @@ SELECT
         -- pas être archivée, même ancienne. access_band='inconnu' (pas de grant) -> inerte.
         WHEN access_band = 'actif'
             THEN 'CONSERVATION'
+        -- FAIL-SAFE P0 : prédiction incertaine → révision humaine obligatoire avant action.
+        -- Couvre (a) faible confiance modèle et (b) flag review_required levé par le scoreur.
+        -- Règle conservatrice : on préfère sur-conserver que purger une donnée par erreur.
+        WHEN coalesce(confidence, 0) < 0.60 OR coalesce(review_required, false)
+            THEN 'A_EVALUER'
         WHEN age_band = 'tres_ancien'
             THEN 'ARCHIVAGE_FROID'
         WHEN is_orphan AND age_band IN ('ancien', 'moyen') AND size_mb > 0
@@ -489,7 +506,11 @@ SELECT
         CASE WHEN access_band = 'actif' THEN 'lu_depuis_demarrage(' || access_reads || ')' END,
         CASE WHEN access_band = 'froid' THEN 'jamais_lu_depuis_demarrage' END,
         CASE WHEN lineage_out_count >= 10 THEN 'fortement_reference(' || lineage_out_count || '_dependants)' END,
-        CASE WHEN lineage_out_count = 0 AND size_mb > 0 THEN 'aucune_dependance_sortante' END
+        CASE WHEN lineage_out_count = 0 AND size_mb > 0 THEN 'aucune_dependance_sortante' END,
+        CASE WHEN coalesce(confidence, 0) < 0.60
+             THEN 'fail_safe:confiance_faible(' || round(coalesce(confidence,0)::numeric,2) || ')' END,
+        CASE WHEN coalesce(review_required, false)
+             THEN 'fail_safe:revue_requise' END
     ], NULL), '; ') AS rationale
 FROM dims
 WITH NO DATA;
@@ -720,3 +741,120 @@ CREATE INDEX IF NOT EXISTS idx_serving_mv_cost_analysis_domain
     ON serving.mv_cost_analysis (domain_label);
 CREATE INDEX IF NOT EXISTS idx_serving_roi_projection_run
     ON serving.roi_projection (run_id, year_offset);
+
+-- ===========================================================================
+-- PHASE 0 — SÛRETÉ & CONFORMITÉ
+-- ===========================================================================
+
+-- ---------------------------------------------------------------------------
+-- P0-1 : Colonnes fail-safe dans mv_archiving_recommendation
+-- ---------------------------------------------------------------------------
+-- La MV est recréée avec WITH NO DATA à chaque refresh. Ces colonnes sont
+-- déjà dans la définition SQL ci-dessus (confidence, review_required,
+-- confidence_band). Les deux règles fail-safe ajoutées au CASE sont :
+--   • confidence < 0.60 → A_EVALUER  (incertitude modèle → révision humaine)
+--   • review_required = true → A_EVALUER  (flag scoreur → révision humaine)
+-- Elles s'insèrent AVANT la branche ARCHIVAGE_FROID (priorité plus haute).
+-- Voir la définition de mv_archiving_recommendation plus haut.
+
+-- ---------------------------------------------------------------------------
+-- P0-2 : Audit trail immuable des décisions d'archivage
+-- ---------------------------------------------------------------------------
+-- Chaque recommandation actée (approuvée, rejetée ou ignorée) est enregistrée
+-- ici avec la version du modèle et l'identité de l'approbateur. La table est
+-- APPEND-ONLY : pas de DELETE, pas d'UPDATE (contrôlé par convention + RBAC).
+CREATE TABLE IF NOT EXISTS serving.archiving_decision_log (
+    id                   BIGSERIAL     PRIMARY KEY,
+    -- Asset concerné
+    asset_id             BIGINT        NOT NULL,
+    run_id               INTEGER       NOT NULL,
+    technical_name       TEXT,
+    domain_label         TEXT,
+    -- Recommandation du système
+    recommended_strategy TEXT          NOT NULL,
+    confidence           NUMERIC,
+    confidence_band      TEXT,
+    review_required      BOOLEAN,
+    model_version        TEXT,
+    -- Décision humaine
+    decision             TEXT          NOT NULL
+        CHECK (decision IN ('APPROVED','REJECTED','DEFERRED','AUTO_CONSERVED')),
+    decision_reason      TEXT,
+    decided_by           TEXT,           -- identifiant de l'approbateur
+    decided_at           TIMESTAMPTZ   NOT NULL DEFAULT now(),
+    -- Traçabilité de la rétention légale appliquée
+    jurisdiction         TEXT          NOT NULL DEFAULT 'FR',
+    retention_version    INTEGER,
+    min_retention_years  INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_adl_asset_run
+    ON serving.archiving_decision_log (asset_id, run_id);
+CREATE INDEX IF NOT EXISTS idx_adl_decided_at
+    ON serving.archiving_decision_log (decided_at DESC);
+CREATE INDEX IF NOT EXISTS idx_adl_domain_decision
+    ON serving.archiving_decision_log (domain_label, decision);
+
+-- ---------------------------------------------------------------------------
+-- P0-3 : Queue d'approbation humaine
+-- ---------------------------------------------------------------------------
+-- Assets qui nécessitent une validation humaine AVANT toute action d'archivage.
+-- Alimentée automatiquement lors du refresh serving pour les cas à risque :
+-- • domaine réglementé + stratégie d'archivage (pas CONSERVATION*)
+-- • review_required = true
+-- • confidence < seuil
+-- Statuts : PENDING → APPROVED | REJECTED | DEFERRED
+CREATE TABLE IF NOT EXISTS serving.archiving_approval_queue (
+    id                   BIGSERIAL     PRIMARY KEY,
+    asset_id             BIGINT        NOT NULL,
+    run_id               INTEGER       NOT NULL,
+    technical_name       TEXT,
+    domain_label         TEXT,
+    recommended_strategy TEXT          NOT NULL,
+    confidence           NUMERIC,
+    confidence_band      TEXT,
+    model_version        TEXT,
+    review_reason        TEXT,          -- why it landed in the queue
+    status               TEXT          NOT NULL DEFAULT 'PENDING'
+        CHECK (status IN ('PENDING','APPROVED','REJECTED','DEFERRED')),
+    assigned_to          TEXT,
+    created_at           TIMESTAMPTZ   NOT NULL DEFAULT now(),
+    resolved_at          TIMESTAMPTZ,
+    resolved_by          TEXT,
+    resolution_comment   TEXT,
+    -- Lien vers l'audit trail une fois résolu
+    decision_log_id      BIGINT        REFERENCES serving.archiving_decision_log (id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_aaq_status
+    ON serving.archiving_approval_queue (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_aaq_asset_run
+    ON serving.archiving_approval_queue (asset_id, run_id);
+CREATE INDEX IF NOT EXISTS idx_aaq_domain
+    ON serving.archiving_approval_queue (domain_label, status);
+
+-- Vue opérationnelle : items en attente, triés par criticité
+CREATE OR REPLACE VIEW serving.v_approval_queue_pending AS
+SELECT
+    q.id,
+    q.asset_id,
+    q.run_id,
+    q.technical_name,
+    q.domain_label,
+    q.recommended_strategy,
+    q.confidence,
+    q.confidence_band,
+    q.review_reason,
+    q.assigned_to,
+    q.created_at,
+    -- criticité : domaine réglementé > faible confiance > review_required
+    CASE
+        WHEN dr.regulated AND q.recommended_strategy NOT LIKE 'CONSERVATION%' THEN 1
+        WHEN q.confidence_band = 'low' THEN 2
+        ELSE 3
+    END AS priority_rank
+FROM serving.archiving_approval_queue q
+LEFT JOIN serving.dim_domain_retention dr
+    ON dr.domain_label = q.domain_label AND dr.jurisdiction = 'FR'
+WHERE q.status = 'PENDING'
+ORDER BY priority_rank, q.created_at;
