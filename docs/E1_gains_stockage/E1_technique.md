@@ -14,7 +14,8 @@ Stockés dans `serving.dim_cost_params`, basés sur la tarification AWS :
 | `storage_cost_per_gb_per_year` | 0.276 | USD/Go/an | S3 Standard (0,023 $/Go/mois) |
 | `cold_storage_cost_per_gb_year` | 0.048 | USD/Go/an | Glacier Deep Archive (~0,004 $/Go/mois) |
 | `compression_ratio` | 0.5 | ratio | Taille résiduelle après compression (−50 %) |
-| `data_growth_rate_pct_per_year` | 15.0 | %/an | Croissance annuelle |
+| `data_growth_rate_pct_per_year` | 15.0 | %/an | Croissance annuelle (moyenne, hypothèse E3) |
+| `data_growth_std_pct_per_year` | 5.0 | %/an | Écart-type de la croissance (incertitude Monte-Carlo E3) |
 | `implementation_cost_one_shot` | 0.0 | USD | Tiering cloud = pas de capex |
 
 **Modification :** `UPDATE serving.dim_cost_params SET param_value = ... WHERE param_name = ...` puis re-run `build_cost_analysis`.
@@ -43,7 +44,7 @@ savings = cost_current − cost_after
 
 | Objet | Type | Rôle |
 |---|---|---|
-| `serving.dim_cost_params` | Table | Paramètres de coût (5 lignes) |
+| `serving.dim_cost_params` | Table | Paramètres de coût (6 lignes) |
 | `serving.mv_cost_analysis` | Vue matérialisée | Coût par domaine (avant/après/économie) |
 | `serving.v_storage_impact_summary` | Vue | Synthèse globale + taux normalisé au To |
 

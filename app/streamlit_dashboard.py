@@ -375,7 +375,7 @@ elif section == "🚀 Pipelines":
     c = st.columns(2)
     if c[0].button("📊 Publier la couche serving (MVs + domaine + archivage + coûts)", width="stretch"):
         run_command("Publication serving", "src.prefect.flows.flow_publish_serving")
-    if c[1].button("📥 Exporter l'Excel (11 feuilles)", width="stretch"):
+    if c[1].button("📥 Exporter l'Excel (13 feuilles)", width="stretch"):
         run_command("Export Excel", "src.export.export_domain_model")
     c2 = st.columns(3)
     if c2[0].button("🏷️ Modèle de domaine", width="stretch"):

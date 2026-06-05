@@ -21,6 +21,8 @@
 | [E4](E4_repartition_couts/) | Répartition des coûts par objet métier | ✅ Complet |
 
 > 📌 **Lire avant la soutenance : [« Lecture critique »](#lecture-critique--valeur-réelle-proxys-et-portée) ci-dessous** — ce qui est solide, ce qui est un proxy, et où se situe la vraie valeur du projet.
+>
+> 🏭 **Usage entreprise : [Évaluation de production & feuille de route](PRODUCTION_READINESS.md)** — scorecard de maturité, registre de risques, critères Go/No-Go et roadmap prototype → production.
 
 ---
 
@@ -123,7 +125,7 @@ python -m src.transform.build_archiving_rules
 # Analyse de coût + projection ROI
 python -m src.transform.build_cost_analysis
 
-# Export Excel complet (11 feuilles : domaine + archivage + coût/ROI)
+# Export Excel complet (13 feuilles : Dashboard + domaine + archivage + coût/ROI)
 python -m src.export.export_domain_model
 
 # Dashboard interactif (démo web, lecture seule sur la couche serving)

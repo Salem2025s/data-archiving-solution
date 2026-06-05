@@ -347,16 +347,22 @@ Crée les schémas et tables via les DDL `sql/ddl/00*..05*`. Idempotent (`CREATE
 | `RawOracleLoader` | Charge dans `raw_oracle.*` (DELETE+INSERT par run_id) | Détection **dynamique** des colonnes : aucune modif du loader si on ajoute un champ à l'extracteur |
 
 ### Étape 2 — Construction de la couche `processed` (`flow_build_processed`)
-Séquence (chaque build = DELETE puis INSERT par `run_id`) :
+Séquence réelle de 10 étapes (chaque build = DELETE puis INSERT par `run_id`) :
+0. purge des prédictions de domaine du `run_id` courant (idempotence du scoring)
 1. `build_dim_asset` — unifie tables Oracle + records PS en un catalogue d'actifs
 2. `build_dim_field` — déplie les colonnes par actif
-3. `build_fact_asset_profile` — rattache les volumes physiques
-4. `build_fact_lineage_edge` — matérialise les arêtes `parentrecname` (parent→enfant)
-5. `build_features_asset` — calcule les scores d'archivabilité / ROI
-6. `build_dataset_asset_ml` — **consolide tout en une ligne par actif** (features techniques + sémantiques)
+3. `build_bridge_asset_term` — table de pont actif ↔ terme métier (vocabulaire)
+4. `build_fact_asset_profile` — rattache les volumes physiques
+5. `build_fact_lineage_edge` — matérialise les arêtes `parentrecname` (parent→enfant)
+6. `build_fact_archiving_event` — événements de purge (vide tant que MongoDB hors scope)
+7. `build_features_asset` — calcule les scores d'archivabilité / ROI
+8. `build_dataset_asset_ml` — **consolide tout en une ligne par actif** (features techniques + sémantiques)
+9. `score_business_domain` — **classification ML par domaine** (partie B, intégrée au flow)
+
+> Le scoring de domaine (B) est donc exécuté **à l'intérieur** de `flow_build_processed` (étape 9), pas dans un flow séparé.
 
 ### Étape 3 — Suite du pipeline
-`score_business_domain` (B) → `flow_publish_serving` (C/D/E). Hors périmètre A.
+`flow_publish_serving` (C/D/E) — refresh des MV + modèle de domaine + règles d'archivage + coût/ROI. Hors périmètre A.
 
 ---
 

@@ -1,11 +1,15 @@
 """Populate serving.dim_archiving_policy and refresh mv_archiving_recommendation.
 
 Data-driven archiving rules engine (section D). The recommended strategy for
-each asset is decided in the materialized view from four concrete dimensions:
-volume (size_mb), ancienneté (age_days from last_analyzed), sensibilité
-(PII / financial semantics) and dépendances (lineage_out_count). The
-archival_candidate_score is kept for reference but is NOT the decision driver
-because it does not differentiate assets in the current run (term_count=0).
+each asset is decided in the materialized view from six concrete dimensions:
+volume (size_mb), ancienneté (age_days from last_analyzed/last_modified),
+sensibilité (PII / financial semantics), dépendances hiérarchiques
+(lineage_out_count), références d'objets stockés (referenced_by_count /
+is_orphan) and accès réel en lecture (access_band, NULL-safe, inerte tant que
+le grant DBA sur V$SEGMENT_STATISTICS est absent). Le DOMAINE est aussi un
+input décisionnel via dim_domain_retention (rétention légale -> CONSERVATION_
+REGLEMENTAIRE). L'archival_candidate_score est conservé pour référence mais
+n'est PAS le moteur de décision (term_count=0 -> il ne différencie pas).
 """
 
 from __future__ import annotations

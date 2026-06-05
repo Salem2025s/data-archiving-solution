@@ -48,6 +48,9 @@ ALLOWED_DOMAINS: list[str] = [
 
 DOMAIN_SET: set[str] = set(ALLOWED_DOMAINS)
 
+# Domaine de repli quand aucun vote LLM n'est exploitable (rebindé par --taxonomy).
+DEFAULT_FALLBACK_DOMAIN = "Finance & Comptabilité"
+
 # Seuil en dessous duquel needs_review passe à True
 LOW_CONSENSUS_THRESHOLD = 0.5
 
@@ -1029,7 +1032,7 @@ def predict_with_consensus(row: dict[str, Any], config: LLMConfig) -> dict[str, 
         fallback = apply_ps_fallback(row)
         prefix, _ = ps_prefix_hint(row.get("technical_name") or row.get("source_ref", ""))
         return {
-            "business_domain": fallback or "Finance & Comptabilité",
+            "business_domain": fallback or DEFAULT_FALLBACK_DOMAIN,
             "llm_consensus_score": 0.0,
             "llm_votes_json": json.dumps(votes, ensure_ascii=False),
             "llm_models_used": ",".join(config.models),
@@ -1108,6 +1111,249 @@ def should_skip_row(
 
 
 # ---------------------------------------------------------------------------
+# Taxonomie PRODUCTION (7 classes, AVEC "Other") — alignée sur
+# src/ml/domain_term_base.py (KEYWORD_TO_LABEL). Sélectionnable via --taxonomy prod7.
+# Différences clés vs la taxonomie 6-classes :
+#   - "Gestion de Projets & Actifs" n'existe pas → replié sur "Finance & Contrôle"
+#     (Project Costing / Asset Management = modules FSCM/Finance).
+#   - "Supply Chain & Ventes" est SCINDÉ en deux classes prod distinctes.
+#   - "Other" est autorisé (dernier recours).
+# ---------------------------------------------------------------------------
+
+ALLOWED_DOMAINS_PROD7: list[str] = [
+    "Finance & Contrôle",
+    "IT & Sécurité",
+    "RH",
+    "Achats & Fournisseurs",
+    "Ventes & Clients",
+    "Supply Chain / Logistique / Production",
+    "Other",
+]
+
+# Remappe 6-classes -> prod7 pour les classes sans ambiguïté.
+_SIXCLASS_TO_PROD7: dict[str, str] = {
+    "Finance & Comptabilité": "Finance & Contrôle",
+    "Gestion de Projets & Actifs": "Finance & Contrôle",  # PC/AM = FSCM/Finance
+    "IT & Technique": "IT & Sécurité",
+    "RH & Paie": "RH",
+    "Achats & Approvisionnement": "Achats & Fournisseurs",
+}
+
+# Split des préfixes "Supply Chain & Ventes" -> deux classes prod.
+_SC_VENTES_SPLIT_PROD7: dict[str, str] = {
+    # Supply Chain / Logistique / Production
+    "IN": "Supply Chain / Logistique / Production",
+    "PL": "Supply Chain / Logistique / Production",
+    "SF": "Supply Chain / Logistique / Production",
+    "MG": "Supply Chain / Logistique / Production",
+    "PROD": "Supply Chain / Logistique / Production",
+    "EN": "Supply Chain / Logistique / Production",
+    "ITEM": "Supply Chain / Logistique / Production",
+    "ITM": "Supply Chain / Logistique / Production",
+    "DLV": "Supply Chain / Logistique / Production",
+    "QS": "Supply Chain / Logistique / Production",
+    # Ventes & Clients (Order Management / Sales / CRM)
+    "OM": "Ventes & Clients",
+    "SA": "Ventes & Clients",
+    "CRM": "Ventes & Clients",
+    "RMA": "Ventes & Clients",
+    "TD": "Ventes & Clients",
+    "ORD": "Ventes & Clients",
+    "CUST": "Ventes & Clients",
+    "OMPB": "Ventes & Clients",
+    "OMC": "Ventes & Clients",
+    "OMBCK": "Ventes & Clients",
+    "OMEC": "Ventes & Clients",
+    "OMB": "Ventes & Clients",
+    "EG": "Ventes & Clients",
+}
+
+PS_MODULE_PREFIX_MAP_PROD7: dict[str, str] = {
+    prefix: (
+        _SC_VENTES_SPLIT_PROD7.get(prefix, "Supply Chain / Logistique / Production")
+        if dom6 == "Supply Chain & Ventes"
+        else _SIXCLASS_TO_PROD7[dom6]
+    )
+    for prefix, dom6 in PS_MODULE_PREFIX_MAP.items()
+}
+
+_PS_GUIDE_TABLE_PROD7 = """\
+PeopleSoft module prefix → domain (use as strong signal):
+  GL AP AR BI TR EX KK JRNL VCHR VAT BNK LEDGER CM CC PMT INV RE CE WTHD CA → Finance & Contrôle
+  AM PC PROJ WM GM RS FO (project costing / fixed assets)                    → Finance & Contrôle
+  HR JOB PERSON BEN PAY ABS COMP TL TV                                       → RH
+  PO EP AUC PV SPF RFQ EM CON VND CNTRCT REQ RECV SAC CS                     → Achats & Fournisseurs
+  IN PL SF MG PROD EN ITEM ITM DLV (inventory / planning / manufacturing)    → Supply Chain / Logistique / Production
+  OM SA CRM RMA ORD CUST (order management / sales / customers)              → Ventes & Clients
+  IT PRCS PSAUTH PSOPR PSROLE PT PSMENU UPG RUN PGM EO FS RTBL INTFC BUS    → IT & Sécurité
+
+Critical disambiguations:
+  PC/AM/PROJ/WM/GM = Project Costing / Asset Mgmt / Grants → Finance & Contrôle (modules FSCM)
+  AUC = Auctions/eSourcing                                 → Achats & Fournisseurs
+  KK  = Commitment Control / Budget                        → Finance & Contrôle
+  IN  = Inventory                                          → Supply Chain (NOT Ventes)
+  OM  = Order Management                                   → Ventes & Clients (NOT Supply Chain)"""
+
+SYSTEM_PROMPT_PROD7 = f"""\
+You are a senior PeopleSoft ERP data governance expert (Oracle PeopleSoft EP92U038).
+
+TASK
+Assign exactly ONE business domain to the data asset described in the input context.
+
+ALLOWED DOMAINS — choose exactly one (use the EXACT French label):
+1. Finance & Contrôle                       — GL, AP/AR, billing, treasury, expenses, tax, budget
+                                               control, journals, project costing & fixed assets
+2. IT & Sécurité                            — PeopleTools, security/roles, process scheduler,
+                                               technical configs, interfaces
+3. RH                                        — HR records, payroll, benefits, absences, compensation
+4. Achats & Fournisseurs                     — purchase orders, eSourcing/auctions, vendors,
+                                               requisitions, receiving, supplier contracts
+5. Ventes & Clients                          — customer orders (OM), sales, billing to customers, CRM
+6. Supply Chain / Logistique / Production    — inventory, planning, manufacturing, shipments,
+                                               logistics, items
+7. Other                                     — ONLY when metadata is truly sparse or conflicting
+
+{_PS_GUIDE_TABLE_PROD7}
+
+DECISION RULES (in priority order)
+1. If ps_prefix_hint is present, it is a strong signal — use it unless column evidence clearly
+   contradicts it.
+2. Analyse column names, semantic roles and sample values to confirm or override the prefix.
+3. Distinguish Supply Chain (inventory/items/manufacturing) from Ventes & Clients (customer
+   orders/sales/billing) — they are SEPARATE domains.
+4. Use "Other" only as a genuine last resort. Prefer Finance & Contrôle for cross-module
+   accounting tables, IT & Sécurité for pure system/configuration tables.
+5. Return STRICT JSON only — no extra text, no markdown.
+
+OUTPUT FORMAT
+{{"business_domain": "<exact domain name from the list above>"}}"""
+
+ADJUDICATOR_SYSTEM_PROMPT_PROD7 = """\
+You are a senior PeopleSoft ERP data governance expert.
+
+You receive an asset context and candidate votes from previous LLM passes.
+Choose exactly ONE final domain from this list (exact French label):
+- Finance & Contrôle
+- IT & Sécurité
+- RH
+- Achats & Fournisseurs
+- Ventes & Clients
+- Supply Chain / Logistique / Production
+- Other
+
+Rules:
+- Base the decision on the asset context, not on majority vote alone.
+- Candidate votes are hints, not ground truth.
+- Distinguish Supply Chain (inventory/items) from Ventes & Clients (orders/sales).
+- Use "Other" only as a genuine last resort.
+- Return STRICT JSON only: {"business_domain": "<exact domain name>"}"""
+
+DOMAIN_ALIASES_PROD7: dict[str, str] = {
+    # Finance & Contrôle (+ projets/actifs/risk repliés)
+    "finance": "Finance & Contrôle",
+    "finance comptabilite": "Finance & Contrôle",
+    "finance and comptabilite": "Finance & Contrôle",
+    "finance controle": "Finance & Contrôle",
+    "finance and controle": "Finance & Contrôle",
+    "finance and control": "Finance & Contrôle",
+    "comptabilite": "Finance & Contrôle",
+    "accounting": "Finance & Contrôle",
+    "risk": "Finance & Contrôle",
+    "risque": "Finance & Contrôle",
+    "treasury": "Finance & Contrôle",
+    "tresorerie": "Finance & Contrôle",
+    "gestion de projets and actifs": "Finance & Contrôle",
+    "gestion de projets": "Finance & Contrôle",
+    "projets and actifs": "Finance & Contrôle",
+    "project management": "Finance & Contrôle",
+    "asset management": "Finance & Contrôle",
+    "immobilisations": "Finance & Contrôle",
+    "project costing": "Finance & Contrôle",
+    "grants": "Finance & Contrôle",
+    # IT & Sécurité
+    "it": "IT & Sécurité",
+    "it technique": "IT & Sécurité",
+    "it and technique": "IT & Sécurité",
+    "technique": "IT & Sécurité",
+    "technical": "IT & Sécurité",
+    "it securite": "IT & Sécurité",
+    "it and securite": "IT & Sécurité",
+    "security": "IT & Sécurité",
+    "securite": "IT & Sécurité",
+    "informatique": "IT & Sécurité",
+    # RH
+    "rh": "RH",
+    "hr": "RH",
+    "rh paie": "RH",
+    "rh and paie": "RH",
+    "human resources": "RH",
+    "ressources humaines": "RH",
+    "payroll": "RH",
+    "paie": "RH",
+    # Achats & Fournisseurs
+    "achats": "Achats & Fournisseurs",
+    "achats fournisseurs": "Achats & Fournisseurs",
+    "achats and fournisseurs": "Achats & Fournisseurs",
+    "achats approvisionnement": "Achats & Fournisseurs",
+    "achats and approvisionnement": "Achats & Fournisseurs",
+    "procurement": "Achats & Fournisseurs",
+    "purchasing": "Achats & Fournisseurs",
+    "fournisseurs": "Achats & Fournisseurs",
+    "vendors": "Achats & Fournisseurs",
+    "suppliers": "Achats & Fournisseurs",
+    "approvisionnement": "Achats & Fournisseurs",
+    # Ventes & Clients
+    "ventes": "Ventes & Clients",
+    "ventes clients": "Ventes & Clients",
+    "ventes and clients": "Ventes & Clients",
+    "sales": "Ventes & Clients",
+    "clients": "Ventes & Clients",
+    "customers": "Ventes & Clients",
+    "crm": "Ventes & Clients",
+    "marketing": "Ventes & Clients",
+    "order management": "Ventes & Clients",
+    # Supply Chain / Logistique / Production
+    "supply chain": "Supply Chain / Logistique / Production",
+    "supply chain logistique production": "Supply Chain / Logistique / Production",
+    "supply chain and ventes": "Supply Chain / Logistique / Production",
+    "supply chain ventes": "Supply Chain / Logistique / Production",
+    "logistique": "Supply Chain / Logistique / Production",
+    "logistics": "Supply Chain / Logistique / Production",
+    "production": "Supply Chain / Logistique / Production",
+    "manufacturing": "Supply Chain / Logistique / Production",
+    "inventory": "Supply Chain / Logistique / Production",
+    "inventaire": "Supply Chain / Logistique / Production",
+    "stock": "Supply Chain / Logistique / Production",
+    # Other
+    "other": "Other",
+    "autre": "Other",
+    "divers": "Other",
+    "inconnu": "Other",
+    "unknown": "Other",
+}
+
+
+def apply_taxonomy(name: str) -> str:
+    """Rebinde les globals de taxonomie selon --taxonomy. Retourne le prompt_version."""
+    global ALLOWED_DOMAINS, DOMAIN_SET, DOMAIN_ALIASES, PS_MODULE_PREFIX_MAP
+    global SYSTEM_PROMPT, ADJUDICATOR_SYSTEM_PROMPT, DEFAULT_FALLBACK_DOMAIN
+
+    if name == "prod7":
+        ALLOWED_DOMAINS = ALLOWED_DOMAINS_PROD7
+        DOMAIN_ALIASES = DOMAIN_ALIASES_PROD7
+        PS_MODULE_PREFIX_MAP = PS_MODULE_PREFIX_MAP_PROD7
+        SYSTEM_PROMPT = SYSTEM_PROMPT_PROD7
+        ADJUDICATOR_SYSTEM_PROMPT = ADJUDICATOR_SYSTEM_PROMPT_PROD7
+        DEFAULT_FALLBACK_DOMAIN = "Finance & Contrôle"
+        DOMAIN_SET = set(ALLOWED_DOMAINS)
+        return "business_domain_v6_prod7classes"
+
+    # "6class" (défaut) : les globals du module sont déjà la taxonomie 6-classes.
+    DOMAIN_SET = set(ALLOWED_DOMAINS)
+    return "business_domain_v5_6classes_nps"
+
+
+# ---------------------------------------------------------------------------
 # Point d'entrée
 # ---------------------------------------------------------------------------
 
@@ -1162,12 +1408,20 @@ def main() -> None:
         help="Ré-annoter les lignes dont business_domain est 'Other' ou vide, "
              "même si --skip-existing est actif",
     )
+    parser.add_argument(
+        "--taxonomy", choices=["6class", "prod7"], default="6class",
+        help="Référentiel cible : '6class' (défaut historique) ou 'prod7' "
+             "(7 classes alignées sur la production, avec 'Other').",
+    )
 
     args = parser.parse_args()
 
     models = [m.strip() for m in str(args.models).split(",") if m.strip()]
     if not models:
         raise ValueError("Au moins un modèle requis via --models")
+
+    prompt_version = apply_taxonomy(args.taxonomy)
+    print(f"Taxonomie active : {args.taxonomy} ({prompt_version}) — classes: {ALLOWED_DOMAINS}")
 
     resolved_sep = resolve_separator(args.sep, args.input)
 
@@ -1179,6 +1433,7 @@ def main() -> None:
         timeout_seconds=args.timeout,
         sleep_between_calls=args.sleep,
         top_k_columns=args.top_k_columns,
+        prompt_version=prompt_version,
     )
 
     df = read_csv_file(args.input, sep=resolved_sep)

@@ -199,9 +199,10 @@ Chaque recommandation est accompagnée d'une colonne `rationale` (ex. : `volume_
 python -m src.transform.build_archiving_rules
 ```
 
-Séquence :
-1. Upsert des 8 stratégies dans `dim_archiving_policy` (idempotent `ON CONFLICT`)
-2. `REFRESH MATERIALIZED VIEW serving.mv_archiving_recommendation`
+Séquence (3 étapes) :
+1. Upsert des **9 stratégies** dans `dim_archiving_policy` (idempotent `ON CONFLICT`)
+2. Upsert de `dim_domain_retention` (**7 domaines** — plancher de rétention légale/métier)
+3. `REFRESH MATERIALIZED VIEW serving.mv_archiving_recommendation`
 
 Durée : ~7 s.
 
@@ -222,17 +223,18 @@ build_archiving_rules()                # section D
 
 ## 9. Export Excel
 
-`src/export/export_domain_model.py` produit désormais 7 feuilles, dont 3 pour l'archivage :
+`src/export/export_domain_model.py` produit **13 feuilles** au total (Dashboard + domaine + archivage + coût/ROI + Metadata), dont 4 pour l'archivage :
 
-| Feuille | Source | Lignes run5 |
+| Feuille | Source | Lignes run6 |
 |---|---|---|
-| Archiving Policies | `dim_archiving_policy` | 8 |
-| Archiving by Domain | `v_archiving_policy_summary` | 44 |
+| Archiving Policies | `dim_archiving_policy` | 9 |
+| Archiving by Domain | `v_archiving_policy_summary` | 32 |
 | Archiving Actions | `mv_archiving_recommendation` (FROID/CHIFFRE/COMPRESSION) | top 1000 |
+| Archiving by Strategy | `mv_archiving_recommendation` (agrégat par stratégie) | 7 |
 
 ```bash
 python -m src.export.export_domain_model
-# → exports/domain_model_run5.xlsx
+# → exports/domain_model_run6.xlsx
 ```
 
 ---
