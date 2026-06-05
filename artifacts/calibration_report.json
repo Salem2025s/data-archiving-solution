@@ -1,0 +1,95 @@
+{
+  "computed_at": "2026-06-05T09:56:24.885578+00:00",
+  "n_scored": 1280,
+  "ece": 0.1351,
+  "ece_status": "WARNING",
+  "calibration_bands": [
+    {
+      "band": "very_low",
+      "lo": 0.0,
+      "hi": 0.4,
+      "n": 382,
+      "mean_conf": 0.2793,
+      "accuracy": 0.4764,
+      "gap": -0.1972
+    },
+    {
+      "band": "low",
+      "lo": 0.4,
+      "hi": 0.6,
+      "n": 397,
+      "mean_conf": 0.4971,
+      "accuracy": 0.5315,
+      "gap": -0.0344
+    },
+    {
+      "band": "medium",
+      "lo": 0.6,
+      "hi": 0.85,
+      "n": 279,
+      "mean_conf": 0.7072,
+      "accuracy": 0.6201,
+      "gap": 0.0871
+    },
+    {
+      "band": "high",
+      "lo": 0.85,
+      "hi": 1.01,
+      "n": 222,
+      "mean_conf": 0.9443,
+      "accuracy": 0.6757,
+      "gap": 0.2687
+    }
+  ],
+  "recall_by_domain": {
+    "Achats & Fournisseurs": {
+      "n": 187,
+      "recall": 0.7166,
+      "sla": 0.9,
+      "sla_ok": false
+    },
+    "Finance & Contrôle": {
+      "n": 344,
+      "recall": 0.3837,
+      "sla": 0.9,
+      "sla_ok": false
+    },
+    "IT & Sécurité": {
+      "n": 206,
+      "recall": 0.4369,
+      "sla": null,
+      "sla_ok": true
+    },
+    "Other": {
+      "n": 18,
+      "recall": 0.7778,
+      "sla": null,
+      "sla_ok": true
+    },
+    "RH": {
+      "n": 120,
+      "recall": 0.8,
+      "sla": 0.9,
+      "sla_ok": false
+    },
+    "Supply Chain / Logistique / Production": {
+      "n": 247,
+      "recall": 0.5789,
+      "sla": null,
+      "sla_ok": true
+    },
+    "Ventes & Clients": {
+      "n": 158,
+      "recall": 0.6772,
+      "sla": 0.9,
+      "sla_ok": false
+    }
+  },
+  "sla_violations": [
+    "Achats & Fournisseurs: 0.717 < 0.9",
+    "Finance & Contrôle: 0.384 < 0.9",
+    "RH: 0.800 < 0.9",
+    "Ventes & Clients: 0.677 < 0.9"
+  ],
+  "overall_sla_ok": false
+}
