@@ -1,0 +1,22 @@
+{
+  "temperatures": [
+    1.3266,
+    1.5966,
+    1.3469,
+    1.8366,
+    1.3885,
+    1.4292,
+    1.515
+  ],
+  "classes": [
+    "Finance & Contrôle",
+    "RH",
+    "Achats & Fournisseurs",
+    "Ventes & Clients",
+    "Supply Chain / Logistique / Production",
+    "IT & Sécurité",
+    "Other"
+  ],
+  "ece_before": 0.052304,
+  "ece_after": 0.011445
+}

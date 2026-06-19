@@ -22,6 +22,14 @@ from src.ml.domain_term_base import DOMAIN_TERMS
 from src.ml.domain_term_base import KEYWORD_TO_LABEL as _TERM_KEYWORD_TO_LABEL
 from src.utils.logging_utils import configure_logging
 
+# Phase 1 — reliability monitoring (imported lazily to avoid circular deps).
+def _run_quality_report(pg: PostgresClient, run_id: int, model_version: str) -> None:
+    try:
+        from src.ml.model_reliability import compute_and_persist_quality_report
+        compute_and_persist_quality_report(pg, run_id, model_version)
+    except Exception:
+        logger.warning("Quality report failed (non-blocking) for run_id={}", run_id)
+
 DEFAULT_MODEL_PATH = "LLM/artifacts_business_domain/production_pipeline_latest.joblib"
 INSERT_BATCH_SIZE = 1000
 DEFAULT_CLOSE_TOP2_MARGIN = 0.05
@@ -1271,6 +1279,11 @@ def score_business_domain(run_id: int, model_path: str) -> int:
             "serving.asset_business_domain_prediction scored: {} row(s)",
             produced,
         )
+
+        # Phase 1 — quality report: distribution snapshot + drift + SLA check.
+        # Non-blocking: a failure never aborts the scoring run.
+        _run_quality_report(postgres_client, run_id, artifacts.model_version)
+
         return produced
 
     except Exception:

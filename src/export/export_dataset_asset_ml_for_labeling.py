@@ -1116,7 +1116,29 @@ def _build_enriched_row(
                 final_semantic = metadata_semantic if metadata_semantic else "other"
         semantic_parts.append(f"{column_name}:{final_semantic or 'other'}")
 
-    export_row["column_sample_values_text"] = " | ".join(sample_parts)
+    # PII masking (Phase 0 — safety): redact real values for columns whose semantic
+    # is a PII category. The pattern/semantic signal is preserved for the LLM annotator;
+    # only the raw sample values (which could contain real names, emails, IDs…) are
+    # replaced with a placeholder. This prevents the labeling export from leaking real
+    # personal data into annotation pipelines or third-party LLM endpoints.
+    PII_SEMANTICS = frozenset({
+        "email_address", "phone_number", "person_identifier", "person_first_name",
+        "person_last_name", "person_full_name", "user_identifier", "postal_location",
+        "geo_latitude", "geo_longitude",
+    })
+    masked_sample_parts: list[str] = []
+    for part in sample_parts:
+        col_name = part.split(":")[0].strip() if ":" in part else ""
+        col_sem = observed_samples_map and next(
+            (s for c, s in (observed_map or {}).get("semantics", {}).items() if c == col_name),
+            None,
+        )
+        if col_sem in PII_SEMANTICS:
+            masked_sample_parts.append(f"{col_name}:[*** masqué PII ***]")
+        else:
+            masked_sample_parts.append(part)
+
+    export_row["column_sample_values_text"] = " | ".join(masked_sample_parts)
     export_row["column_observed_pattern_text"] = " | ".join(pattern_parts)
 
     if semantic_parts:
