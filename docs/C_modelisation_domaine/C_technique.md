@@ -183,13 +183,15 @@ Durée : ~4 secondes sur run_id=5.
 
 **Fichier produit :** `exports/domain_model_run<N>.xlsx`
 
-**Feuilles :**
-| Feuille | Contenu | Nb lignes run5 |
+Le classeur compte **13 feuilles** au total (Dashboard + domaine + archivage + coût/ROI + Metadata). Les **3 feuilles produites par la section C** :
+
+| Feuille | Contenu | Nb lignes run6 |
 |---|---|---|
 | Domain Profile | `mv_domain_profile` complet | 7 |
-| Domain Shared Keys | `mv_domain_dependency` complet (clés partagées) | 531 |
-| Top Archival Candidates | `v_archivability_by_domain` (top 20/domaine) | 142 |
-| Metadata | run_id, date export, compteurs | 6 |
+| Domain Shared Keys | `mv_domain_dependency` complet (clés partagées) | 573 |
+| Top Archival Candidates | `v_archivability_by_domain` (top 20/domaine) | 144 |
+
+> Les feuilles d'archivage (D) et de coût/ROI (E1–E4) ainsi que **Dashboard** (5 graphiques) et **Metadata** sont décrites dans leurs sections respectives.
 
 **Commande :**
 ```bash
