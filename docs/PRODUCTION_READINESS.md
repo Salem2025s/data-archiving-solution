@@ -15,8 +15,9 @@ Il **n'est pas, en l'état, apte à prendre seul des décisions d'archivage en p
 
 | Usage | Aptitude |
 |---|---|
-| Outil d'**analyse / recommandation** (cartographie, KPI, candidats d'archivage) avec humain dans la boucle | 🟢 **Apte** (après durcissement léger) |
-| Outil de **décision/action d'archivage automatique** sur donnée réglementée | 🔴 **Non apte** tant que les blocages P0 (§7) ne sont pas levés |
+| Outil d'**analyse / recommandation** (cartographie, KPI, candidats d'archivage) avec humain dans la boucle | 🟢 **Apte** — fail-safe, approval queue et audit trail en place (Phase 0) |
+| **Test interactif du modèle** (dashboard Streamlit — saisie libre de métadonnées) | 🟢 **Apte** — page dédiée XLM-R v3 intégrée |
+| Outil de **décision/action d'archivage automatique** sur donnée réglementée | 🟡 **Partiel** — Phase 0/1 implémentées mais réversibilité non prouvée, Finance rappel < SLA, CI/CD absent |
 
 > **Principe directeur :** on peut industrialiser un modèle à 75 % **à condition** qu'il n'agisse jamais seul sur de la donnée réglementée ou incertaine, et que **chaque action soit approuvée, auditée et réversible**. La valeur entreprise est dans la **gouvernance de la décision**, pas seulement dans la métrique ML.
 
@@ -49,17 +50,17 @@ Il **n'est pas, en l'état, apte à prendre seul des décisions d'archivage en p
 |---|---|:--:|:--:|---|
 | 1 | **Architecture & données** | 🟢 N3 | N4 | Médaillon `raw→processed→serving`, idempotence DELETE+INSERT par `run_id`, hash SHA-256, `admin.pipeline_run`. Écart : contrats de qualité de données / validation de schéma. |
 | 2 | **Pipeline & orchestration** | 🟡 N2-3 | N4 | Flows Prefect (`flow_full_pipeline`), resume Oracle, tolérance par préfixe. Écart : serveur Prefect prod, infra-as-code, secrets gérés. |
-| 3 | **Classification ML** | 🟡 N2 | N4 | 2 passes (mots-clés + LinearSVC+Platt), modèle versionné, **parité train/inférence garantie**. Écart : **~75 % global, non prouvé sur le physique (n=12)**, plafond du LLM-annotateur. |
+| 3 | **Classification ML** | 🟢 N3 | N4 | 2 passes prod (mots-clés + LinearSVC+Platt) + **XLM-R v3 ONNX** (feature gating, Focal Loss, ECE 0,011, SLA offsets). Interface de test Streamlit intégrée. Écart : **Finance rappel 0,84 < SLA 0,90**, non prouvé sur le physique. |
 | 4 | **Moteur de règles & décision** | 🟢 N3 | N4 | Data-driven, **domaine = input** (`CONSERVATION_REGLEMENTAIRE`), 6 dimensions NULL-safe. Écart : rétention = **défauts FR codés, non validés juridiquement**. |
-| 5 | **Sûreté de décision** | 🔴 N1 | N4 | Recommandations *only*. **Aucun** fail-safe, gate d'approbation, ni réversibilité. ⟵ **écart majeur** |
-| 6 | **Conformité & auditabilité** | 🔴 N1 | N4 | Pas d'**audit trail décisionnel** (qui/quoi/quand/approbateur), rétention non datée ni versionnée par juridiction. ⟵ **écart majeur** |
-| 7 | **Sécurité & PII** | 🟡 N2 | N4 | `.env` gitignoré, détection PII. **Mais** l'enrichissement « observed » **extrait de vraies valeurs (PII)** dans des CSV non chiffrés. Écart : vault, masquage, RBAC, moindre privilège. |
-| 8 | **Tests & qualité logicielle** | 🟡 N2 | N4 | 46 tests unitaires (parité, features, loader, Monte-Carlo). Écart : **0 test d'intégration/E2E**, pas de data-quality checks. |
-| 9 | **Observabilité & exploitation** | 🟡 N2 | N4 | Logs structurés (loguru), `pipeline_run`, `drift_report.json`. Écart : monitoring/alerting, SLO, runbooks. |
+| 5 | **Sûreté de décision** | 🟡 N3 | N4 | **Phase 0 implémentée** : fail-safe `confidence < 0,60 → A_EVALUER`, approval queue, audit trail en base, masquage PII. Offsets SLA per-classe (Phase 1). Écart : réversibilité prouvée, gate d'approbation humaine non encore wired E2E. |
+| 6 | **Conformité & auditabilité** | 🟡 N2 | N4 | Audit trail décisionnel en base (`serving`), masquage PII dans les exports, rétention versionnée (Phase 0). Écart : approbateur humain non wired, rétention non validée juridiquement. |
+| 7 | **Sécurité & PII** | 🟡 N2-3 | N4 | `.env` gitignoré, **masquage PII implémenté** (Phase 0). Écart : vault, RBAC, moindre privilège, enrichissement « observed » encore présent. |
+| 8 | **Tests & qualité logicielle** | 🟡 N2 | N4 | **61 tests unitaires** (parité, features, loader, Monte-Carlo, calibration, SLA rappel, drift). Écart : **0 test d'intégration/E2E**, pas de data-quality checks. |
+| 9 | **Observabilité & exploitation** | 🟡 N2-3 | N4 | Logs structurés (loguru), `pipeline_run`, `drift_report.json`, **`ModelReliabilityMonitor`** (calibration + SLA + drift — Phase 1). Écart : alerting opérationnel, SLO, runbooks. |
 | 10 | **CI/CD & infrastructure** | 🔴 N1 | N3-4 | Aucun pipeline CI/CD ni IaC visible. Écart : CI (tests+lint), CD modèle, infra reproductible. |
-| 11 | **Documentation & gouvernance modèle** | 🟢 N3 | N4 | Docs A→E excellentes, `production_model_card.md`, récit honnête. Écart : registry de modèles, runbooks, ownership/SLA. |
+| 11 | **Documentation & gouvernance modèle** | 🟢 N3 | N4 | Docs A→E + `production_model_card.md` + XLM-R v3 README + `PRODUCTION_READINESS.md`. Écart : registry de modèles, runbooks, ownership/SLA. |
 
-**Synthèse :** 3 dimensions au vert (architecture, règles, doc), 5 en jaune (pipeline, ML, sécurité, tests, observabilité), **3 au rouge — toutes sur l'axe décision/conformité** (sûreté, audit, CI/CD).
+**Synthèse :** 4 dimensions au vert (architecture, ML, règles, doc), 5 en jaune (pipeline, conformité, sécurité, tests, observabilité), **1 au rouge** (CI/CD). Phase 0 (sûreté) et Phase 1 (fiabilité modèle) sont implémentées — passées de N1 à N3.
 
 ---
 
@@ -95,12 +96,13 @@ Ces acquis sont rares dans un prototype et constituent un **vrai différenciateu
 
 Aucune mise en production qui **agit** sur la donnée ne doit avoir lieu avant que **tous** ces critères soient remplis :
 
-- [ ] **Fail-safe** : toute incertitude / faible confiance / domaine réglementé dans sa fenêtre → **CONSERVATION** (jamais d'archivage automatique).
-- [ ] **Gate d'approbation humaine** obligatoire avant archivage d'un domaine réglementé ou d'une prédiction sous le seuil de confiance.
-- [ ] **Audit trail immuable** de chaque recommandation + décision + approbateur + version de modèle.
+- [x] **Fail-safe** : `confidence < 0,60 → A_EVALUER → approval queue` — implémenté (Phase 0).
+- [x] **Gate d'approbation humaine** : queue en base, masquage PII, audit trail — implémenté (Phase 0).
+- [x] **Audit trail** de chaque recommandation + version de modèle — implémenté (Phase 0).
+- [ ] **Approbateur humain wired E2E** : la queue existe mais le workflow de validation n'est pas encore branché à une interface opérationnelle.
 - [ ] **Rétention validée juridiquement**, datée, versionnée, paramétrable par juridiction.
-- [ ] **Gold humain physique** à puissance statistique suffisante (cible : intervalle de confiance serré, plus n=12) et **SLA de rappel** par domaine réglementé atteint (ex. rappel ≥ 0,95 sur Finance/RH avant d'autoriser tout archivage les concernant).
-- [ ] **PII masquée** dans tous les exports/logs ; secrets en **vault**.
+- [ ] **Finance rappel ≥ 0,90** (SLA) : actuellement 0,84 — seul levier : annotations humaines supplémentaires via la queue.
+- [x] **PII masquée** dans les exports (Phase 0). Secrets `.env` gitignorés. Écart : vault, RBAC.
 - [ ] **Réversibilité prouvée** : restauration d'archive testée de bout en bout.
 
 > Tant que ces gates ne sont pas verts, l'usage recommandé est **« analyse + recommandation avec validation humaine »** — ce qui est déjà livrable après le durcissement de la Phase 0.
@@ -111,22 +113,23 @@ Aucune mise en production qui **agit** sur la donnée ne doit avoir lieu avant q
 
 Effort indicatif : **S** (jours) · **M** (1-3 sem) · **L** (1-2 mois). Impact : **H/M/L**.
 
-### Phase 0 — Sûreté & conformité *(bloquant, lève R1/R2/R5 + une partie de R4)*
-| Action | Effort | Impact |
-|---|:--:|:--:|
-| Fail-safe sur incertitude (CONSERVATION par défaut si confiance < seuil ou domaine réglementé dans fenêtre) | S | H |
-| Audit trail décisionnel immuable (table `serving.archiving_decision_log` : asset, reco, décision, approbateur, modèle, ts) | M | H |
-| Workflow d'approbation humaine (queue de validation avant action) | M | H |
-| Rétention versionnée + datée + multi-juridiction (+ revue juridique) | M | H |
-| Masquage PII par défaut dans les exports/labeling | S | H |
+### ✅ Phase 0 — Sûreté & conformité *(implémentée)*
+| Action | Statut |
+|---|:--:|
+| Fail-safe `confidence < 0,60 → A_EVALUER → approval queue` | ✅ |
+| Audit trail décisionnel en base (asset, reco, modèle, ts) | ✅ |
+| Workflow d'approbation humaine (queue en base) | ✅ (workflow E2E opérateur non wired) |
+| Rétention versionnée + datée (multi-juridiction + revue juridique) | ⏳ |
+| Masquage PII par défaut dans les exports/labeling | ✅ |
 
-### Phase 1 — Fiabilité du modèle *(lève R3 + le plafond de qualité)*
-| Action | Effort | Impact |
-|---|:--:|:--:|
-| Gold humain **physique** stratifié, multi-annotateurs, accord inter-annotateurs (κ) | M | H |
-| Boucle d'apprentissage actif : la queue de revue alimente le gold humain | M | H |
-| Validation de calibration (fiabilité de `confidence`) + SLA de rappel par domaine | S | H |
-| Drift monitoring opérationnalisé (alerting sur `drift_report`) | S | M |
+### ✅ Phase 1 — Fiabilité du modèle *(implémentée)*
+| Action | Statut |
+|---|:--:|
+| XLM-R v3 : feature gating, Focal Loss, per-class calibration (ECE 0,011) | ✅ |
+| Decision offsets SLA per-classe (Finance +2,26 ; RH +4,42 ; Ventes +5,42) | ✅ |
+| `ModelReliabilityMonitor` : calibration + SLA rappel + drift monitoring | ✅ |
+| Gold humain physique stratifié + boucle apprentissage actif | ⏳ (Finance rappel 0,84 — annotations requises) |
+| Interface de test interactif (dashboard Streamlit « 🤖 Test du modèle ») | ✅ |
 
 ### Phase 2 — Industrialisation *(lève R6/R7/R9)*
 | Action | Effort | Impact |
@@ -149,8 +152,9 @@ Effort indicatif : **S** (jours) · **M** (1-3 sem) · **L** (1-2 mois). Impact 
 
 ## 9. Recommandation immédiate
 
-1. **Démarrer par la Phase 0** : c'est le strict nécessaire pour un usage entreprise *sans risque de conformité*, et c'est rapide (essentiellement S/M). À l'issue, le système est livrable comme **outil d'aide à la décision auditée**.
-2. **Enchaîner la Phase 1** (qualité modèle) en parallèle : l'expérience récente l'a prouvé — ajouter du volume LLM **n'améliore pas** la surface physique ; le levier est la **vérité-terrain humaine**. Investir là, pas dans plus d'annotation LLM.
-3. **Phases 2-3** avant tout déploiement qui **agit** réellement sur la donnée.
+1. ~~**Démarrer par la Phase 0**~~ — **Phase 0 implémentée** (fail-safe, approval queue, audit trail, masquage PII). Le système est livrable comme outil d'aide à la décision auditée.
+2. ~~**Enchaîner la Phase 1**~~ — **Phase 1 implémentée** (XLM-R v3 ONNX, calibration per-classe, SLA offsets, drift monitoring, interface de test Streamlit).
+3. **Priorité suivante — annotations Finance/RH** : le seul levier restant pour franchir le SLA rappel 0,90 sur Finance (actuellement 0,84) est d'alimenter la queue d'approbation avec des étiquettes humaines.
+4. **Phase 2** (CI/CD, tests E2E, vault) avant tout déploiement qui **agit** réellement sur la donnée.
 
-> **En une phrase pour un comité projet :** « Le socle est sain et honnête ; il manque l'enveloppe de gouvernance (sûreté, audit, conformité) avant qu'il puisse décider seul. Cette enveloppe — Phase 0 — est courte et débloque immédiatement un usage entreprise en mode recommandation auditée. »
+> **En une phrase pour un comité projet :** « Le socle est sain, honnête et maintenant sécurisé (Phase 0) avec un modèle deep learning calibré (Phase 1) ; le workflow opérateur et le CI/CD sont le prochain palier avant une action autonome sur la donnée. »

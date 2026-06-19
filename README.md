@@ -535,6 +535,8 @@ Projet/
 
 ## 15. Artefacts ML
 
+### 15a. Modèle de production (scoring pipeline — LinearSVC)
+
 | Fichier | Description |
 |---|---|
 | `LLM/artifacts_business_domain/production_pipeline_latest.joblib` | **Modèle de production déployé = v3.4-human** (LinearSVC+Platt, gold LLM + 1 130 corrections humaines) — **utiliser pour le scoring** |
@@ -546,3 +548,36 @@ Projet/
 | `artifacts/human_eval_sample*.csv` · `human_eval_report*.json` | Échantillons annotés (3 lots, ~1 290 lignes) + rapports de justesse réelle |
 | `src/ml/domain_term_base.py` | Base de termes pour la pré-classification keywords |
 | `artifacts/business_domain_model.joblib`, `…_metrics.json`, `labeled_dataset_clean.csv`, `relabeling_priority_set.csv` | Piste **baseline** (obsolète, taxonomie 3-4 classes — ne pas confondre avec la production) |
+
+### 15b. Modèle deep learning — XLM-RoBERTa v3 (inférence standalone, ONNX)
+
+Classifieur XLM-R large fine-tuné sur PeopleSoft avec feature gating, Focal Loss (γ=2,0), calibration par température per-classe et offsets de décision SLA. **Ne nécessite pas PyTorch en inférence** — exécuté via ONNX Runtime.
+
+| Fichier | Description |
+|---|---|
+| `artifacts/xlmr_v3/predict.py` | Point d'entrée inférence : `DomainClassifier(apply_offsets=False\|True).predict(row)` |
+| `artifacts/xlmr_v3/features.py` | Feature builder vendorisé (129 features numériques + texte, identique au training) |
+| `artifacts/xlmr_v3/artifacts/model.onnx` | Graphe ONNX (opset 17, ~215 Ko sans poids) |
+| `artifacts/xlmr_v3/artifacts/temperatures.json` | 7 températures per-classe calibrées (ECE 0,052 → **0,011**) |
+| `artifacts/xlmr_v3/artifacts/decision_offsets.json` | Offsets per-classe SLA-strict (Finance +2,26, RH +4,42, Ventes +5,42…) |
+| `artifacts/xlmr_v3/artifacts/scaler_params.npz` | Paramètres StandardScaler pour les 129 features numériques |
+| `artifacts/xlmr_v3/artifacts/class_labels.json` | Ordre canonique des 7 classes |
+| `artifacts/xlmr_v3/requirements-inference.txt` | Dépendances inférence uniquement (`onnxruntime`, `transformers`, `numpy`) |
+| `artifacts/xlmr_v3/README.md` | Architecture, métriques, modes équilibré / SLA-strict |
+| `artifacts/xlmr_v1/` | Version v1 (température globale unique, sans offsets) — conservée pour comparaison |
+| `artifacts/calibration_report.json` | Rapport ECE avant/après calibration (v1 vs v3) |
+| `src/ml/model_reliability.py` | Phase 1 : calibration, SLA rappel, drift monitoring (`ModelReliabilityMonitor`) |
+
+```bash
+# Tester le modèle directement (standalone, sans base de données)
+cd artifacts/xlmr_v3
+pip install -r requirements-inference.txt
+python predict.py        # demo sur 2 exemples prédéfinis
+
+# Ou via le dashboard Streamlit (section "🤖 Test du modèle")
+streamlit run app/streamlit_dashboard.py
+```
+
+> **Deux modes d'inférence :**
+> - `apply_offsets=False` (défaut) — mode équilibré, optimise le macro-F1 global
+> - `apply_offsets=True` — mode SLA-strict, élève le rappel sur les domaines réglementés (Finance, RH, Achats, Ventes)

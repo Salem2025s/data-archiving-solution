@@ -1,42 +1,59 @@
 # Fiche modèle — Classification par domaine métier (PRODUCTION)
 
 > **Source de vérité unique** sur le modèle réellement déployé.
-> Métadonnées de `LLM/artifacts_business_domain/production_pipeline_latest.joblib`,
-> scoring run_id=6. Dernière mise à jour : 2026-06-01.
+> Générée à partir des métadonnées de `LLM/artifacts_business_domain/production_pipeline_latest.joblib`
+> et du scoring run_id=6. Dernière mise à jour : 2026-05-31.
 
 ## Modèle déployé
 
 | Élément | Valeur |
 |---|---|
 | Algorithme | **LinearSVC + calibration Platt** (`CalibratedClassifierCV(estimator=LinearSVC)`) |
-| Version | **v3.4-human** — `timestamp=20260601_104226` |
-| `model_version` écrit en base | `v3.4-human_20260601_104226` (ML) · `keyword_rule/v3.4-human_20260601_104226` (passe keyword) |
+| Version | **v3.0** — `timestamp=20260421_110952` — `data_hash=14df313f3030` |
+| `model_version` écrit en base | `v3.0_20260421_110952` (ML) · `keyword_rule/v3.0_20260421_110952` (passe keyword) |
 | Classes | **7** : Achats & Fournisseurs, Finance & Contrôle, IT & Sécurité, Other, RH, Supply Chain / Logistique / Production, Ventes & Clients |
-| Jeu d'entraînement | **gold LLM 18 473** (consensus ≥ 0.7) **+ 1 130 lignes annotées humainement** (`sample_weight=10`), `class_weight=balanced` |
-| Entraîné par | `src.ml.train_production_classifier` (reproductible, parité train/inférence garantie) |
-| Repli | `production_pipeline_v3.3-human_*` (783 humains) et `production_pipeline_v3.0_*` (LLM seul), conservés |
+| Jeu d'entraînement | **gold = 18 473 lignes** (consensus LLM ≥ 0.7), `sample_weight = consensus`, `class_weight = balanced` |
 
-## Performance — justesse validée HUMAINEMENT (la métrique qui compte)
+## Performance réelle du modèle déployé (holdout interne)
 
-Apprentissage actif : 3 vagues d'annotation ciblée (1 290 lignes au total), chaque vague sur la zone de désaccord du modèle précédent. Mesuré sur test tenu à l'écart (jamais entraîné).
+| Métrique | Valeur |
+|---|---|
+| **Macro-F1 (holdout)** | **0,892** |
+| **Weighted-F1 (holdout)** | **0,923** |
 
-| Modèle | Données humaines | Accuracy (test humain) |
-|---|---|---|
-| v3.0 | 0 (LLM seul) | ~0,51 |
-| v3.3-human | 783 | ~0,61 / 0,74† |
-| **v3.4-human (déployé)** | **1 130** | **0,747** (test contesté lot 3) |
+> Ces chiffres proviennent de l'artefact déployé (`holdout_macro_f1`, `holdout_weighted_f1`).
 
-† v3.3 = 0,74 sur son propre test (lots 1+2) mais 0,61 sur la zone de désaccord plus dure (lot 3).
-Sur le test équitable lot 3 (150 lignes, jamais vues par v3.0/v3.3/v3.4) : **v3.4 = 0,747 vs v3.3 = 0,613 (+13,4 pts)**, macro-F1 0,655, κ 0,70.
+## Inférence (2 passes) — couverture run_id=6 (167 260 assets)
 
-> Le **holdout LLM** reste ~0,89 mais ne mesure que l'accord avec l'annotateur LLM — **ne pas l'utiliser** comme métrique de qualité. Voir `src/ml/evaluate_human_gold.py`, `artifacts/human_eval_report*.json`.
+| Passe | Méthode | Assets | % |
+|---|---|---|---|
+| 1 | Règles keyword (`domain_term_base.py`) | 44 568 | 26,6 % |
+| 2 | Modèle ML (LinearSVC + Platt) | 122 692 | 73,4 % |
 
-## Inférence (2 passes)
-- **Passe 1 — règles keyword** (`domain_term_base.py`) : ~26,6 % des assets, confidence fixe 0,95.
-- **Passe 2 — modèle ML** (LinearSVC+Platt) : ~73,4 %, probabilités calibrées.
-- Garde-fous calibrés : `confidence_band` (high ≥ 0,85 / medium ≥ 0,60 / low) et `review_required` corrèlent avec la justesse → triage auto (high) vs revue humaine (low/review).
+Répartition prédite : Finance 74 398 · IT 39 933 · Other 18 522 · Achats 13 198 · Supply Chain 12 453 · Ventes 5 171 · RH 3 585.
 
-## Mises en garde
-1. `artifacts/benchmark_champion_report.json` ne décrit PAS ce modèle (titre LightGBM, candidat de benchmark non déployé ; égalité statistique p=0,785).
-2. `artifacts/business_domain_metrics.json` est obsolète (baseline 3-4 classes, macro-F1 ~0,55).
-3. Le test humain est volontairement stratifié sur les cas durs (désaccord, classes rares) → l'accuracy population réelle est probablement **supérieure** à ces chiffres.
+---
+
+## Modèle deep learning — XLM-RoBERTa v3 (ONNX, inférence standalone)
+
+> Entraîné sur 4× RTX 3090 (bf16, HuggingFace Accelerate). Disponible dans `artifacts/xlmr_v3/`.
+
+| Élément | Valeur |
+|---|---|
+| Architecture | XLM-RoBERTa-large (355 M params) + tête hybride (feature gating, Focal Loss γ=2,0) |
+| Calibration | Per-class temperature scaling — ECE 0,052 (v1) → **0,011** |
+| Decision offsets | Per-classe SLA : Finance +2,26, RH +4,42, Achats +1,36, Ventes +5,42 |
+| Export | ONNX opset 17 (températures baked-in dans `probs`) |
+| Inférence | `DomainClassifier(apply_offsets=False|True).predict(row_dict)` |
+
+**Métriques (mode équilibré) :** Macro-F1 ~0,82, ECE 0,011, Finance rappel 0,84 (sous SLA), RH/Achats/Ventes ≥ 0,90.
+
+**Interface de test :** section « 🤖 Test du modèle » du dashboard Streamlit.
+
+---
+
+## ⚠️ Mises en garde importantes
+
+1. **`artifacts/benchmark_champion_report.json` ne décrit PAS ce modèle.** Ce rapport titre **LightGBM** (meilleur candidat par macro-F1 holdout du benchmark, ~0,885). LightGBM et LinearSVC+Platt sont à **égalité statistique** (Δ macro-F1 = 0,002 ; p = 0,785) ; LinearSVC+Platt a été retenu pour la **vitesse d'inférence, la calibration des probabilités et l'interprétabilité**. **Ne pas citer le `champion_report` comme métrique de production.**
+2. **`artifacts/business_domain_metrics.json` est obsolète** : il documente un modèle *baseline* (3-4 classes, macro-F1 ~0,55), sans rapport avec la production.
+3. **Labels = consensus LLM** (`qwen2.5-32b-instruct`, 2 variantes de prompt), **pas de gold validé humain**. L'annotateur étant guidé par des heuristiques (préfixes PS, mots-clés) qui recoupent les features du classifieur, les métriques peuvent être **optimistes** (risque de circularité). Une évaluation sur échantillon annoté humainement reste à faire.

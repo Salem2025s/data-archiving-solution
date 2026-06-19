@@ -51,7 +51,7 @@
 - **Sources MongoDB hors périmètre** du run courant → pas de lignage/purges réels.
 
 ### Ce qui reste à durcir
-**Socle de tests en place** (46 tests unitaires sans DB, `pytest` — feature-builders de scoring + régression train/inférence, loader, settings, base de termes, éval humaine, extracteur d'accès, **projection Monte-Carlo / estimateur de croissance**). Reste : tests d'intégration DB · vrai signal d'accès (grant DBA) · accumulation de runs pour faire passer E3 sur croissance **observée**.
+**Socle de tests en place** (61 tests unitaires sans DB, `pytest` — feature-builders de scoring + régression train/inférence, loader, settings, base de termes, éval humaine, extracteur d'accès, projection Monte-Carlo / estimateur de croissance, **calibration + SLA rappel + drift** `model_reliability`). Phase 0 (fail-safe, approval queue, masquage PII, audit trail) et Phase 1 (calibration, SLA, drift monitoring) sont **implémentées**. Reste : tests d'intégration DB · vrai signal d'accès (grant DBA) · Finance recall 0,84 < SLA 0,90 (seul levier : annotations humaines supplémentaires).
 
 ---
 
@@ -91,7 +91,8 @@ exports/domain_model_run5.xlsx
 | Paramètre | Valeur |
 |---|---|
 | `run_id` actif | 6 (ré-extraction Oracle avec `referenced_by_count`) |
-| Modèle de domaine déployé | **v3.4-human** (LinearSVC+Platt, gold LLM + 1 130 corrections humaines) — justesse réelle ~75 % sur cas durs |
+| Modèle de domaine déployé (scoring prod) | **v3.4-human** (LinearSVC+Platt, gold LLM + 1 130 corrections humaines) — justesse réelle ~75 % sur cas durs |
+| Modèle deep learning (test interactif) | **XLM-R v3** (ONNX, 50 epochs, feature gating + Focal Loss, ECE 0,011) — interface Streamlit |
 | Assets classifiés | 167 260 |
 | Arêtes de lignage (`ps_parent_record`) | 4 590 |
 | Arêtes inter-domaines (bridge keys) | 573 |
@@ -133,7 +134,8 @@ pip install -r requirements-ml.txt   # installe streamlit (une fois)
 streamlit run app/streamlit_dashboard.py
 ```
 
-> **Dashboard / Interface Streamlit** (`app/streamlit_dashboard.py`) — 7 sections, sans terminal :
+> **Dashboard / Interface Streamlit** (`app/streamlit_dashboard.py`) — 8 sections, sans terminal :
 > - **Consultation** (lecture `serving.*`) : Vue d'ensemble (KPIs) · Domaines · Dépendances · Archivage (filtres domaine/stratégie) · Coûts & ROI (camembert, Pareto, projection).
 > - **🚀 Pipelines** : boutons pour lancer chaque traitement (publication serving, exports, régénérations) + **pipeline complet** (extraction Oracle/Mongo, VPN requis) avec **logs en direct** et historique des runs (`admin.pipeline_run`).
 > - **⚙️ Paramètres** : formulaires d'édition des coûts/ROI (`dim_cost_params`) avec recalcul « what-if » + bouton **réinitialiser aux valeurs par défaut**.
+> - **🤖 Test du modèle** : interface interactive pour tester le classifieur XLM-R v3 en saisissant les métadonnées d'une table (nom, module, colonnes, volumétrie, sémantique) — affiche le domaine prédit, la confiance calibrée, la distribution des probabilités par classe (graphe Altair), et déclenche l'alerte `review_required` / `A_EVALUER` si nécessaire. 5 exemples prédéfinis (Finance, RH, Achats, IT, Supply Chain). Deux modes : équilibré (macro-F1) et SLA-strict (rappel réglementé ≥ 0,90).

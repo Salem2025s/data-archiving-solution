@@ -338,3 +338,94 @@ python -m src.transform.score_business_domain \
 ## 8. Drift monitoring
 
 Le fichier `LLM/artifacts_business_domain/drift_report.json` trace l'évolution de la distribution des prédictions entre runs, permettant de détecter si le comportement du modèle change avec les nouvelles données.
+
+---
+
+## 9. XLM-RoBERTa v3 — Classifieur deep learning (bundle ONNX)
+
+> Entraîné sur un serveur 4× RTX 3090 (bf16, HuggingFace Accelerate). Disponible en inférence sans PyTorch via ONNX Runtime.
+
+### 9.1 Architecture
+
+```
+XLM-RoBERTa-large (355 M params)
+   [CLS] → 1024-d
+
+Feature gating (129 features numériques → 1024-d gate via sigmoid)
+   cls_gated = [CLS] × (1 + sigmoid(num_gate(num)))
+
+Tête hybride
+   Linear(1152, 512) → GELU → Dropout(0.2) → Linear(512, 7)
+   ─── 1152 = 1024 (text_gated) + 128 (num_proj(num))
+```
+
+### 9.2 Innovations vs LinearSVC
+
+| Technique | Détail |
+|---|---|
+| **Feature gating** | Les features numériques modulent le CLS embedding — le contexte volumétrique ajuste la représentation sémantique |
+| **Focal Loss (γ=2,0)** | Pénalise les prédictions confiantes erronées — améliore les classes rares (RH, Ventes) |
+| **Per-class temperature scaling** | 7 températures indépendantes optimisées sur NLL — ECE passe de 0,052 (v1) à **0,011** |
+| **Decision offsets SLA** | `label = argmax(logits + offsets)` — post-processing sans réentraînement pour enforcer rappel ≥ 0,90 |
+
+### 9.3 Format d'entrée (`build_input_text` v3)
+
+```
+[TABLE] {technical_name} [MODULE] {source_ref} [COLS] {column_names[:400]}
+[SEM] {column_semantics[:200]} [TYPES] {column_type_signature_text[:200]}
+```
+
+### 9.4 Paramètres d'entraînement
+
+| Paramètre | Valeur |
+|---|---|
+| Modèle de base | `xlm-roberta-large` (355 M paramètres) |
+| Précision | `bf16` (4× RTX 3090) |
+| Epochs | 50 (early stopping orienté rappel réglementé) |
+| Batch size | 32 par GPU (128 total) |
+| Optimiseur | AdamW (lr 2e-5, weight decay 0,01) |
+| Scheduler | Cosine warmup (10 % steps) |
+| Max sequence length | 256 tokens |
+| Export ONNX | opset 17 (températures baked-in dans `probs`) |
+
+### 9.5 Métriques (holdout LLM)
+
+| Mode | Macro-F1 | ECE | Finance rappel | RH rappel | Achats rappel | Ventes rappel |
+|---|---|---|---|---|---|---|
+| Équilibré (`apply_offsets=False`) | ~0,82 | 0,011 | 0,84 | ≥ 0,90 | ≥ 0,90 | ≥ 0,90 |
+| SLA-strict (`apply_offsets=True`) | ~0,79 | 0,011 | 0,89 | ≥ 0,90 | ≥ 0,90 | ≥ 0,90 |
+
+> Finance reste la classe la plus difficile (rappel 0,84 en mode équilibré). Seules des annotations humaines supplémentaires permettront de franchir le seuil SLA 0,90.
+
+### 9.6 Règle de décision
+
+```python
+logits, probs = session.run(["logits", "probs"], inputs)
+# probs = softmax(logits / T_k)  ← températures per-classe baked-in ONNX
+label = argmax(logits + offsets)   # offsets = 0 en mode équilibré
+confidence = probs[label]          # probabilité calibrée per-classe
+review_required = label in REGULATED and confidence < 0.60
+```
+
+### 9.7 Utilisation
+
+```bash
+# Inférence standalone (hors base de données, hors pipeline)
+cd artifacts/xlmr_v3
+pip install -r requirements-inference.txt
+python predict.py
+
+# Via le dashboard Streamlit (section "🤖 Test du modèle")
+streamlit run app/streamlit_dashboard.py
+```
+
+### 9.8 Artefacts
+
+| Fichier | Rôle |
+|---|---|
+| `artifacts/xlmr_v3/artifacts/model.onnx` | Graphe ONNX (poids exclus — `model.onnx.data` gitignored) |
+| `artifacts/xlmr_v3/artifacts/temperatures.json` | 7 températures per-classe |
+| `artifacts/xlmr_v3/artifacts/decision_offsets.json` | Offsets logit pour SLA (Finance +2,26 ; RH +4,42 ; Ventes +5,42) |
+| `artifacts/xlmr_v3/artifacts/scaler_params.npz` | StandardScaler (129 features) |
+| `artifacts/calibration_report.json` | ECE avant/après calibration (LinearSVC v3.4 vs XLM-R v1 vs XLM-R v3) |
+| `src/ml/model_reliability.py` | `ModelReliabilityMonitor` — calibration, SLA rappel, drift (Phase 1) |

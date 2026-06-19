@@ -142,6 +142,36 @@ Le modèle ayant été entraîné sur des étiquettes produites par une IA, mesu
 
 ---
 
+## XLM-RoBERTa v3 — Le modèle deep learning
+
+En complément du modèle de production (LinearSVC), un second modèle a été entraîné sur un serveur GPU dédié : **XLM-RoBERTa v3**, un modèle de langage de 355 millions de paramètres.
+
+| Caractéristique | LinearSVC (production) | XLM-R v3 (deep learning) |
+|---|---|---|
+| Taille du modèle | ~5 Mo | 355 M paramètres (ONNX) |
+| Vitesse d'inférence | Millisecondes | ~0,5 s / table (CPU) |
+| Calibration (ECE) | ~0,05 | **0,011** (quasi-parfaite) |
+| Compréhension sémantique | Mots-clés + statistiques | Contexte sémantique profond |
+| Interface de test | — | **Dashboard Streamlit** intégré |
+
+**Deux innovations clés :**
+
+1. **Feature gating** — les statistiques de la table (nombre de colonnes, volume, etc.) influencent directement la façon dont le modèle interprète le nom et les colonnes. Une table volumineuse avec beaucoup de champs numériques n'est pas analysée de la même façon qu'une petite table de configuration.
+
+2. **Offsets de décision SLA** — pour les domaines réglementés (Finance, RH, Achats, Ventes), on peut activer un mode strict qui préfère rater une classification plutôt que de mal classer une table réglementée. Concrètement : si le modèle hésite sur une table Finance, il la classe Finance (et la soumet à validation humaine) plutôt que de la laisser partir en IT.
+
+### Tester le modèle dans l'interface Streamlit
+
+La section **🤖 Test du modèle** du dashboard (`streamlit run app/streamlit_dashboard.py`) permet de saisir les métadonnées d'une table et de voir :
+- Le **domaine prédit** (avec couleur par domaine)
+- Le **score de confiance calibré** (en %)
+- La **distribution des probabilités** pour les 7 domaines (graphique interactif)
+- Une **alerte de revue humaine** si la confiance est trop faible sur un domaine réglementé
+
+5 exemples prédéfinis permettent de tester en un clic (PS_GL_ACCOUNT → Finance, PS_EMPLOYEES → RH, PSROLEDEFN → IT, etc.).
+
+---
+
 ## Ce que ça apporte au projet
 
 1. **Gouvernance par domaine** : on connaît la répartition des tables et du volume par domaine métier
