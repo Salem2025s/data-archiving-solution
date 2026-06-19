@@ -38,10 +38,17 @@ st.set_page_config(
 # ---------------------------------------------------------------------------
 @st.cache_resource
 def get_engine():
-    return create_engine(get_settings().postgresql_url, pool_pre_ping=True)
+    # connect_timeout=3 : abandon immédiat si PostgreSQL n'est pas joignable
+    # pool_timeout=5    : n'attend pas plus de 5 s pour obtenir une connexion du pool
+    return create_engine(
+        get_settings().postgresql_url,
+        pool_pre_ping=True,
+        pool_timeout=5,
+        connect_args={"connect_timeout": 3},
+    )
 
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=300, show_spinner=False)
 def run_query(sql: str) -> pd.DataFrame:
     with get_engine().connect() as conn:
         return pd.read_sql(text(sql), conn)
@@ -50,12 +57,12 @@ def run_query(sql: str) -> pd.DataFrame:
 def safe_query(sql: str) -> pd.DataFrame:
     try:
         return run_query(sql)
-    except Exception as exc:  # base indisponible / vue absente
-        st.warning(f"Requête indisponible : {exc}")
+    except Exception as exc:
+        st.warning(f"Base indisponible : {exc}")
         return pd.DataFrame()
 
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=300, show_spinner=False)
 def run_query_params(sql: str, params: tuple[tuple, ...]) -> pd.DataFrame:
     """Parameterized query — params is a tuple of (name, value) pairs (hashable for cache)."""
     p = dict(params)
@@ -67,7 +74,7 @@ def safe_query_params(sql: str, params: dict) -> pd.DataFrame:
     try:
         return run_query_params(sql, tuple(sorted(params.items())))
     except Exception as exc:
-        st.warning(f"Requête indisponible : {exc}")
+        st.warning(f"Base indisponible : {exc}")
         return pd.DataFrame()
 
 
