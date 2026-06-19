@@ -1,0 +1,21 @@
+{
+  "decision_offsets": [
+    2.2629,
+    4.4224,
+    1.3553,
+    5.4163,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "classes": [
+    "Finance & Contrôle",
+    "RH",
+    "Achats & Fournisseurs",
+    "Ventes & Clients",
+    "Supply Chain / Logistique / Production",
+    "IT & Sécurité",
+    "Other"
+  ],
+  "rule": "label=argmax(logits+offset)"
+}

@@ -1,0 +1,5 @@
+# Inference-only dependencies for the XLM-R v1 bundle (no PyTorch needed).
+# Tested with Python 3.10–3.12.
+onnxruntime>=1.17           # runs model.onnx (CPU); use onnxruntime-gpu for CUDA
+transformers>=4.40          # tokenizer only (pulls `tokenizers`); no torch required
+numpy>=1.24

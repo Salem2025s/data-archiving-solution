@@ -23,6 +23,15 @@ LLM/artifacts_business_domain/dataset_scored_full.csv
 artifacts/*.png
 *.log
 
+# ---- Artefacts ONNX XLM-R (volumieux, transférés séparément) ----
+# Poids du modèle (~2.2 GB) et tokenizer (~17 MB) — ne pas committer
+*.onnx.data
+artifacts/xlmr_v1/artifacts/tokenizer/tokenizer.json
+artifacts/xlmr_v3/artifacts/tokenizer/tokenizer.json
+# Les bundles zip d'origine
+xlmr_v1_bundle.zip
+xlmr_v3_50ep_bundle.zip
+
 # ---- Outils locaux ----
 
 # ---- OS ----
