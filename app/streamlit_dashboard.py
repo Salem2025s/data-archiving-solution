@@ -55,6 +55,22 @@ def safe_query(sql: str) -> pd.DataFrame:
         return pd.DataFrame()
 
 
+@st.cache_data(ttl=300)
+def run_query_params(sql: str, params: tuple[tuple, ...]) -> pd.DataFrame:
+    """Parameterized query — params is a tuple of (name, value) pairs (hashable for cache)."""
+    p = dict(params)
+    with get_engine().connect() as conn:
+        return pd.read_sql(text(sql), conn, params=p)
+
+
+def safe_query_params(sql: str, params: dict) -> pd.DataFrame:
+    try:
+        return run_query_params(sql, tuple(sorted(params.items())))
+    except Exception as exc:
+        st.warning(f"Requête indisponible : {exc}")
+        return pd.DataFrame()
+
+
 @st.cache_resource(show_spinner="Chargement du modèle XLM-R v3…")
 def _load_classifier(apply_offsets: bool):
     """Load the XLM-R v3 ONNX classifier.  Cached per (apply_offsets) value."""
@@ -123,9 +139,12 @@ def run_command(label: str, module: str, extra_args: list[str] | None = None) ->
 st.sidebar.title("📊 Gouvernance des données")
 st.sidebar.caption("Oracle PeopleSoft EP92U038 — couche serving")
 
-run_df = safe_query("SELECT MAX(run_id) AS run_id FROM processed.dim_asset")
-run_id = int(run_df["run_id"].iloc[0]) if not run_df.empty and run_df["run_id"].iloc[0] is not None else 0
-st.sidebar.metric("Run actif", f"#{run_id}")
+try:
+    run_df = run_query("SELECT MAX(run_id) AS run_id FROM processed.dim_asset")
+    run_id = int(run_df["run_id"].iloc[0]) if not run_df.empty and run_df["run_id"].iloc[0] is not None else 0
+except Exception:
+    run_id = 0
+st.sidebar.metric("Run actif", f"#{run_id}" if run_id else "hors-ligne")
 
 section = st.sidebar.radio(
     "Navigation",
@@ -272,18 +291,22 @@ elif section == "Archivage":
     strat = col2.selectbox("Stratégie", ["(toutes)"] + (strat_filters["recommended_strategy"].tolist() if not strat_filters.empty else []))
 
     where = ["size_mb > 0"]
+    params: dict = {}
     if dom != "(tous)":
-        where.append(f"domain_label = '{dom}'")
+        where.append("domain_label = :dom")
+        params["dom"] = dom
     if strat != "(toutes)":
-        where.append(f"recommended_strategy = '{strat}'")
+        where.append("recommended_strategy = :strat")
+        params["strat"] = strat
     clause = " AND ".join(where)
-    reco = safe_query(
+    reco = safe_query_params(
         f"""SELECT technical_name, domain_label, recommended_strategy,
                    ROUND(size_mb::numeric,2) AS size_mb, age_band, sensitivity_level,
                    lineage_out_count, rationale
             FROM serving.mv_archiving_recommendation
             WHERE {clause}
-            ORDER BY size_mb DESC LIMIT 300"""
+            ORDER BY size_mb DESC LIMIT 300""",
+        params,
     )
     st.caption(f"{len(reco)} assets (top 300 par taille)")
     st.dataframe(reco, width="stretch", hide_index=True)
@@ -592,23 +615,15 @@ elif section == "🤖 Test du modèle":
         },
     }
 
-    preset_name = st.selectbox("Exemple rapide", list(_PRESETS))
+    preset_name = st.selectbox("Exemple rapide", list(_PRESETS), key="pred__preset")
     preset = _PRESETS[preset_name]
 
-    # ── Mode de prédiction ────────────────────────────────────────────────
-    mode_label = st.radio(
-        "Mode de prédiction",
-        [
-            "Équilibré  (optimise le macro-F1 global)",
-            "SLA-strict  (rappel ≥ 0.90 sur les domaines réglementés)",
-        ],
-        horizontal=True,
-    )
-    apply_offsets = mode_label.startswith("SLA")
-
-    st.divider()
-
-    # ── Formulaire ────────────────────────────────────────────────────────
+    # ── Formulaire (mode inclus pour éviter les reruns parasites) ─────────
+    # BUG FIX: clés suffixées par preset_name → Streamlit crée un nouveau widget
+    # à chaque changement de preset, forçant la réinitialisation via value=.
+    # BUG FIX: le radio mode est DANS le formulaire pour que changer le mode
+    # ne déclenche pas un rerun qui efface les résultats affichés.
+    _pk = preset_name  # suffixe de clé — change quand le preset change
     with st.form("predict_form"):
         col_id, col_vol = st.columns([3, 2])
 
@@ -618,25 +633,44 @@ elif section == "🤖 Test du modèle":
                 "Nom technique *",
                 value=str(preset.get("technical_name", "")),
                 placeholder="ex. PS_VENDOR_ADDR",
+                key=f"pred__technical_name__{_pk}",
             )
             source_ref = st.text_input(
                 "Module / source_ref *",
                 value=str(preset.get("source_ref", "")),
                 placeholder="ex. AP, HR, GL, PSROLE, IN…",
+                key=f"pred__source_ref__{_pk}",
             )
             column_names = st.text_area(
                 "Noms de colonnes *  (séparés par des espaces)",
                 value=str(preset.get("column_names", "")),
                 height=90,
                 placeholder="vendor_id setid address1 city state postal country…",
+                key=f"pred__column_names__{_pk}",
             )
 
         with col_vol:
             st.subheader("Volumétrie")
-            field_count       = st.number_input("Nombre total de champs",  min_value=0, value=int(preset.get("field_count", 0)),       step=1)
-            numeric_field_count = st.number_input("dont champs numériques", min_value=0, value=int(preset.get("numeric_field_count", 0)), step=1)
-            row_count         = st.number_input("Nombre de lignes",        min_value=0, value=int(preset.get("row_count", 0)),          step=500)
-            size_mb           = st.number_input("Taille (Mo)",             min_value=0.0, value=float(preset.get("size_mb", 0.0)),      step=0.1, format="%.2f")
+            field_count = st.number_input(
+                "Nombre total de champs", min_value=0,
+                value=int(preset.get("field_count", 0)), step=1,
+                key=f"pred__field_count__{_pk}",
+            )
+            numeric_field_count = st.number_input(
+                "dont champs numériques", min_value=0,
+                value=int(preset.get("numeric_field_count", 0)), step=1,
+                key=f"pred__numeric_fc__{_pk}",
+            )
+            row_count = st.number_input(
+                "Nombre de lignes", min_value=0,
+                value=int(preset.get("row_count", 0)), step=500,
+                key=f"pred__row_count__{_pk}",
+            )
+            size_mb = st.number_input(
+                "Taille (Mo)", min_value=0.0,
+                value=float(preset.get("size_mb", 0.0)), step=0.1, format="%.2f",
+                key=f"pred__size_mb__{_pk}",
+            )
 
         with st.expander("Sémantique & types de colonnes (optionnel — enrichit la prédiction)"):
             column_semantics = st.text_area(
@@ -644,14 +678,29 @@ elif section == "🤖 Test du modèle":
                 value=str(preset.get("column_semantics", "")),
                 height=80,
                 placeholder="VENDOR_ID:reference_identifier|ADDRESS1:postal_location",
+                key=f"pred__col_sem__{_pk}",
             )
             col_type_sig = st.text_input(
                 "Signature de types   (column_type_signature_text)",
                 value=str(preset.get("column_type_signature_text", "")),
                 placeholder="VARCHAR:5|NUMBER:3|DATE:2",
+                key=f"pred__col_types__{_pk}",
             )
 
+        st.divider()
+        mode_label = st.radio(
+            "Mode de prédiction",
+            [
+                "Équilibré  (macro-F1 global)",
+                "SLA-strict  (rappel ≥ 0.90 sur les domaines réglementés)",
+            ],
+            horizontal=True,
+            key="pred__mode",
+        )
+
         submitted = st.form_submit_button("🔍 Prédire", type="primary", use_container_width=True)
+
+    apply_offsets: bool = mode_label.startswith("SLA")
 
     # ── Résultats ─────────────────────────────────────────────────────────
     if submitted:
