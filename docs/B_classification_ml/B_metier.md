@@ -30,7 +30,7 @@ Le système reconnaît des mots-clés caractéristiques par domaine :
 - Si une table s'appelle `VOUCHER_LINE` et contient des colonnes comme `AMOUNT`, `VENDOR_ID`, `DUE_DT` → **Finance & Contrôle** (mots-clés : voucher, amount, vendor)
 - Si une table s'appelle `PERSONAL_DATA` avec `EMPLID`, `BIRTHDATE` → **RH** (mots-clés : emplid, personal)
 
-Cette étape est rapide et très fiable (confiance = 95 %) pour les tables avec un nom explicite.
+Cette étape est rapide et fiable pour les tables au nom explicite. Sa **confiance est graduée selon la force du signal** (nombre de mots-clés trouvés et écart avec le 2ᵉ domaine) : de **0,73** quand l'indice est mince à **0,90** quand il est net. Auparavant, toutes ces tables recevaient une confiance fixe de 95 % — un chiffre arbitraire qui les faisait toutes passer pour « très sûres » ; la graduation reflète désormais l'évidence réelle.
 
 ### Étape 2 — Le modèle de Machine Learning (73,4 % des assets)
 

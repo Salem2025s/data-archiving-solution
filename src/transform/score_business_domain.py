@@ -193,7 +193,12 @@ KEYWORD_TO_LABEL: dict[str, str] = {
 
 _MIN_KEYWORD_HITS = 2           # minimum keyword count for a domain to qualify
 _KEYWORD_DOMINANCE_RATIO = 3.0  # top domain must score >= N× the second-best
-_KEYWORD_RULE_CONFIDENCE = 0.95 # fixed confidence assigned to keyword-classified rows
+# Confiance GRADUÉE (et non plus fixe) des règles mots-clés : elle reflète la
+# force de l'évidence (nb de correspondances + dominance sur le 2ᵉ domaine) et
+# reste bornée sous la certitude. Un flat 0.95 était surconfiant et plaçait
+# systématiquement ces lignes en bande "high" — non calibré vs. justesse réelle.
+_KEYWORD_RULE_BASE_CONFIDENCE = 0.70  # base heuristique (bande "medium")
+_KEYWORD_RULE_MAX_CONFIDENCE = 0.90   # plafond honnête (cas les plus nets seulement)
 
 PS_MODULE_PREFIXES: dict[str, str] = {
     "GL": "finance", "AP": "finance", "AR": "finance", "AM": "finance",
@@ -891,6 +896,24 @@ def _build_feature_matrix(
 # Keyword pre-classification — fast path before ML inference
 # ---------------------------------------------------------------------------
 
+def _keyword_confidence(top_count: int, second_count: int) -> float:
+    """Confiance graduée d'une classification par mots-clés.
+
+    Reflète la force de l'évidence plutôt qu'une valeur fixe :
+      - bonus selon le nombre de correspondances au-delà du minimum ;
+      - bonus de dominance (domaine unique, ou ratio élevé sur le 2ᵉ domaine).
+    Bornée dans [base, max] pour rester honnête (jamais une « certitude »).
+    """
+    hit_bonus = min(0.03 * (top_count - _MIN_KEYWORD_HITS), 0.12)
+    if second_count <= 0:
+        dominance_bonus = 0.08  # un seul domaine détecté
+    else:
+        ratio = top_count / second_count
+        dominance_bonus = max(0.0, min(0.02 * (ratio - _KEYWORD_DOMINANCE_RATIO), 0.08))
+    confidence = _KEYWORD_RULE_BASE_CONFIDENCE + hit_bonus + dominance_bonus
+    return round(min(confidence, _KEYWORD_RULE_MAX_CONFIDENCE), 4)
+
+
 def _keyword_classify(
     row: dict[str, Any],
 ) -> tuple[str, str | None, float] | None:
@@ -922,14 +945,13 @@ def _keyword_classify(
 
     sorted_hits = sorted(hits.items(), key=lambda x: x[1], reverse=True)
     top_domain, top_count = sorted_hits[0]
+    second_count = sorted_hits[1][1] if len(sorted_hits) > 1 else 0
 
     if top_count < _MIN_KEYWORD_HITS:
         return None
 
-    if len(sorted_hits) > 1:
-        _, second_count = sorted_hits[1]
-        if top_count < _KEYWORD_DOMINANCE_RATIO * second_count:
-            return None
+    if second_count > 0 and top_count < _KEYWORD_DOMINANCE_RATIO * second_count:
+        return None
 
     label = _TERM_KEYWORD_TO_LABEL.get(top_domain)
     if label is None:
@@ -939,7 +961,7 @@ def _keyword_classify(
     if len(sorted_hits) > 1:
         alt_label = _TERM_KEYWORD_TO_LABEL.get(sorted_hits[1][0])
 
-    return label, alt_label, _KEYWORD_RULE_CONFIDENCE
+    return label, alt_label, _keyword_confidence(top_count, second_count)
 
 
 def _decode_prediction_labels(

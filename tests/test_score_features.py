@@ -85,7 +85,8 @@ def test_keyword_classify_finance_dominant():
     assert result is not None
     label, _alt, confidence = result
     assert label == "Finance & Contrôle"
-    assert confidence == 0.95
+    # Confiance graduée (plus de valeur fixe 0.95) : bornée et jamais une certitude.
+    assert sbd._KEYWORD_RULE_BASE_CONFIDENCE <= confidence <= sbd._KEYWORD_RULE_MAX_CONFIDENCE
 
 
 def test_keyword_classify_ambiguous_returns_none():
