@@ -11,5 +11,10 @@ requests>=2.31.0       # appels HTTP vers l'annotateur LLM (Ollama)
 # Dashboard interactif (app/streamlit_dashboard.py)
 streamlit>=1.30.0      # embarque altair pour les graphiques
 
+# Inférence XLM-RoBERTa v3 (ONNX) — page « 🤖 Test du modèle » du dashboard
+# et artifacts/xlmr_v3/predict.py (aucun PyTorch requis).
+onnxruntime>=1.17.0    # exécution du graphe ONNX (opset 17)
+transformers>=4.40.0   # AutoTokenizer (tokenizer XLM-R)
+
 # Optionnel — piste embeddings (reportée v2), à décommenter si besoin :
 # sentence-transformers>=2.2.0

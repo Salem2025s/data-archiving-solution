@@ -54,13 +54,13 @@ Il **n'est pas, en l'état, apte à prendre seul des décisions d'archivage en p
 | 4 | **Moteur de règles & décision** | 🟢 N3 | N4 | Data-driven, **domaine = input** (`CONSERVATION_REGLEMENTAIRE`), 6 dimensions NULL-safe. Écart : rétention = **défauts FR codés, non validés juridiquement**. |
 | 5 | **Sûreté de décision** | 🟡 N3 | N4 | **Phase 0 implémentée** : fail-safe `confidence < 0,60 → A_EVALUER`, approval queue, audit trail en base, masquage PII. Offsets SLA per-classe (Phase 1). Écart : réversibilité prouvée, gate d'approbation humaine non encore wired E2E. |
 | 6 | **Conformité & auditabilité** | 🟡 N2 | N4 | Audit trail décisionnel en base (`serving`), masquage PII dans les exports, rétention versionnée (Phase 0). Écart : approbateur humain non wired, rétention non validée juridiquement. |
-| 7 | **Sécurité & PII** | 🟡 N2-3 | N4 | `.env` gitignoré, **masquage PII implémenté** (Phase 0). Écart : vault, RBAC, moindre privilège, enrichissement « observed » encore présent. |
+| 7 | **Sécurité & PII** | 🟢 N3 | N4 | `.env` gitignoré, **masquage PII** (Phase 0), **chiffrement au repos des PII** (`pgcrypto`, schéma `security`), **moindre privilège** (comptes `pfe_reader`/`pfe_writer`, écriture refusée en lecture seule). Écart : vault à secrets, RBAC applicatif, enrichissement « observed » encore présent. |
 | 8 | **Tests & qualité logicielle** | 🟡 N2 | N4 | **61 tests unitaires** (parité, features, loader, Monte-Carlo, calibration, SLA rappel, drift). Écart : **0 test d'intégration/E2E**, pas de data-quality checks. |
 | 9 | **Observabilité & exploitation** | 🟡 N2-3 | N4 | Logs structurés (loguru), `pipeline_run`, `drift_report.json`, **`ModelReliabilityMonitor`** (calibration + SLA + drift — Phase 1). Écart : alerting opérationnel, SLO, runbooks. |
 | 10 | **CI/CD & infrastructure** | 🔴 N1 | N3-4 | Aucun pipeline CI/CD ni IaC visible. Écart : CI (tests+lint), CD modèle, infra reproductible. |
 | 11 | **Documentation & gouvernance modèle** | 🟢 N3 | N4 | Docs A→E + `production_model_card.md` + XLM-R v3 README + `PRODUCTION_READINESS.md`. Écart : registry de modèles, runbooks, ownership/SLA. |
 
-**Synthèse :** 4 dimensions au vert (architecture, ML, règles, doc), 5 en jaune (pipeline, conformité, sécurité, tests, observabilité), **1 au rouge** (CI/CD). Phase 0 (sûreté) et Phase 1 (fiabilité modèle) sont implémentées — passées de N1 à N3.
+**Synthèse :** **5 dimensions au vert** (architecture, ML, règles, **sécurité & PII**, doc), 4 en jaune (pipeline, conformité, tests, observabilité), **1 au rouge** (CI/CD). Phase 0 (sûreté) et Phase 1 (fiabilité modèle) sont implémentées — passées de N1 à N3. La sécurité passe au vert avec le **chiffrement des PII au repos** et le **moindre privilège DB** ; le vault à secrets reste le principal écart.
 
 ---
 
@@ -85,7 +85,7 @@ Ces acquis sont rares dans un prototype et constituent un **vrai différenciateu
 | **R4** | **Fuite PII** par l'outil de gouvernance lui-même (valeurs réelles dans les exports) | 🟠 Élevé | Moyenne | `observed enrichment` lit emails/identités → CSV | Masquage/pseudonymisation, chiffrement, accès restreint, désactivation par défaut |
 | **R5** | Rétention = **défauts FR codés**, non validés ni versionnés par juridiction | 🟠 Élevé | Élevée | `dim_domain_retention` valeurs par défaut | Table versionnée, datée, **validée par le juridique**, multi-juridiction |
 | **R6** | Régression silencieuse sur la couche serving/règles | 🟡 Moyen | Moyenne | 0 test d'intégration | Tests d'intégration DB + data-quality assertions en CI |
-| **R7** | Secrets en `.env`, pas de moindre privilège DB | 🟡 Moyen | Moyenne | `.env` local | Vault, comptes à privilèges séparés (lecture Oracle ≠ écriture PG) |
+| **R7** | Secrets en `.env` (pas de vault) | 🟡 Moyen | Moyenne | `.env` local ; **moindre privilège DB traité** : comptes `pfe_reader` (SELECT) / `pfe_writer` (CRUD) créés et vérifiés | Vault à secrets (les mots de passe restent en clair dans la configuration) |
 | **R8** | Pas de **réversibilité** prouvée d'un archivage | 🟡 Moyen | Moyenne | Couche d'action absente | Dry-run + restore testé avant toute exécution réelle |
 | **R9** | Échecs/dérives non détectés en prod | 🟡 Moyen | Moyenne | Pas de monitoring/alerting | SLO + alerting sur statut de run et drift |
 | **R10** | Double comptage `ps_record`/`oracle_table` fausse les volumes | 🟢 Faible | Faible | Connu, documenté | Déduplication par fichier physique |
@@ -102,7 +102,7 @@ Aucune mise en production qui **agit** sur la donnée ne doit avoir lieu avant q
 - [ ] **Approbateur humain wired E2E** : la queue existe mais le workflow de validation n'est pas encore branché à une interface opérationnelle.
 - [ ] **Rétention validée juridiquement**, datée, versionnée, paramétrable par juridiction.
 - [ ] **Finance rappel ≥ 0,90** (SLA) : actuellement 0,84 — seul levier : annotations humaines supplémentaires via la queue.
-- [x] **PII masquée** dans les exports (Phase 0). Secrets `.env` gitignorés. Écart : vault, RBAC.
+- [x] **PII masquée** dans les exports (Phase 0) et **chiffrée au repos** (`pgcrypto`). Secrets `.env` gitignorés. **Moindre privilège DB en place** (`pfe_reader`/`pfe_writer`). Écart : vault à secrets, RBAC applicatif.
 - [ ] **Réversibilité prouvée** : restauration d'archive testée de bout en bout.
 
 > Tant que ces gates ne sont pas verts, l'usage recommandé est **« analyse + recommandation avec validation humaine »** — ce qui est déjà livrable après le durcissement de la Phase 0.
@@ -136,7 +136,7 @@ Effort indicatif : **S** (jours) · **M** (1-3 sem) · **L** (1-2 mois). Impact 
 |---|:--:|:--:|
 | Tests d'intégration/E2E (couche serving, règles, vues) + data-quality checks | M | H |
 | CI (tests + lint + type-check) et CD du modèle (registry, promotion gouvernée) | M | M |
-| Vault pour secrets + comptes DB à moindre privilège | S | M |
+| Vault pour secrets (comptes DB à moindre privilège : ✅ fait) | S | M |
 | Observabilité : SLO, monitoring, alerting, runbooks | M | M |
 | Infra-as-code + orchestration Prefect serveur | M | M |
 
