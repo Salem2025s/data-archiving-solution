@@ -1,0 +1,31 @@
+# Configuration Streamlit — dashboard de gouvernance
+# Objectif : fiabiliser le chargement des modules JS servis en localhost
+# (évite les "Failed to fetch dynamically imported module" causés par
+#  antivirus / proxy / protection XSRF qui altèrent les en-têtes des fetch).
+
+[server]
+headless = true                 # ne pas ouvrir automatiquement un navigateur
+address = "localhost"
+port = 8501
+enableCORS = false              # évite l'altération des réponses par AV/proxy local
+enableXsrfProtection = false    # les fetch de modules ne dépendent plus d'un cookie XSRF
+enableStaticServing = true
+fileWatcherType = "auto"
+
+[browser]
+gatherUsageStats = false        # aucune télémétrie externe
+
+[theme]
+base = "light"
+primaryColor = "#2563EB"                 # bleu corporate (accent principal)
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F6FB"     # fond sidebar / cartes
+textColor = "#1E293B"                    # slate-800
+font = "sans serif"
+
+[runner]
+fastReruns = true
+
+[client]
+showErrorDetails = true
+toolbarMode = "minimal"

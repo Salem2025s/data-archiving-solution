@@ -30,7 +30,147 @@ st.set_page_config(
     page_title="Gouvernance des données — PFE",
     page_icon="📊",
     layout="wide",
+    initial_sidebar_state="expanded",
 )
+
+
+# ---------------------------------------------------------------------------
+# Design system — CSS global injecté une seule fois
+# ---------------------------------------------------------------------------
+def _inject_css() -> None:
+    st.markdown(
+        """
+        <style>
+        /* ---------- Layout général ---------- */
+        .main .block-container { padding-top: 2.2rem; padding-bottom: 3rem; max-width: 1400px; }
+        #MainMenu, footer { visibility: hidden; }
+
+        /* ---------- Typographie ---------- */
+        html, body, [class*="css"] { font-family: "Inter", "Segoe UI", system-ui, sans-serif; }
+        h1, h2, h3 { color: #0F172A; letter-spacing: -0.01em; }
+
+        /* ---------- En-tête de page (hero) ---------- */
+        .page-header {
+            display: flex; align-items: center; gap: 18px;
+            padding: 22px 26px; margin-bottom: 24px;
+            background: linear-gradient(120deg, #2563EB 0%, #4F46E5 100%);
+            border-radius: 16px; color: #fff;
+            box-shadow: 0 10px 30px -12px rgba(37,99,235,.55);
+        }
+        .page-header-icon { font-size: 2.4rem; line-height: 1; }
+        .page-header-title { color: #fff !important; margin: 0; font-size: 1.7rem; font-weight: 700; }
+        .page-header-sub { color: rgba(255,255,255,.88); margin: 4px 0 0; font-size: .95rem; }
+
+        /* ---------- Cartes métriques ---------- */
+        [data-testid="stMetric"] {
+            background: #FFFFFF; border: 1px solid #E6EAF2;
+            border-radius: 14px; padding: 16px 18px;
+            box-shadow: 0 1px 3px rgba(16,24,40,.06);
+            transition: box-shadow .18s ease, transform .18s ease;
+        }
+        [data-testid="stMetric"]:hover {
+            box-shadow: 0 8px 24px -10px rgba(37,99,235,.35);
+            transform: translateY(-2px);
+        }
+        [data-testid="stMetricLabel"] { color: #64748B; font-weight: 600; }
+        [data-testid="stMetricValue"] { color: #0F172A; font-weight: 700; }
+
+        /* ---------- Boutons ---------- */
+        .stButton > button, .stDownloadButton > button {
+            border-radius: 10px; font-weight: 600; border: 1px solid #E2E8F0;
+            transition: all .15s ease;
+        }
+        .stButton > button:hover, .stDownloadButton > button:hover {
+            border-color: #2563EB; transform: translateY(-1px);
+        }
+        .stButton > button[kind="primary"] {
+            background: linear-gradient(120deg, #2563EB, #4F46E5); border: none;
+        }
+
+        /* ---------- Sidebar (slate sombre raffiné) ---------- */
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #111C33 0%, #0B1220 100%);
+            border-right: 1px solid #1E293B;
+        }
+        [data-testid="stSidebar"] * { color: #CBD5E1; }
+        [data-testid="stSidebar"] .block-container { padding-top: 1.4rem; }
+        .sidebar-brand {
+            padding: 4px 2px 12px; margin-bottom: 10px;
+            border-bottom: 1px solid #1E293B;
+        }
+        .sidebar-brand h2 { color: #fff !important; font-size: 1.12rem; margin: 0; font-weight: 700; letter-spacing: -.01em; }
+        .sidebar-brand p  { color: #7C8BA5 !important; font-size: .76rem; margin: 4px 0 0; }
+        .sidebar-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(37,99,235,.12); border: 1px solid rgba(37,99,235,.35);
+            border-radius: 999px; padding: 6px 13px; font-size: .8rem; font-weight: 600;
+            color: #E2E8F0 !important; margin: 2px 0 4px;
+        }
+        .sidebar-badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .dot-on  { background: #22C55E; box-shadow: 0 0 9px #22C55E; }
+        .dot-off { background: #EF4444; box-shadow: 0 0 9px #EF4444; }
+
+        /* Navigation → menu (pas des boutons radio) */
+        [data-testid="stSidebar"] [role="radiogroup"] { gap: 2px; }
+        [data-testid="stSidebar"] [role="radiogroup"] label {
+            padding: 10px 13px; border-radius: 10px; margin: 0;
+            border-left: 3px solid transparent;
+            transition: background .15s ease, border-color .15s ease; cursor: pointer;
+        }
+        /* Masque la pastille radio pour un vrai rendu de menu */
+        [data-testid="stSidebar"] [role="radiogroup"] label > div:first-child { display: none; }
+        [data-testid="stSidebar"] [role="radiogroup"] label p {
+            font-size: .93rem; font-weight: 500; color: #CBD5E1;
+        }
+        [data-testid="stSidebar"] [role="radiogroup"] label:hover { background: #1B2740; }
+        /* Item actif : fond bleuté + barre d'accent + texte blanc */
+        [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
+            background: rgba(37,99,235,.18);
+            border-left-color: #2563EB;
+        }
+        [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) p {
+            color: #FFFFFF; font-weight: 600;
+        }
+
+        /* Bouton dans la sidebar sombre → contraste lisible */
+        [data-testid="stSidebar"] .stButton > button {
+            background: #1B2740; color: #E2E8F0; border: 1px solid #2A3B5C;
+        }
+        [data-testid="stSidebar"] .stButton > button:hover {
+            background: #24344F; border-color: #2563EB; color: #fff;
+        }
+
+        /* ---------- Expanders & tableaux ---------- */
+        [data-testid="stExpander"] {
+            border: 1px solid #E6EAF2; border-radius: 12px; overflow: hidden;
+        }
+        [data-testid="stDataFrame"] { border-radius: 12px; overflow: hidden; }
+
+        /* ---------- Divider plus discret ---------- */
+        hr { margin: 1.4rem 0; border-color: #E6EAF2; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def page_header(title: str, subtitle: str = "", icon: str = "📊") -> None:
+    """En-tête de section cohérent (hero avec dégradé)."""
+    st.markdown(
+        f"""
+        <div class="page-header">
+          <div class="page-header-icon">{icon}</div>
+          <div>
+            <div class="page-header-title">{title}</div>
+            <div class="page-header-sub">{subtitle}</div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+_inject_css()
 
 
 # ---------------------------------------------------------------------------
@@ -76,6 +216,46 @@ def safe_query_params(sql: str, params: dict) -> pd.DataFrame:
     except Exception as exc:
         st.warning(f"Base indisponible : {exc}")
         return pd.DataFrame()
+
+
+# Palette de couleurs cohérente sur tout le dashboard
+_PAL: dict[str, str] = {
+    "Finance & Contrôle":                      "#1f77b4",
+    "IT & Sécurité":                           "#8c564b",
+    "Supply Chain / Logistique / Production":  "#d62728",
+    "Achats & Fournisseurs":                   "#ff7f0e",
+    "Ventes & Clients":                        "#9467bd",
+    "RH":                                      "#2ca02c",
+    "Other":                                   "#7f7f7f",
+}
+
+
+# ---------------------------------------------------------------------------
+# Requêtes SQL sauvegardées (persistées dans un fichier JSON local)
+# ---------------------------------------------------------------------------
+import json as _json
+
+_SAVED_QUERIES_PATH = _PROJECT_ROOT / ".streamlit" / "saved_queries.json"
+
+
+def load_saved_queries() -> dict[str, dict[str, str]]:
+    """Charge les requêtes sauvegardées ({'oracle': {...}, 'postgres': {...}})."""
+    if _SAVED_QUERIES_PATH.exists():
+        try:
+            data = _json.loads(_SAVED_QUERIES_PATH.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                return data
+        except Exception:
+            pass
+    return {}
+
+
+def write_saved_queries(data: dict[str, dict[str, str]]) -> None:
+    """Écrit le catalogue des requêtes sauvegardées sur disque."""
+    _SAVED_QUERIES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _SAVED_QUERIES_PATH.write_text(
+        _json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
 
 
 @st.cache_resource(show_spinner="Chargement du modèle XLM-R v3…")
@@ -143,77 +323,200 @@ def run_command(label: str, module: str, extra_args: list[str] | None = None) ->
 # ---------------------------------------------------------------------------
 # Barre latérale
 # ---------------------------------------------------------------------------
-st.sidebar.title("📊 Gouvernance des données")
-st.sidebar.caption("Oracle PeopleSoft EP92U038 — couche serving")
+st.sidebar.markdown(
+    """
+    <div class="sidebar-brand">
+      <h2>📊 Gouvernance des données</h2>
+      <p>Oracle PeopleSoft EP92U038 · couche serving</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 try:
     run_df = run_query("SELECT MAX(run_id) AS run_id FROM processed.dim_asset")
     run_id = int(run_df["run_id"].iloc[0]) if not run_df.empty and run_df["run_id"].iloc[0] is not None else 0
 except Exception:
     run_id = 0
-st.sidebar.metric("Run actif", f"#{run_id}" if run_id else "hors-ligne")
 
-section = st.sidebar.radio(
-    "Navigation",
-    [
-        "Vue d'ensemble",
-        "Domaines",
-        "Clés partagées",
-        "Archivage",
-        "Coûts & ROI",
-        "🚀 Pipelines",
-        "⚙️ Paramètres",
-        "🤖 Test du modèle",
-    ],
+_online = bool(run_id)
+st.sidebar.markdown(
+    f"""
+    <div class="sidebar-badge">
+      <span class="dot {'dot-on' if _online else 'dot-off'}"></span>
+      {'Run actif #' + str(run_id) if _online else 'Base hors-ligne'}
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
-st.sidebar.button("🔄 Rafraîchir les données", on_click=st.cache_data.clear)
+
+# Navigation (icône + libellé pour un rendu homogène)
+_NAV = {
+    "🏠  Vue d'ensemble":  "Vue d'ensemble",
+    "🗂️  Domaines":         "Domaines",
+    "🔗  Clés partagées":   "Clés partagées",
+    "📦  Archivage":        "Archivage",
+    "💰  Coûts & ROI":      "Coûts & ROI",
+    "🚀  Pipelines":        "🚀 Pipelines",
+    "⚙️  Paramètres":       "⚙️ Paramètres",
+    "💾  Console SQL":      "💾 Console SQL",
+    "🤖  Test du modèle":   "🤖 Test du modèle",
+}
+st.sidebar.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+_nav_label = st.sidebar.radio("Navigation", list(_NAV), label_visibility="collapsed")
+section = _NAV[_nav_label]
+
+st.sidebar.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+st.sidebar.button("🔄  Rafraîchir les données", on_click=st.cache_data.clear,
+                  use_container_width=True)
 
 
 # ===========================================================================
 # 1. VUE D'ENSEMBLE
 # ===========================================================================
 if section == "Vue d'ensemble":
-    st.title("Vue d'ensemble du patrimoine de données")
+    page_header(
+        "Vue d'ensemble du patrimoine de données",
+        "Cartographie, volumétrie et potentiel d'archivage — lecture seule",
+        "🏠",
+    )
 
-    impact = safe_query("SELECT * FROM serving.v_storage_impact_summary")
-    profile = safe_query("SELECT * FROM serving.mv_domain_profile ORDER BY asset_count DESC")
+    impact   = safe_query("SELECT * FROM serving.v_storage_impact_summary")
+    profile  = safe_query("SELECT * FROM serving.mv_domain_profile ORDER BY asset_count DESC")
+    archiving = safe_query("SELECT * FROM serving.v_archiving_policy_summary")
 
     total_assets = int(profile["asset_count"].sum()) if not profile.empty else 0
-    n_domains = profile["domain_label"].nunique() if not profile.empty else 0
+    n_domains    = profile["domain_label"].nunique() if not profile.empty else 0
 
+    # ── KPIs ────────────────────────────────────────────────────────────────
     c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("Assets classifiés", f"{total_assets:,}".replace(",", " "))
+    c1.metric("Assets classifiés", f"{total_assets:,}".replace(",", " "))
     c2.metric("Domaines métier", n_domains)
     if not impact.empty:
         row = impact.iloc[0]
-        c3.metric("Patrimoine", f"{row['total_patrimoine_gb']:.1f} Go")
-        c4.metric("Coût actuel", f"${row['current_cost_usd_year']:.2f}/an")
-        c5.metric("Économie possible", f"${row['annual_savings_usd']:.2f}/an",
-                  delta=f"-{row['reduction_pct']:.0f}%")
-
-    if not impact.empty:
-        row = impact.iloc[0]
-        st.info(
-            f"**Taux d'économie normalisé : ${row['savings_usd_per_tb_archived_year']:.0f} / To archivé / an** "
-            f"(actif {row['cost_active_usd_per_gb_year']} $/Go/an → froid {row['cost_cold_usd_per_gb_year']} $/Go/an). "
-            "Métrique transposable à l'échelle production."
+        c3.metric("Patrimoine total", f"{row['total_patrimoine_gb']:.1f} Go")
+        c4.metric("Coût annuel actuel", f"${row['current_cost_usd_year']:,.0f}")
+        c5.metric(
+            "Économie possible",
+            f"${row['annual_savings_usd']:,.0f} / an",
+            delta=f"réduction de {row['reduction_pct']:.0f}%",
         )
 
+    # ── Bannière ROI ─────────────────────────────────────────────────────────
+    if not impact.empty:
+        st.success(
+            f"**💡 Taux d'économie normalisé : ${row['savings_usd_per_tb_archived_year']:,.0f} / To archivé / an** "
+            f"— stockage actif {row['cost_active_usd_per_gb_year']} $/Go/an → froid "
+            f"{row['cost_cold_usd_per_gb_year']} $/Go/an · métrique transposable à l'échelle production."
+        )
+
+    st.divider()
+
+    # ── Répartition par domaine (donut) + Volume (barres) ────────────────────
     if not profile.empty:
-        col_a, col_b = st.columns(2)
+        profile["pct"] = (profile["asset_count"] / profile["asset_count"].sum() * 100).round(1)
+        _color_sc = alt.Scale(domain=list(_PAL), range=list(_PAL.values()))
+
+        col_a, col_b = st.columns([1, 2])
         with col_a:
-            st.subheader("Assets par domaine")
-            st.bar_chart(profile.set_index("domain_label")["asset_count"], horizontal=True)
+            st.subheader("Répartition par domaine")
+            donut = (
+                alt.Chart(profile)
+                .mark_arc(innerRadius=65, outerRadius=115, stroke="white", strokeWidth=1.5)
+                .encode(
+                    theta=alt.Theta("asset_count:Q"),
+                    color=alt.Color(
+                        "domain_label:N",
+                        scale=_color_sc,
+                        legend=alt.Legend(
+                            title=None, orient="bottom", columns=2,
+                            labelFontSize=11, symbolSize=120,
+                        ),
+                    ),
+                    tooltip=[
+                        alt.Tooltip("domain_label:N", title="Domaine"),
+                        alt.Tooltip("asset_count:Q",  title="Assets", format=","),
+                        alt.Tooltip("pct:Q",          title="%",      format=".1f"),
+                    ],
+                )
+                .properties(height=340)
+            )
+            st.altair_chart(donut, use_container_width=True)
+
         with col_b:
-            st.subheader("Volume par domaine (Mo)")
-            st.bar_chart(profile.set_index("domain_label")["total_size_mb"], horizontal=True)
+            st.subheader("Volume stocké par domaine (Mo)")
+            _bv = alt.Chart(profile).mark_bar(cornerRadiusEnd=3).encode(
+                x=alt.X("total_size_mb:Q", title="Volume (Mo)", axis=alt.Axis(format=",")),
+                y=alt.Y("domain_label:N", sort="-x", title=None,
+                         axis=alt.Axis(labelLimit=260)),
+                color=alt.Color("domain_label:N", scale=_color_sc, legend=None),
+                tooltip=[
+                    alt.Tooltip("domain_label:N",   title="Domaine"),
+                    alt.Tooltip("total_size_mb:Q",  title="Volume (Mo)", format=",.0f"),
+                    alt.Tooltip("asset_count:Q",    title="Assets",      format=","),
+                    alt.Tooltip("pct:Q",            title="% du parc",   format=".1f"),
+                ],
+            )
+            _lv = alt.Chart(profile).mark_text(align="left", dx=4, fontSize=11, color="#444").encode(
+                x="total_size_mb:Q",
+                y=alt.Y("domain_label:N", sort="-x"),
+                text=alt.Text("total_size_mb:Q", format=",.0f"),
+            )
+            st.altair_chart((_bv + _lv).properties(height=340), use_container_width=True)
+
+    # ── Synthèse des recommandations d'archivage ─────────────────────────────
+    if not archiving.empty:
+        st.divider()
+        st.subheader("Recommandations d'archivage — synthèse")
+
+        by_strat = (
+            archiving.groupby("recommended_strategy", as_index=False)
+            .agg(nb_assets=("asset_count", "sum"), volume_mb=("total_size_mb", "sum"))
+            .sort_values("nb_assets", ascending=False)
+        )
+        total_rec = by_strat["nb_assets"].sum()
+
+        metric_cols = st.columns(min(len(by_strat), 4))
+        for i, (_, r) in enumerate(by_strat.head(4).iterrows()):
+            label = r["recommended_strategy"].replace("_", " ").title()
+            vol = (f"{r['volume_mb'] / 1024:.1f} Go"
+                   if r["volume_mb"] >= 1024 else f"{r['volume_mb']:.0f} Mo")
+            pct_s = f"{r['nb_assets'] / total_rec * 100:.0f}% des assets"
+            metric_cols[i].metric(label, f"{int(r['nb_assets']):,}".replace(",", " "),
+                                  delta=vol, delta_color="off")
+
+        strat_bars = alt.Chart(by_strat).mark_bar(cornerRadiusEnd=3, color="#4c8cbf").encode(
+            x=alt.X("nb_assets:Q", title="Nb d'assets", axis=alt.Axis(format=",")),
+            y=alt.Y("recommended_strategy:N", sort="-x", title=None,
+                    axis=alt.Axis(labelLimit=360, labelFontSize=11)),
+            tooltip=[
+                alt.Tooltip("recommended_strategy:N", title="Stratégie"),
+                alt.Tooltip("nb_assets:Q",  title="Assets",      format=","),
+                alt.Tooltip("volume_mb:Q",  title="Volume (Mo)", format=",.0f"),
+            ],
+        )
+        strat_lbl = alt.Chart(by_strat).mark_text(
+            align="left", dx=4, fontSize=11, color="#444"
+        ).encode(
+            x="nb_assets:Q",
+            y=alt.Y("recommended_strategy:N", sort="-x"),
+            text=alt.Text("nb_assets:Q", format=","),
+        )
+        st.altair_chart(
+            (strat_bars + strat_lbl).properties(height=max(200, len(by_strat) * 46)),
+            use_container_width=True,
+        )
 
 
 # ===========================================================================
 # 2. DOMAINES
 # ===========================================================================
 elif section == "Domaines":
-    st.title("Profil par domaine métier")
+    page_header(
+        "Profil par domaine métier",
+        "Score d'archivage, risque, qualité des données par domaine",
+        "🗂️",
+    )
 
     profile = safe_query("SELECT * FROM serving.mv_domain_profile ORDER BY asset_count DESC")
     if profile.empty:
@@ -224,7 +527,35 @@ elif section == "Domaines":
     col_a, col_b = st.columns(2)
     with col_a:
         st.subheader("Score d'archivage moyen")
-        st.bar_chart(profile.set_index("domain_label")["avg_archival_score"], horizontal=True)
+        _sc = alt.Chart(profile).mark_bar(cornerRadiusEnd=3).encode(
+            x=alt.X(
+                "avg_archival_score:Q",
+                title="Score moyen",
+                scale=alt.Scale(zero=False),
+                axis=alt.Axis(format=".2f"),
+            ),
+            y=alt.Y(
+                "domain_label:N",
+                sort="-x",
+                title=None,
+                axis=alt.Axis(labelLimit=260),
+            ),
+            color=alt.Color(
+                "domain_label:N",
+                scale=alt.Scale(domain=list(_PAL), range=list(_PAL.values())),
+                legend=None,
+            ),
+            tooltip=[
+                alt.Tooltip("domain_label:N", title="Domaine"),
+                alt.Tooltip("avg_archival_score:Q", title="Score", format=".3f"),
+            ],
+        )
+        _scl = alt.Chart(profile).mark_text(align="left", dx=4, fontSize=11, color="#444").encode(
+            x=alt.X("avg_archival_score:Q", scale=alt.Scale(zero=False)),
+            y=alt.Y("domain_label:N", sort="-x"),
+            text=alt.Text("avg_archival_score:Q", format=".2f"),
+        )
+        st.altair_chart((_sc + _scl).properties(height=270), use_container_width=True)
     with col_b:
         st.subheader("Niveau de risque (hiérarchie de records PeopleSoft)")
         risk = profile[["domain_label", "avg_lineage_out", "risk_level"]].copy()
@@ -239,10 +570,13 @@ elif section == "Domaines":
 # 3. CLÉS MÉTIER PARTAGÉES ENTRE DOMAINES (vocabulaire, pas des FK)
 # ===========================================================================
 elif section == "Clés partagées":
-    st.title("Graphe des clés métier partagées entre domaines")
-    st.caption("Domaines employant le même nom de champ-clé (ex. SETID). Signal de "
-               "vocabulaire commun / couplage potentiel — PeopleSoft ne déclare pas de "
-               "clés étrangères, ce ne sont donc pas des dépendances prouvées.")
+    page_header(
+        "Clés métier partagées entre domaines",
+        "Champs-clés communs (ex. SETID) — couplage potentiel, pas des FK",
+        "🔗",
+    )
+    st.caption("PeopleSoft ne déclare pas de clés étrangères : ces liens signalent un "
+               "vocabulaire commun / couplage potentiel, pas des dépendances prouvées.")
 
     dep = safe_query("SELECT * FROM serving.mv_domain_dependency ORDER BY shared_asset_count DESC")
     if dep.empty:
@@ -253,10 +587,58 @@ elif section == "Clés partagées":
     view = dep if pick == "(tous)" else dep[(dep["source_domain"] == pick) | (dep["target_domain"] == pick)]
 
     st.metric("Liens (clés partagées)", len(view))
-    top = view.head(20).copy()
-    top["paire"] = top["source_domain"] + " ↔ " + top["target_domain"] + " (" + top["bridge_field"] + ")"
+
+    # Agréger par paire (source ↔ target) — une ligne peut exister par bridge_field
+    top = (
+        view.groupby(["source_domain", "target_domain"], as_index=False)
+        .agg(
+            shared_asset_count=("shared_asset_count", "sum"),
+            nb_champs=("bridge_field", "nunique"),
+            champs_pont=("bridge_field", lambda x: ", ".join(sorted(x.unique()))),
+        )
+        .sort_values("shared_asset_count", ascending=False)
+        .head(20)
+        .copy()
+    )
+    top["paire"] = top["source_domain"] + " ↔ " + top["target_domain"]
+
+    bars = (
+        alt.Chart(top)
+        .mark_bar(cornerRadiusEnd=4)
+        .encode(
+            x=alt.X(
+                "shared_asset_count:Q",
+                title="Assets partagés (total)",
+                axis=alt.Axis(grid=True, format=","),
+            ),
+            y=alt.Y("paire:N", sort="-x", title=None, axis=alt.Axis(labelLimit=340)),
+            color=alt.Color(
+                "source_domain:N",
+                scale=alt.Scale(domain=list(_PAL), range=list(_PAL.values())),
+                legend=alt.Legend(title="Domaine source", orient="bottom"),
+            ),
+            tooltip=[
+                alt.Tooltip("source_domain:N",      title="Domaine source"),
+                alt.Tooltip("target_domain:N",      title="Domaine cible"),
+                alt.Tooltip("champs_pont:N",        title="Champs partagés"),
+                alt.Tooltip("nb_champs:Q",          title="Nb champs"),
+                alt.Tooltip("shared_asset_count:Q", title="Assets total", format=","),
+            ],
+        )
+    )
+
+    labels = (
+        alt.Chart(top)
+        .mark_text(align="left", dx=5, fontSize=11, color="#444")
+        .encode(
+            x=alt.X("shared_asset_count:Q"),
+            y=alt.Y("paire:N", sort="-x"),
+            text=alt.Text("shared_asset_count:Q", format=","),
+        )
+    )
+
     st.subheader("Top 20 liens (nb records partagés)")
-    st.bar_chart(top.set_index("paire")["shared_asset_count"], horizontal=True)
+    st.altair_chart((bars + labels).properties(height=500), use_container_width=True)
     st.dataframe(view, width="stretch", hide_index=True)
 
 
@@ -264,7 +646,11 @@ elif section == "Clés partagées":
 # 4. ARCHIVAGE
 # ===========================================================================
 elif section == "Archivage":
-    st.title("Recommandations d'archivage")
+    page_header(
+        "Recommandations d'archivage",
+        "Stratégies proposées par table physique, filtrables et exportables",
+        "📦",
+    )
 
     summary = safe_query("SELECT * FROM serving.v_archiving_policy_summary")
     policies = safe_query("SELECT * FROM serving.dim_archiving_policy ORDER BY priority")
@@ -278,10 +664,40 @@ elif section == "Archivage":
         c1, c2 = st.columns(2)
         with c1:
             st.subheader("Volume par stratégie (Mo)")
-            st.bar_chart(by_strat.set_index("recommended_strategy")["volume_mb"], horizontal=True)
+            _bv = alt.Chart(by_strat).mark_bar(cornerRadiusEnd=3, color="#4c8cbf").encode(
+                x=alt.X("volume_mb:Q", title="Volume (Mo)", axis=alt.Axis(format=",")),
+                y=alt.Y("recommended_strategy:N", sort="-x", title=None,
+                        axis=alt.Axis(labelLimit=380, labelFontSize=11)),
+                tooltip=[
+                    alt.Tooltip("recommended_strategy:N", title="Stratégie"),
+                    alt.Tooltip("volume_mb:Q", title="Volume (Mo)", format=",.0f"),
+                    alt.Tooltip("nb_assets:Q", title="Nb assets", format=","),
+                ],
+            )
+            _lbv = alt.Chart(by_strat).mark_text(align="left", dx=4, fontSize=10, color="#444").encode(
+                x="volume_mb:Q",
+                y=alt.Y("recommended_strategy:N", sort="-x"),
+                text=alt.Text("volume_mb:Q", format=",.0f"),
+            )
+            st.altair_chart((_bv + _lbv).properties(height=280), use_container_width=True)
         with c2:
             st.subheader("Nb d'assets par stratégie")
-            st.bar_chart(by_strat.set_index("recommended_strategy")["nb_assets"], horizontal=True)
+            _bn = alt.Chart(by_strat).mark_bar(cornerRadiusEnd=3, color="#5ba85b").encode(
+                x=alt.X("nb_assets:Q", title="Nb d'assets", axis=alt.Axis(format=",")),
+                y=alt.Y("recommended_strategy:N", sort="-x", title=None,
+                        axis=alt.Axis(labelLimit=380, labelFontSize=11)),
+                tooltip=[
+                    alt.Tooltip("recommended_strategy:N", title="Stratégie"),
+                    alt.Tooltip("nb_assets:Q", title="Nb assets", format=","),
+                    alt.Tooltip("volume_mb:Q", title="Volume (Mo)", format=",.0f"),
+                ],
+            )
+            _lbn = alt.Chart(by_strat).mark_text(align="left", dx=4, fontSize=10, color="#444").encode(
+                x="nb_assets:Q",
+                y=alt.Y("recommended_strategy:N", sort="-x"),
+                text=alt.Text("nb_assets:Q", format=","),
+            )
+            st.altair_chart((_bn + _lbn).properties(height=280), use_container_width=True)
 
     with st.expander("📋 Politiques d'archivage (référentiel)"):
         st.dataframe(policies, width="stretch", hide_index=True)
@@ -323,7 +739,11 @@ elif section == "Archivage":
 # 5. COÛTS & ROI
 # ===========================================================================
 elif section == "Coûts & ROI":
-    st.title("Analyse des coûts & projection ROI")
+    page_header(
+        "Analyse des coûts & projection ROI",
+        "Coût par domaine, Pareto, projection Monte-Carlo avec intervalles",
+        "💰",
+    )
 
     cost = safe_query("SELECT * FROM serving.v_cost_by_domain ORDER BY cost_rank")
     roi = safe_query("SELECT * FROM serving.v_roi_projection_summary ORDER BY year_offset")
@@ -342,15 +762,21 @@ elif section == "Coûts & ROI":
                     tooltip=["domain_label", "current_cost_usd_year", "cost_share_pct"],
                 )
             )
-            st.altair_chart(pie, width="stretch")
+            st.altair_chart(pie, use_container_width=True)
         with c2:
             st.subheader("Pareto des coûts")
-            base = alt.Chart(cost).encode(x=alt.X("domain_label:N", sort="-y", title=None))
+            base = alt.Chart(cost).encode(
+                x=alt.X("domain_label:N", sort="-y", title=None,
+                         axis=alt.Axis(labelAngle=-30, labelLimit=160, labelFontSize=10))
+            )
             bars = base.mark_bar().encode(y=alt.Y("current_cost_usd_year:Q", title="Coût $/an"))
             line = base.mark_line(point=True, color="red").encode(
                 y=alt.Y("cumulative_cost_pct:Q", title="% cumulé")
             )
-            st.altair_chart(alt.layer(bars, line).resolve_scale(y="independent"), width="stretch")
+            st.altair_chart(
+                alt.layer(bars, line).resolve_scale(y="independent"),
+                use_container_width=True,
+            )
 
         st.dataframe(cost, width="stretch", hide_index=True)
 
@@ -384,7 +810,7 @@ elif section == "Coûts & ROI":
                     tooltip=["year_offset", "scénario", "coût_cumulé_usd"],
                 )
             )
-            st.altair_chart(line, width="stretch")
+            st.altair_chart(line, use_container_width=True)
         with cc2:
             st.caption("Économie nette cumulée — médiane + intervalle P10–P90 (Monte Carlo)")
             band = (
@@ -409,7 +835,7 @@ elif section == "Coûts & ROI":
                     ],
                 )
             )
-            st.altair_chart(band + median, width="stretch")
+            st.altair_chart(band + median, use_container_width=True)
 
         st.dataframe(roi, width="stretch", hide_index=True)
 
@@ -422,8 +848,11 @@ elif section == "Coûts & ROI":
 # 6. PIPELINES — Centre de contrôle
 # ===========================================================================
 elif section == "🚀 Pipelines":
-    st.title("Centre de contrôle des pipelines")
-    st.caption("Lance les traitements sans terminal. Les logs s'affichent en direct.")
+    page_header(
+        "Centre de contrôle des pipelines",
+        "Lance les traitements sans terminal — logs en direct",
+        "🚀",
+    )
 
     st.subheader("⚡ Régénération analytics (rapide & sûr)")
     st.write(
@@ -444,21 +873,19 @@ elif section == "🚀 Pipelines":
         run_command("Analyse coût/ROI", "src.transform.build_cost_analysis")
 
     st.divider()
-    st.subheader("🗄️ Pipeline complet (lourd — VPN Oracle + MongoDB requis)")
+    st.subheader("🗄️ Pipeline complet (lourd — VPN Oracle requis)")
     st.warning(
-        "L'extraction interroge Oracle (~87 000 records) puis MongoDB, "
-        "reconstruit toute la couche processed + le scoring ML, et crée un "
-        "**nouveau run_id**. Durée : plusieurs minutes. À n'utiliser que connecté au VPN."
+        "L'extraction interroge Oracle (~87 000 records), "
+        "reconstruit toute la couche processed + le scoring ML, publie la couche "
+        "serving, et crée un **nouveau run_id**. Durée : plusieurs minutes. "
+        "À n'utiliser que connecté au VPN."
     )
     if st.button("Initialiser la base (schémas + tables)"):
         run_command("Initialisation base", "src.prefect.flows.flow_init_db")
 
     confirm = st.checkbox("Je confirme vouloir lancer une extraction (VPN Oracle requis)")
-    col_p = st.columns(2)
-    if col_p[0].button("🗄️ Pipeline Oracle seul (sans MongoDB)", disabled=not confirm, width="stretch"):
-        run_command("Pipeline Oracle seul", "src.prefect.flows.flow_oracle_only")
-    if col_p[1].button("🚀 Pipeline complet (Oracle + MongoDB)", disabled=not confirm, type="primary", width="stretch"):
-        run_command("Pipeline complet", "src.prefect.flows.flow_full_pipeline")
+    if st.button("🚀 Pipeline complet (Oracle)", disabled=not confirm, type="primary", width="stretch"):
+        run_command("Pipeline complet Oracle", "src.prefect.flows.flow_oracle_only")
 
     st.divider()
     st.subheader("🕑 Historique des exécutions")
@@ -473,8 +900,11 @@ elif section == "🚀 Pipelines":
 # 7. PARAMÈTRES — édition coûts & ROI (what-if)
 # ===========================================================================
 elif section == "⚙️ Paramètres":
-    st.title("Paramètres de coût & ROI")
-    st.caption("Édite les paramètres (serving.dim_cost_params) puis relance les calculs en un clic.")
+    page_header(
+        "Paramètres de coût & ROI",
+        "Scénarios what-if sur serving.dim_cost_params, recalcul en un clic",
+        "⚙️",
+    )
 
     from src.transform.build_cost_analysis import COST_PARAMS as DEFAULT_COST_PARAMS
     from src.transform.build_cost_analysis import build_cost_analysis
@@ -561,25 +991,330 @@ elif section == "⚙️ Paramètres":
 
 
 # ===========================================================================
-# 8. TEST DU MODÈLE
+# 8. CONSOLE SQL
 # ===========================================================================
-elif section == "🤖 Test du modèle":
-    st.title("Testez le classifieur XLM-R v3")
-    st.caption(
-        "Saisir les métadonnées d'une table PeopleSoft et visualiser la prédiction "
-        "du domaine métier (XLM-R v3 — ECE 0.011, 50 epochs, feature gating + Focal Loss)."
+elif section == "💾 Console SQL":
+    import time as _time
+
+    page_header(
+        "Console SQL",
+        "Interroge Oracle EP92U038 (source) ou PostgreSQL (cible) — lecture seule",
+        "💾",
     )
 
-    # ── Couleurs par domaine ──────────────────────────────────────────────
-    _DOMAIN_COLORS: dict[str, str] = {
-        "Finance & Contrôle":                     "#1f77b4",
-        "RH":                                     "#2ca02c",
-        "Achats & Fournisseurs":                  "#ff7f0e",
-        "Ventes & Clients":                       "#9467bd",
-        "Supply Chain / Logistique / Production": "#d62728",
-        "IT & Sécurité":                          "#8c564b",
-        "Other":                                  "#7f7f7f",
-    }
+    target = st.radio(
+        "Base de données",
+        ["🏛️ Oracle EP92U038  (VPN requis)", "🐘 PostgreSQL pfe_data_ia"],
+        horizontal=True,
+    )
+    is_oracle = target.startswith("🏛️")
+
+    # ── Requêtes rapides ────────────────────────────────────────────────
+    with st.expander("📋 Requêtes rapides — cliquez pour copier", expanded=False):
+        if is_oracle:
+            st.markdown("**🏗️ Architecture de la base**")
+
+            st.code("""-- Schémas (owners) et nombre de tables
+SELECT owner, COUNT(*) AS nb_tables, ROUND(SUM(NVL(num_rows,0))) AS total_lignes
+FROM ALL_TABLES
+GROUP BY owner
+ORDER BY nb_tables DESC""", language="sql")
+
+            st.code("""-- Types d'objets Oracle dans SYSADM (tables, vues, index, LOB…)
+SELECT object_type, COUNT(*) AS nb
+FROM ALL_OBJECTS
+WHERE owner = 'SYSADM'
+GROUP BY object_type ORDER BY nb DESC""", language="sql")
+
+            st.code("""-- Toutes les tables d'un schéma (triées par volume)
+SELECT table_name, num_rows,
+       ROUND(blocks * 8192 / 1024 / 1024, 1) AS size_mb
+FROM ALL_TABLES
+WHERE owner = 'SYSADM'
+ORDER BY num_rows DESC NULLS LAST""", language="sql")
+
+            st.code("""-- Tablespaces visibles (espaces de stockage)
+SELECT tablespace_name, status, contents, extent_management
+FROM USER_TABLESPACES
+ORDER BY tablespace_name""", language="sql")
+
+            st.code("""-- Index d'une table (remplacer PS_JRNL_LN)
+SELECT index_name, uniqueness, index_type
+FROM ALL_INDEXES
+WHERE owner = 'SYSADM' AND table_name = 'PS_JRNL_LN'
+ORDER BY index_name""", language="sql")
+
+            st.code("""-- Contraintes d'une table (PK/UK/Check ; FK quasi inexistantes en PeopleSoft)
+SELECT constraint_name, constraint_type, status
+FROM ALL_CONSTRAINTS
+WHERE owner = 'SYSADM' AND table_name = 'PS_JRNL_LN'
+ORDER BY constraint_type""", language="sql")
+
+            st.code("""-- Version PeopleTools & état de l'instance
+SELECT toolsrel, ownerid, lastrefreshdttm, unicode_enabled
+FROM SYSADM.PSSTATUS""", language="sql")
+
+            st.divider()
+            st.markdown("**📊 Exploration métier**")
+
+            st.code("""-- Top 10 tables les plus volumineuses (Oracle)
+SELECT table_name, num_rows,
+       ROUND(blocks * 8192 / 1024 / 1024, 1) AS size_mb,
+       last_analyzed
+FROM ALL_TABLES
+WHERE owner = 'SYSADM' AND num_rows IS NOT NULL
+ORDER BY num_rows DESC FETCH FIRST 10 ROWS ONLY""", language="sql")
+
+            st.code("""-- Répartition des types de records + matérialisation Oracle
+SELECT rectype,
+       CASE rectype
+           WHEN 0 THEN 'SQL Table'
+           WHEN 1 THEN 'SQL View'
+           WHEN 2 THEN 'Derived/Work Record'
+           WHEN 3 THEN 'SubRecord'
+           WHEN 5 THEN 'Dynamic View'
+           WHEN 6 THEN 'Query View'
+           WHEN 7 THEN 'Temporary Table'
+           ELSE 'Autre'
+       END AS signification,
+       COUNT(*) AS nb,
+       CASE rectype
+           WHEN 0 THEN 'Oui'
+           WHEN 7 THEN 'Oui (transitoire)'
+           ELSE 'Non'
+       END AS materialise_oracle
+FROM SYSADM.PSRECDEFN
+WHERE recname <> 'PSDUMMY'
+GROUP BY rectype ORDER BY nb DESC""", language="sql")
+
+            st.code("""-- Tables physiques rectype=0 réellement présentes dans ALL_TABLES
+SELECT
+    COUNT(*) AS total_rectype0,
+    SUM(CASE WHEN t.table_name IS NOT NULL THEN 1 ELSE 0 END) AS avec_table_physique,
+    SUM(CASE WHEN t.table_name IS NULL     THEN 1 ELSE 0 END) AS sans_table_physique
+FROM SYSADM.PSRECDEFN r
+LEFT JOIN ALL_TABLES t
+       ON t.owner = 'SYSADM'
+      AND t.table_name = CASE
+            WHEN TRIM(r.sqltablename) IS NOT NULL AND TRIM(r.sqltablename) <> ''
+            THEN TRIM(r.sqltablename)
+            ELSE 'PS_' || r.recname
+          END
+WHERE r.recname <> 'PSDUMMY' AND r.rectype = 0""", language="sql")
+
+            st.code("""-- Colonnes d'une table (remplacer PS_JRNL_LN)
+SELECT column_name, data_type, data_length, nullable
+FROM ALL_TAB_COLUMNS
+WHERE owner = 'SYSADM' AND table_name = 'PS_JRNL_LN'
+ORDER BY column_id""", language="sql")
+
+            st.code("""-- Champs les plus partagés entre records
+SELECT f.fieldname, COUNT(rf.recname) AS nb_records
+FROM SYSADM.PSDBFIELD f
+JOIN SYSADM.PSRECFIELDDB rf ON rf.fieldname = f.fieldname
+GROUP BY f.fieldname
+ORDER BY nb_records DESC FETCH FIRST 20 ROWS ONLY""", language="sql")
+
+            st.code("""-- Aperçu données réelles d'une table métier
+SELECT * FROM SYSADM.PS_JRNL_LN FETCH FIRST 10 ROWS ONLY""", language="sql")
+        else:
+            st.code("""-- Assets par domaine (couche serving)
+SELECT domain_label, asset_count, total_size_mb
+FROM serving.mv_domain_profile
+ORDER BY asset_count DESC""", language="sql")
+
+            st.code("""-- Top 20 recommandations d'archivage par taille
+SELECT technical_name, domain_label, recommended_strategy,
+       ROUND(size_mb, 1) AS size_mb, age_band, sensitivity_level
+FROM serving.mv_archiving_recommendation
+WHERE size_mb > 0
+ORDER BY size_mb DESC LIMIT 20""", language="sql")
+
+            st.code("""-- Schémas et tables disponibles
+SELECT table_schema, table_name
+FROM information_schema.tables
+WHERE table_schema NOT IN ('information_schema','pg_catalog')
+ORDER BY table_schema, table_name""", language="sql")
+
+            st.code("""-- Historique des runs pipeline
+SELECT id, flow_name, run_type, status, started_at, ended_at
+FROM admin.pipeline_run ORDER BY id DESC LIMIT 10""", language="sql")
+
+            st.code("""-- Profil coût par domaine
+SELECT domain_label, current_cost_usd_year, cost_share_pct, cost_rank
+FROM serving.v_cost_by_domain ORDER BY cost_rank""", language="sql")
+
+    # ── Requêtes sauvegardées (persistées) ──────────────────────────────
+    _db_key = "oracle" if is_oracle else "postgres"
+    sql_key = f"console_sql_{'ora' if is_oracle else 'pg'}"
+    default_sql = (
+        "SELECT 1 AS ping FROM DUAL"
+        if is_oracle
+        else "SELECT current_database(), current_timestamp"
+    )
+    if sql_key not in st.session_state:
+        st.session_state[sql_key] = default_sql
+
+    _saved = load_saved_queries()
+    _bucket = _saved.get(_db_key, {})
+
+    with st.expander(f"💾 Requêtes sauvegardées ({len(_bucket)})", expanded=bool(_bucket)):
+        if _bucket:
+            lc1, lc2, lc3 = st.columns([5, 1.3, 1.3])
+            picked = lc1.selectbox(
+                "Charger une requête", ["—"] + sorted(_bucket),
+                key="console_saved_pick", label_visibility="collapsed",
+            )
+            # NB : on modifie session_state[sql_key] AVANT la création du text_area
+            if lc2.button("📂 Charger", use_container_width=True) and picked != "—":
+                st.session_state[sql_key] = _bucket[picked]
+            if lc3.button("🗑️ Supprimer", use_container_width=True) and picked != "—":
+                _saved.get(_db_key, {}).pop(picked, None)
+                write_saved_queries(_saved)
+                st.success(f"Requête « {picked} » supprimée.")
+                st.rerun()
+        else:
+            st.caption("Aucune requête sauvegardée pour cette base. "
+                       "Écris une requête ci-dessous puis sauvegarde-la.")
+
+    # ── Éditeur ─────────────────────────────────────────────────────────
+    sql_input = st.text_area(
+        "Requête SQL",
+        height=220,
+        key=sql_key,
+        placeholder="SELECT ...",
+    )
+
+    # ── Sauvegarde de la requête courante ───────────────────────────────
+    sv1, sv2 = st.columns([5, 2])
+    save_name = sv1.text_input(
+        "Nom pour sauvegarder la requête courante",
+        key="console_save_name", placeholder="ex. Top tables volumineuses",
+        label_visibility="collapsed",
+    )
+    if sv2.button("💾 Sauvegarder", use_container_width=True):
+        _name = save_name.strip()
+        if not _name:
+            st.warning("Donne un nom à la requête avant de sauvegarder.")
+        elif not sql_input.strip():
+            st.warning("La requête est vide.")
+        else:
+            _saved.setdefault(_db_key, {})[_name] = sql_input
+            write_saved_queries(_saved)
+            st.success(f"Requête « {_name} » sauvegardée pour {_db_key}.")
+            st.rerun()
+
+    c1, c2, c3 = st.columns([2, 2, 6])
+    max_rows = c1.number_input("Lignes max", min_value=10, max_value=5000,
+                                value=500, step=50, key="console_max_rows")
+    run_btn = c2.button("▶️ Exécuter", type="primary", use_container_width=True)
+
+    if run_btn:
+        sql_clean = sql_input.strip().rstrip(";")
+
+        # Sécurité : lecture seule — autorise SELECT et WITH…SELECT (CTE),
+        # rejette tout mot-clé d'écriture/DDL présent comme token.
+        import re as _re
+        _tokens = set(_re.findall(r"[A-Za-z_]+", sql_clean.upper()))
+        _first = sql_clean.lstrip("( \t\n").upper().split()[0] if sql_clean.split() else ""
+        _forbidden = {
+            "INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "TRUNCATE",
+            "GRANT", "REVOKE", "MERGE", "CALL", "EXEC", "EXECUTE", "COMMIT",
+            "ROLLBACK", "REPLACE", "UPSERT",
+        }
+        if _first not in {"SELECT", "WITH"}:
+            st.error("❌ Seules les requêtes **SELECT** (ou `WITH … SELECT`) sont autorisées (lecture seule).")
+            st.stop()
+        _hit = _tokens & _forbidden
+        if _hit:
+            st.error(f"❌ Mot-clé d'écriture interdit détecté : **{', '.join(sorted(_hit))}**. "
+                     "Console en lecture seule.")
+            st.stop()
+
+        t0 = _time.time()
+
+        if is_oracle:
+            try:
+                from src.connectors.oracle_client import OracleClient
+                with st.spinner("Connexion Oracle (VPN requis)…"):
+                    _ora = OracleClient(settings=get_settings())
+                with st.spinner("Exécution en cours…"):
+                    rows = _ora.fetch_all(sql_clean)
+                elapsed = _time.time() - t0
+                df_res = pd.DataFrame(rows) if rows else pd.DataFrame()
+                if len(df_res) > max_rows:
+                    st.warning(f"⚠️ Résultat tronqué à {int(max_rows)} lignes "
+                               f"({len(df_res)} retournées).")
+                    df_res = df_res.head(int(max_rows))
+                st.success(f"✅ {len(df_res)} ligne(s) — {elapsed:.2f} s")
+                if not df_res.empty:
+                    st.dataframe(df_res, use_container_width=True, hide_index=True)
+                    st.download_button(
+                        "⬇️ Télécharger CSV",
+                        df_res.to_csv(index=False).encode("utf-8"),
+                        file_name="oracle_result.csv",
+                        mime="text/csv",
+                    )
+                else:
+                    st.info("Requête exécutée — aucune ligne retournée.")
+            except Exception as exc:
+                elapsed = _time.time() - t0
+                st.error(f"❌ Erreur Oracle ({elapsed:.1f} s) : {exc}")
+                _msg = str(exc)
+                if "ORA-00942" in _msg:
+                    st.info("💡 **Table ou vue inexistante.** Qualifie le schéma "
+                            "(`SYSADM.PS_...`) et vérifie l'orthographe. "
+                            "Ex. `SELECT * FROM SYSADM.PS_JRNL_LN FETCH FIRST 10 ROWS ONLY`.")
+                elif "ORA-00904" in _msg:
+                    st.info("💡 **Nom de colonne invalide.** Vérifie les colonnes de la table "
+                            "avec `SELECT column_name FROM ALL_TAB_COLUMNS WHERE table_name='...'`.")
+                elif "ORA-00933" in _msg or "ORA-00923" in _msg or "ORA-00936" in _msg:
+                    st.info("💡 **Syntaxe SQL incorrecte.** En Oracle, la limite s'écrit "
+                            "`FETCH FIRST n ROWS ONLY` (pas `LIMIT`), et il faut un nom de table "
+                            "après `FROM`. Ex. `SELECT * FROM SYSADM.PSRECDEFN FETCH FIRST 10 ROWS ONLY`.")
+                else:
+                    st.info("💡 Vérifie que le VPN est actif et que l'instance Oracle "
+                            "`192.168.11.111:1521/EP92U038` est joignable.")
+        else:
+            try:
+                with st.spinner("Exécution PostgreSQL…"):
+                    with get_engine().connect() as _conn:
+                        df_res = pd.read_sql(text(sql_clean), _conn)
+                elapsed = _time.time() - t0
+                if len(df_res) > max_rows:
+                    st.warning(f"⚠️ Résultat tronqué à {int(max_rows)} lignes "
+                               f"({len(df_res)} retournées).")
+                    df_res = df_res.head(int(max_rows))
+                st.success(f"✅ {len(df_res)} ligne(s) — {elapsed:.2f} s")
+                if not df_res.empty:
+                    st.dataframe(df_res, use_container_width=True, hide_index=True)
+                    st.download_button(
+                        "⬇️ Télécharger CSV",
+                        df_res.to_csv(index=False).encode("utf-8"),
+                        file_name="postgres_result.csv",
+                        mime="text/csv",
+                    )
+                else:
+                    st.info("Requête exécutée — aucune ligne retournée.")
+            except Exception as exc:
+                elapsed = _time.time() - t0
+                st.error(f"❌ Erreur PostgreSQL ({elapsed:.1f} s) : {exc}")
+                st.info("💡 Vérifiez que Docker / PostgreSQL est démarré.")
+
+
+# ===========================================================================
+# 9. TEST DU MODÈLE
+# ===========================================================================
+elif section == "🤖 Test du modèle":
+    page_header(
+        "Test du classifieur XLM-R v3",
+        "Saisis les métadonnées d'une table et visualise la prédiction du domaine",
+        "🤖",
+    )
+    st.caption(
+        "XLM-RoBERTa v3 — ECE 0.011, 50 epochs, feature gating + Focal Loss."
+    )
+
     _REGULATED = {"Finance & Contrôle", "RH", "Achats & Fournisseurs", "Ventes & Clients"}
 
     # ── Exemples prédéfinis ───────────────────────────────────────────────
@@ -733,7 +1468,7 @@ elif section == "🤖 Test du modèle":
                 confidence = result["confidence"]
                 review     = result["review_required"]
                 probs      = result["probs"]
-                color      = _DOMAIN_COLORS.get(label, "#555")
+                color      = _PAL.get(label, "#555")
                 conf_pct   = confidence * 100
 
                 st.divider()
@@ -789,8 +1524,8 @@ elif section == "🤖 Test du modèle":
                         color=alt.Color(
                             "domaine:N",
                             scale=alt.Scale(
-                                domain=list(_DOMAIN_COLORS),
-                                range=list(_DOMAIN_COLORS.values()),
+                                domain=list(_PAL),
+                                range=list(_PAL.values()),
                             ),
                             legend=None,
                         ),
