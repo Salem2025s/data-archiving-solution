@@ -10,18 +10,68 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import Any
 
+import re
+
 import oracledb
 from loguru import logger
 from tenacity import (
     Retrying,
     before_sleep_log,
     retry,
+    retry_if_exception,
     retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
 )
 
 from src.config.settings import Settings
+
+# Codes d'erreur transitoires (connexion / réseau / instance) — seuls ceux-là
+# justifient un retry. Les erreurs SQL déterministes (syntaxe ORA-009xx, table
+# absente ORA-00942, identifiant invalide ORA-00904…) échoueraient à l'identique
+# à chaque tentative : on les laisse remonter immédiatement.
+_RETRYABLE_DPY: frozenset[str] = frozenset({
+    "DPY-6005",  # cannot connect to database (timeout, VPN coupé)
+    "DPY-4011",  # the database or network closed the connection
+    "DPY-4024",  # connection was closed
+    "DPY-1001",  # not connected to database
+})
+_RETRYABLE_ORA: frozenset[str] = frozenset({
+    "ORA-03113",  # end-of-file on communication channel
+    "ORA-03114",  # not connected to ORACLE
+    "ORA-03135",  # connection lost contact
+    "ORA-00028",  # your session has been killed
+    "ORA-01012",  # not logged on
+    "ORA-01033",  # ORACLE initialization or shutdown in progress
+    "ORA-01034",  # ORACLE not available
+    "ORA-01089",  # immediate shutdown in progress
+    "ORA-12170",  # TNS: connect timeout occurred
+    "ORA-12514",  # listener does not currently know of service
+    "ORA-12518",  # listener could not hand off client connection
+    "ORA-12537",  # TNS: connection closed
+    "ORA-12541",  # TNS: no listener
+    "ORA-12570",  # TNS: packet reader failure
+    "ORA-12571",  # TNS: packet writer failure
+    "ORA-25408",  # can not safely replay call
+})
+
+
+def _oracle_error_code(exc: BaseException) -> str:
+    """Extrait le code complet (ex. 'ORA-00933', 'DPY-6005') d'une erreur oracledb."""
+    err = exc.args[0] if getattr(exc, "args", None) else None
+    code = getattr(err, "full_code", None)
+    if code:
+        return code
+    match = re.match(r"\s*([A-Z]{3}-\d{4,5})", str(err) if err is not None else str(exc))
+    return match.group(1) if match else ""
+
+
+def _is_retryable_oracle_error(exc: BaseException) -> bool:
+    """True uniquement pour les erreurs transitoires (connexion/réseau)."""
+    if not isinstance(exc, oracledb.Error):
+        return False
+    code = _oracle_error_code(exc)
+    return code in _RETRYABLE_DPY or code in _RETRYABLE_ORA
 
 
 class OracleClient:
@@ -72,7 +122,9 @@ class OracleClient:
         return Retrying(
             stop=stop_after_attempt(attempts),
             wait=wait_exponential(multiplier=1, min=1, max=30),
-            retry=retry_if_exception_type(oracledb.Error),
+            # Ne retente QUE les erreurs transitoires (connexion/réseau).
+            # Une erreur de syntaxe SQL échoue immédiatement (pas de 15 s d'attente).
+            retry=retry_if_exception(_is_retryable_oracle_error),
             before_sleep=before_sleep_log(logger, "WARNING"),  # type: ignore[arg-type]
             reraise=True,
         )
@@ -204,7 +256,7 @@ if __name__ == "__main__":
     from src.config.settings import get_settings
 
     settings = get_settings()
-    configure_logging(settings.log_level)
+    configure_logging()
 
     client = OracleClient(settings=settings)
     ok = client.test_connection()
