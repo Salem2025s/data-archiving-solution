@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Salem\\\\Desktop\\\\Projets\\\\pfe\\\\Projet\\\\artifacts\" -File -ErrorAction SilentlyContinue | Select-Object @{Name='FullPath';Expression={$_.FullName}}, @{Name='Size_KB';Expression={[math]::Round\\($_.Length / 1KB, 2\\)}} | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1)",
-      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Salem\\\\Desktop\\\\Projets\\\\pfe\\\\Projet\\\\exports\\\\artifacts_business_domain\" | Sort-Object LastWriteTime -Descending | Select-Object Name, LastWriteTime, @{N='SizeMB';E={[math]::Round\\($_.Length/1MB,2\\)}} | Format-Table -AutoSize)",
-      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Salem\\\\Desktop\\\\Projets\\\\pfe\\\\Projet\\\\LLM\\\\artifacts_business_domain\" | Sort-Object LastWriteTime -Descending | Select-Object Name, LastWriteTime, @{N='SizeMB';E={[math]::Round\\($_.Length/1MB,2\\)}} | Format-Table -AutoSize)"
-    ]
-  }
-}

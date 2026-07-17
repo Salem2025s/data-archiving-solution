@@ -11,6 +11,9 @@ __pycache__/
 .ipynb_checkpoints/
 .pytest_cache/
 
+# ---- Streamlit : requêtes SQL sauvegardées par l'utilisateur (perso) ----
+.streamlit/saved_queries.json
+
 # ---- Données de travail volumineuses (non versionnées) ----
 exports/
 LLM/catboost_info/
