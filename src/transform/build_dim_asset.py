@@ -57,40 +57,6 @@ FROM (
         now() AS loaded_at
     FROM raw_oracle.record_catalog rc
     WHERE rc.run_id = :run_id
-
-    UNION ALL
-
-    SELECT DISTINCT
-        :run_id AS run_id,
-        'mongo' AS source_system,
-        'mongo_collection' AS asset_type,
-        ci.collection_name AS technical_name,
-        ci.collection_name AS business_name,
-        ci.db_name AS schema_name,
-        NULL::text AS owner_name,
-        NULL::text AS description,
-        NULL::text AS status,
-        ci.source_doc_id AS source_ref,
-        now() AS loaded_at
-    FROM raw_mongo.collection_inventory ci
-    WHERE ci.run_id = :run_id
-
-    UNION ALL
-
-    SELECT DISTINCT
-        :run_id AS run_id,
-        'mongo' AS source_system,
-        'mongo_object' AS asset_type,
-        coalesce(mt.name, mt.object_md, mt.source_doc_id) AS technical_name,
-        mt.name AS business_name,
-        NULL::text AS schema_name,
-        mt.add_by AS owner_name,
-        NULL::text AS description,
-        mt.status AS status,
-        mt.source_doc_id AS source_ref,
-        now() AS loaded_at
-    FROM raw_mongo.metadatastable mt
-    WHERE mt.run_id = :run_id
 ) s
 """
 

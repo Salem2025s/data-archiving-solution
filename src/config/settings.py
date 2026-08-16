@@ -9,7 +9,6 @@ Sections
 - App          : application identity and run mode
 - PostgreSQL   : target database connection parameters
 - Oracle       : PeopleSoft EP92U038 source connection parameters
-- MongoDB      : DDTMdbDemo source connection parameters
 - Logging      : log verbosity
 - Pipeline     : execution strategy defaults
 
@@ -159,22 +158,6 @@ class Settings(BaseSettings):
     )
 
     # ------------------------------------------------------------------
-    # MongoDB DDTMdbDemo (source)
-    # ------------------------------------------------------------------
-
-    mongo_uri: str = Field(
-        default="mongodb://localhost:27017",
-        description=(
-            "MongoDB connection URI. "
-            "Include credentials in the URI when authentication is required."
-        ),
-    )
-    mongo_db_name: str = Field(
-        default="DDTMdbDemo",
-        description="MongoDB database name to connect to.",
-    )
-
-    # ------------------------------------------------------------------
     # Logging
     # ------------------------------------------------------------------
 
@@ -194,9 +177,9 @@ class Settings(BaseSettings):
         default="full",
         description="Default extraction strategy: 'full' (full reload) or 'incremental'.",
     )
-    default_source_system: Literal["oracle", "mongo", "both"] = Field(
+    default_source_system: Literal["oracle"] = Field(
         default="oracle",
-        description="Default source system to extract from when not specified at runtime.",
+        description="Source system extracted by the pipeline (Oracle PeopleSoft EP92U038).",
     )
     run_id: str = Field(
         default_factory=lambda: uuid4().hex,
@@ -273,15 +256,6 @@ class Settings(BaseSettings):
         """
         return f"{self.oracle_host}:{self.oracle_port}/{self.oracle_service_name}"
 
-    @property
-    def mongo_database_name(self) -> str:
-        """Return the MongoDB target database name.
-
-        Alias for ``mongo_db_name``, provided for consistency with the
-        naming convention used in other utility properties.
-        """
-        return self.mongo_db_name
-
 
 # ---------------------------------------------------------------------------
 # Cached factory
@@ -336,10 +310,6 @@ def get_settings() -> Settings:
 # ORACLE_USER=SYSADM
 # ORACLE_PASSWORD=change_me
 # ORACLE_OWNER=SYSADM
-#
-# # ── MongoDB DDTMdbDemo ──────────────────────────────────────────────────
-# MONGO_URI=mongodb://localhost:27017
-# MONGO_DB_NAME=DDTMdbDemo
 #
 # # ── Logging ─────────────────────────────────────────────────────────────
 # LOG_LEVEL=INFO

@@ -1,8 +1,7 @@
-"""Build `processed.bridge_asset_term` for current Oracle-only V1 scope.
+"""Build `processed.bridge_asset_term` for the Oracle-only scope.
 
-In this project version, Mongo term sources are out of scope and no explicit
-Oracle raw source for business terms is available. The build therefore performs
-a safe full-reload cleanup for the run and keeps the table empty.
+The Oracle source exposes no explicit raw source for business terms, so the
+build performs a safe full-reload cleanup for the run and keeps the table empty.
 """
 
 from __future__ import annotations

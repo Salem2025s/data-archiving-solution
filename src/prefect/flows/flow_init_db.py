@@ -22,7 +22,6 @@ DDL_FILES: tuple[str, ...] = (
     "001_schemas.sql",
     "010_admin.sql",
     "020_raw_oracle.sql",
-    "030_raw_mongo.sql",
     "040_processed.sql",
     "050_serving.sql",
 )

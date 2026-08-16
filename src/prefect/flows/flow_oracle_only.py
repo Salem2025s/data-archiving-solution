@@ -1,8 +1,4 @@
-"""Prefect flow : rechargement complet Oracle SEUL (sans MongoDB).
-
-Identique à `flow_full_pipeline` mais sans l'étape `flow_mongo_raw` : utile
-quand seule la source Oracle doit être ré-extraite (ex. nouvelles colonnes
-`last_modified` / `referenced_by_count`) sans dépendre de MongoDB (hors scope).
+"""Prefect flow : rechargement complet de la source Oracle.
 
 Crée un nouveau run_id, extrait Oracle → raw_oracle, construit la couche
 processed (avec scoring ML), puis publie la couche serving. Cycle de vie tracé
@@ -11,16 +7,14 @@ dans `admin.pipeline_run`.
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from loguru import logger
 from prefect import flow
 
 from src.config.settings import get_settings
 from src.connectors.postgres_client import PostgresClient
 from src.prefect.flows.flow_build_processed import flow_build_processed
-from src.prefect.flows.flow_full_pipeline import (
-    mark_pipeline_run_failed,
-    mark_pipeline_run_success,
-)
 from src.prefect.flows.flow_oracle_raw import flow_oracle_raw
 from src.prefect.flows.flow_publish_serving import flow_publish_serving
 from src.utils.logging_utils import configure_logging
@@ -42,9 +36,54 @@ def _create_oracle_run(postgres_client: PostgresClient) -> int:
     return run_id
 
 
+def mark_pipeline_run_success(postgres_client: PostgresClient, run_id: int) -> None:
+    """Mark a pipeline run as success and set ended_at."""
+    sql = """
+        UPDATE admin.pipeline_run
+        SET status = :status,
+            ended_at = :ended_at,
+            error_message = NULL
+        WHERE id = :run_id
+    """
+    postgres_client.execute(
+        sql=sql,
+        params={
+            "status": "success",
+            "ended_at": datetime.utcnow(),
+            "run_id": run_id,
+        },
+    )
+    logger.info("Marked run_id={} as success", run_id)
+
+
+def mark_pipeline_run_failed(
+    postgres_client: PostgresClient,
+    run_id: int,
+    error_message: str,
+) -> None:
+    """Mark a pipeline run as failed and set ended_at + error_message."""
+    sql = """
+        UPDATE admin.pipeline_run
+        SET status = :status,
+            ended_at = :ended_at,
+            error_message = :error_message
+        WHERE id = :run_id
+    """
+    postgres_client.execute(
+        sql=sql,
+        params={
+            "status": "failed",
+            "ended_at": datetime.utcnow(),
+            "error_message": error_message[:4000],
+            "run_id": run_id,
+        },
+    )
+    logger.info("Marked run_id={} as failed", run_id)
+
+
 @flow(name="flow_oracle_only")
 def flow_oracle_only(model_path: str | None = None) -> int:
-    """Run Oracle-only full reload end-to-end (no MongoDB).
+    """Run the Oracle full reload end-to-end.
 
     Ordered: flow_oracle_raw -> flow_build_processed (incl. scoring) ->
     flow_publish_serving.
@@ -56,7 +95,7 @@ def flow_oracle_only(model_path: str | None = None) -> int:
     settings = get_settings()
     postgres_client = PostgresClient(settings=settings)
 
-    logger.info("Starting flow_oracle_only (Oracle seul, sans MongoDB)")
+    logger.info("Starting flow_oracle_only (source Oracle PeopleSoft EP92U038)")
     run_id = _create_oracle_run(postgres_client=postgres_client)
 
     try:

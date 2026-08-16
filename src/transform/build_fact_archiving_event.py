@@ -1,9 +1,8 @@
-"""Build `processed.fact_archiving_event` for current Oracle-only V1 scope.
+"""Build `processed.fact_archiving_event` for the Oracle-only scope.
 
-In this project version, Mongo archiving sources are out of scope and no
-explicit Oracle raw source for archiving events is available. The build
-therefore performs a safe full-reload cleanup for the run and keeps the table
-empty.
+The Oracle source exposes no purge journal, so no archiving events can be
+derived. The build performs a safe full-reload cleanup for the run and keeps
+the table empty.
 """
 
 from __future__ import annotations

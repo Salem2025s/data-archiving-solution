@@ -151,89 +151,6 @@ WHERE NOT EXISTS (
 );
 """
 
-MONGO_COLLECTION_INSERT_SQL = """
-INSERT INTO processed.fact_asset_profile (
-    run_id,
-    asset_id,
-    snapshot_date,
-    row_count,
-    size_mb,
-    column_count,
-    index_count,
-    last_analyzed,
-    source_profile_json,
-    loaded_at
-)
-SELECT
-    :run_id AS run_id,
-    da.id AS asset_id,
-    current_date AS snapshot_date,
-    ci.document_count::bigint AS row_count,
-    (ci.storage_size_bytes::numeric / 1024 / 1024) AS size_mb,
-    NULL::integer AS column_count,
-    NULL::integer AS index_count,
-    NULL::timestamp AS last_analyzed,
-    jsonb_build_object(
-        'source', 'raw_mongo.collection_inventory',
-        'collection_name', ci.collection_name,
-        'db_name', ci.db_name,
-        'document_count', ci.document_count,
-        'storage_size_bytes', ci.storage_size_bytes
-    ) AS source_profile_json,
-    now() AS loaded_at
-FROM processed.dim_asset da
-JOIN raw_mongo.collection_inventory ci
-  ON ci.run_id = :run_id
- AND da.run_id = :run_id
- AND da.source_system = 'mongo'
- AND da.asset_type = 'mongo_collection'
- AND lower(da.technical_name) = lower(ci.collection_name);
-"""
-
-MONGO_OBJECT_INSERT_SQL = """
-INSERT INTO processed.fact_asset_profile (
-    run_id,
-    asset_id,
-    snapshot_date,
-    row_count,
-    size_mb,
-    column_count,
-    index_count,
-    last_analyzed,
-    source_profile_json,
-    loaded_at
-)
-WITH mongo_field_counts AS (
-    SELECT
-        lower(coalesce(object_md, name)) AS object_name,
-        COUNT(*)::integer AS column_count
-    FROM raw_mongo.fields
-    WHERE run_id = :run_id
-    GROUP BY lower(coalesce(object_md, name))
-)
-SELECT
-    :run_id AS run_id,
-    da.id AS asset_id,
-    current_date AS snapshot_date,
-    NULL::bigint AS row_count,
-    NULL::numeric AS size_mb,
-    mfc.column_count,
-    NULL::integer AS index_count,
-    NULL::timestamp AS last_analyzed,
-    jsonb_build_object(
-        'source', 'raw_mongo.fields',
-        'object_name', da.technical_name,
-        'column_count', mfc.column_count
-    ) AS source_profile_json,
-    now() AS loaded_at
-FROM processed.dim_asset da
-LEFT JOIN mongo_field_counts mfc
-  ON mfc.object_name = lower(da.technical_name)
-WHERE da.run_id = :run_id
-  AND da.source_system = 'mongo'
-  AND da.asset_type = 'mongo_object';
-"""
-
 COUNT_SQL = """
 SELECT COUNT(*) AS row_count
 FROM processed.fact_asset_profile
@@ -252,28 +169,16 @@ def build_fact_asset_profile(run_id: int) -> int:
         postgres_client.execute(DELETE_SQL, {"run_id": run_id})
 
         logger.info(
-            "Step 1/4 - loading Oracle asset profiles matched by technical_name for run_id={}",
+            "Step 1/2 - loading Oracle asset profiles matched by technical_name for run_id={}",
             run_id,
         )
         postgres_client.execute(ORACLE_INSERT_BY_TECHNICAL_NAME_SQL, {"run_id": run_id})
 
         logger.info(
-            "Step 2/4 - loading Oracle asset profiles matched by source_ref for run_id={}",
+            "Step 2/2 - loading Oracle asset profiles matched by source_ref for run_id={}",
             run_id,
         )
         postgres_client.execute(ORACLE_INSERT_BY_SOURCE_REF_SQL, {"run_id": run_id})
-
-        logger.info(
-            "Step 3/4 - loading Mongo collection profiles for run_id={}",
-            run_id,
-        )
-        postgres_client.execute(MONGO_COLLECTION_INSERT_SQL, {"run_id": run_id})
-
-        logger.info(
-            "Step 4/4 - loading Mongo object profiles for run_id={}",
-            run_id,
-        )
-        postgres_client.execute(MONGO_OBJECT_INSERT_SQL, {"run_id": run_id})
 
         row = postgres_client.fetch_one(COUNT_SQL, {"run_id": run_id})
         produced = int(row["row_count"]) if row else 0

@@ -99,37 +99,6 @@ JOIN dedup_columns dc
   ON upper(dc.physical_table_name) = upper(tc.table_name)
 """
 
-MONGO_OBJECT_INSERT_SQL = """
-INSERT INTO processed.dim_field (
-    run_id,
-    asset_id,
-    technical_name,
-    business_name,
-    data_type,
-    data_length,
-    nullable_flag,
-    source_ref,
-    loaded_at
-)
-SELECT DISTINCT
-    :run_id AS run_id,
-    da.id AS asset_id,
-    f.name AS technical_name,
-    f.label AS business_name,
-    coalesce(f.data_type, f.type) AS data_type,
-    f.length AS data_length,
-    NULL::boolean AS nullable_flag,
-    f.source_doc_id AS source_ref,
-    now() AS loaded_at
-FROM processed.dim_asset da
-JOIN raw_mongo.fields f
-  ON f.run_id = :run_id
- AND da.run_id = :run_id
- AND da.source_system = 'mongo'
- AND da.asset_type = 'mongo_object'
- AND lower(da.technical_name) = lower(coalesce(f.object_md, f.name))
-"""
-
 COUNT_SQL = "SELECT COUNT(*) AS row_count FROM processed.dim_field WHERE run_id = :run_id"
 
 
@@ -144,22 +113,16 @@ def build_dim_field(run_id: int) -> int:
         postgres_client.execute(DELETE_SQL, {"run_id": run_id})
 
         logger.info(
-            "Step 1/3 - loading PeopleSoft record fields for run_id={}",
+            "Step 1/2 - loading PeopleSoft record fields for run_id={}",
             run_id,
         )
         postgres_client.execute(ORACLE_RECORD_INSERT_SQL, {"run_id": run_id})
 
         logger.info(
-            "Step 2/3 - loading Oracle physical table fields for run_id={}",
+            "Step 2/2 - loading Oracle physical table fields for run_id={}",
             run_id,
         )
         postgres_client.execute(ORACLE_TABLE_INSERT_SQL, {"run_id": run_id})
-
-        logger.info(
-            "Step 3/3 - loading Mongo object fields for run_id={}",
-            run_id,
-        )
-        postgres_client.execute(MONGO_OBJECT_INSERT_SQL, {"run_id": run_id})
 
         row = postgres_client.fetch_one(COUNT_SQL, {"run_id": run_id})
         produced = int(row["row_count"]) if row else 0
