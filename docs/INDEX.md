@@ -48,7 +48,7 @@
 - **Échelle économique = démo** (~8 Go, ~14 $ d'économie sur 5 ans) : la **méthodologie** coût/ROI est valide, les **montants** sont illustratifs (à rejouer sur un volume de production).
 - **E2 (comparaison N-1) = réelle mais historique court** (2 runs) ; **E3 (ROI) = Monte-Carlo** dont la croissance repose actuellement sur l'**hypothèse** (15 %±5 %), faute d'un historique encore concluant — bascule automatique en « observé » dès que les runs s'accumuleront.
 - **Gold test humain mono-annotateur** (pas d'accord inter-annotateurs).
-- **Sources MongoDB hors périmètre** du run courant → pas de lignage/purges réels.
+- **Périmètre Oracle-only** : la source ne fournit pas de journal de purge → `fact_archiving_event` vide, archivabilité fondée sur les signaux dérivés des métadonnées.
 
 ### Ce qui reste à durcir
 **Socle de tests en place** (61 tests unitaires sans DB, `pytest` — feature-builders de scoring + régression train/inférence, loader, settings, base de termes, éval humaine, extracteur d'accès, projection Monte-Carlo / estimateur de croissance, **calibration + SLA rappel + drift** `model_reliability`). Phase 0 (fail-safe, approval queue, masquage PII, audit trail) et Phase 1 (calibration, SLA, drift monitoring) sont **implémentées**. Reste : tests d'intégration DB · vrai signal d'accès (grant DBA) · Finance recall 0,84 < SLA 0,90 (seul levier : annotations humaines supplémentaires).
@@ -108,10 +108,7 @@ exports/domain_model_run5.xlsx
 # Environnement
 .venv\Scripts\activate
 
-# Pipeline complet (Oracle + MongoDB)
-python -m src.prefect.flows.flow_full_pipeline
-
-# Pipeline Oracle seul (sans MongoDB — nouveau run_id)
+# Pipeline complet (Oracle — nouveau run_id)
 python -m src.prefect.flows.flow_oracle_only
 
 # Publier la couche serving (MVs + domaines)
@@ -136,6 +133,6 @@ streamlit run app/streamlit_dashboard.py
 
 > **Dashboard / Interface Streamlit** (`app/streamlit_dashboard.py`) — 8 sections, sans terminal :
 > - **Consultation** (lecture `serving.*`) : Vue d'ensemble (KPIs) · Domaines · Dépendances · Archivage (filtres domaine/stratégie) · Coûts & ROI (camembert, Pareto, projection).
-> - **🚀 Pipelines** : boutons pour lancer chaque traitement (publication serving, exports, régénérations) + **pipeline complet** (extraction Oracle/Mongo, VPN requis) avec **logs en direct** et historique des runs (`admin.pipeline_run`).
+> - **🚀 Pipelines** : boutons pour lancer chaque traitement (publication serving, exports, régénérations) + **pipeline complet** (extraction Oracle, VPN requis) avec **logs en direct** et historique des runs (`admin.pipeline_run`).
 > - **⚙️ Paramètres** : formulaires d'édition des coûts/ROI (`dim_cost_params`) avec recalcul « what-if » + bouton **réinitialiser aux valeurs par défaut**.
 > - **🤖 Test du modèle** : interface interactive pour tester le classifieur XLM-R v3 en saisissant les métadonnées d'une table (nom, module, colonnes, volumétrie, sémantique) — affiche le domaine prédit, la confiance calibrée, la distribution des probabilités par classe (graphe Altair), et déclenche l'alerte `review_required` / `A_EVALUER` si nécessaire. 5 exemples prédéfinis (Finance, RH, Achats, IT, Supply Chain). Deux modes : équilibré (macro-F1) et SLA-strict (rappel réglementé ≥ 0,90).

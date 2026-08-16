@@ -7,18 +7,22 @@
 
 ## 1. Modèle de coût (paramètres réels)
 
-Stockés dans `serving.dim_cost_params`, basés sur la tarification AWS :
+Stockés dans `serving.dim_cost_params`, alimentés depuis l'**API publique Azure
+Retail Prices** (`src/extract/external/fetch_cloud_storage_prices.py --apply`) —
+tarifs réels et rejouables, non plus des constantes codées en dur :
 
 | param_name | Valeur | Unité | Base |
 |---|---|---|---|
-| `storage_cost_per_gb_per_year` | 0.276 | USD/Go/an | S3 Standard (0,023 $/Go/mois) |
-| `cold_storage_cost_per_gb_year` | 0.048 | USD/Go/an | Glacier Deep Archive (~0,004 $/Go/mois) |
+| `storage_cost_per_gb_per_year` | 0.211968 | USD/Go/an | Azure Hot LRS (0,0177 $/Go/mois) |
+| `cold_storage_cost_per_gb_year` | 0.0216 | USD/Go/an | Azure Archive LRS (0,0018 $/Go/mois) |
 | `compression_ratio` | 0.5 | ratio | Taille résiduelle après compression (−50 %) |
 | `data_growth_rate_pct_per_year` | 15.0 | %/an | Croissance annuelle (moyenne, hypothèse E3) |
 | `data_growth_std_pct_per_year` | 5.0 | %/an | Écart-type de la croissance (incertitude Monte-Carlo E3) |
 | `implementation_cost_one_shot` | 0.0 | USD | Tiering cloud = pas de capex |
 
-**Modification :** `UPDATE serving.dim_cost_params SET param_value = ... WHERE param_name = ...` puis re-run `build_cost_analysis`.
+**Mise à jour depuis la source :** `python -m src.extract.external.fetch_cloud_storage_prices --apply`
+puis re-run `build_cost_analysis`. (Modification manuelle toujours possible via
+`UPDATE serving.dim_cost_params SET param_value = ... WHERE param_name = ...`.)
 
 ---
 

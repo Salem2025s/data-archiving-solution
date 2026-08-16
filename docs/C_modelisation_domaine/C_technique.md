@@ -101,7 +101,8 @@ python -m src.transform.build_serving_domain_model
 | RH | 3 585 | 9 | 0 | LOW |
 
 > `archival_candidates = 0` sur tous les domaines car `purge_event_count = 0`
-> (MongoDB hors scope : `fact_archiving_event` est vide — ce point sera corrigé en section D/E).
+> (périmètre Oracle-only : la source ne fournit pas de journal de purge, donc
+> `fact_archiving_event` reste vide — les règles D/E s'appuient sur les signaux dérivés des métadonnées Oracle).
 
 ---
 

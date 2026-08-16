@@ -95,5 +95,5 @@ Sur le run_id=5, tous les domaines sont en **LOW** car la majorité des assets s
 
 ## Limites connues
 
-- **`archival_candidates = 0`** sur run_id=5 : les scores d'archivabilité sont bridés par l'absence de données MongoDB (`purge_event_count = 0`, `term_count = 0`). Ce sera corrigé en section D lors de l'activation des données d'archivage réelles.
+- **`archival_candidates = 0`** sur run_id=5 : en périmètre Oracle-only, la source ne fournit pas de journal de purge ni de vocabulaire métier externe (`purge_event_count = 0`, `term_count = 0`), ce qui bride les scores d'archivabilité. Les règles de la section D s'appuient donc sur les seuls signaux dérivables des métadonnées Oracle.
 - **Dépendances via SETID/DESCR** : ces champs sont des clés de paramétrage transverses, pas des clés métier directes. Les vraies dépendances métier (VOUCHER_ID ↔ Finance/Achats) seront mieux quantifiées en section D.

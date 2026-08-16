@@ -13,7 +13,7 @@ Concrètement, cette partie répond à trois questions :
 2. **Où stocker ces informations de façon réutilisable ?** → une base PostgreSQL organisée en couches.
 3. **Comment préparer un jeu de données prêt pour le ML ?** → une chaîne de transformation qui consolide tout en un enregistrement par actif.
 
-Le périmètre couvre : **connexion → extraction → chargement → couche brute → couche transformée → jeu de données ML**. Les sources MongoDB existent dans l'architecture mais sont hors scope de cette phase.
+Le périmètre couvre : **connexion → extraction → chargement → couche brute → couche transformée → jeu de données ML**. Source unique : Oracle PeopleSoft EP92U038.
 
 ---
 
@@ -66,7 +66,7 @@ flowchart TD
     M --> B
 ```
 
-Chaque exécution complète est pilotée par **Prefect** (`flow_full_pipeline`) et tracée dans `admin.pipeline_run`.
+Chaque exécution complète est pilotée par **Prefect** (`flow_oracle_only`) et tracée dans `admin.pipeline_run`.
 
 > Les diagrammes Mermaid de ce document se rendent visuellement dans l'aperçu Markdown de VS Code, sur GitHub/GitLab, et la plupart des visionneuses Markdown récentes.
 
@@ -212,7 +212,6 @@ La base cible suit une **architecture en couches** (inspirée du modèle *medall
 ```
 admin       → orchestration & traçabilité des exécutions
 raw_oracle  → copie fidèle des métadonnées Oracle (couche bronze)
-raw_mongo   → copie des collections MongoDB (hors scope phase actuelle)
 processed   → modèle dimensionnel raffiné (couche silver)
 serving     → vues d'exposition, scores, KPI (couche gold)
 ```
@@ -289,7 +288,7 @@ record_catalog.physical_table_name ──► table_catalog.table_name
 | `dim_field` | Dimension | `asset_id → dim_asset.id` | Une ligne par colonne d'actif |
 | `fact_asset_profile` | Fait | `asset_id` | Profil physique : `row_count`, `size_mb`, `column_count`, `last_analyzed` |
 | `fact_lineage_edge` | Fait | `source_asset_id`, `target_asset_id` | Arêtes de lignage (`ps_parent_record` issu de `parentrecname`) |
-| `fact_archiving_event` | Fait | `asset_id` | Événements de purge (alimenté plus tard via MongoDB) |
+| `fact_archiving_event` | Fait | `asset_id` | Événements de purge (table présente ; vide en périmètre Oracle-only, faute de journal de purge dans la source) |
 | `features_asset` | Fait | `asset_id` | Scores calculés : `archival_candidate_score`, `roi_score`, compteurs |
 | `dataset_asset_ml` | Table consolidée | `asset_id` | **1 ligne / actif, features prêtes ML** (sortie de la partie A) |
 
@@ -332,7 +331,7 @@ Produit par les parties B→E (scores ML, modèle de domaine, règles d'archivag
 
 ## 6. Le pipeline étape par étape
 
-Orchestration : `flow_full_pipeline` (Prefect) enchaîne les sous-flows. Chaque étape a un rôle précis.
+Orchestration : `flow_oracle_only` (Prefect) enchaîne les sous-flows. Chaque étape a un rôle précis.
 
 ### Étape 0 — Initialisation (`flow_init_db`)
 Crée les schémas et tables via les DDL `sql/ddl/00*..05*`. Idempotent (`CREATE ... IF NOT EXISTS`).
@@ -354,7 +353,7 @@ Séquence réelle de 10 étapes (chaque build = DELETE puis INSERT par `run_id`)
 3. `build_bridge_asset_term` — table de pont actif ↔ terme métier (vocabulaire)
 4. `build_fact_asset_profile` — rattache les volumes physiques
 5. `build_fact_lineage_edge` — matérialise les arêtes `parentrecname` (parent→enfant)
-6. `build_fact_archiving_event` — événements de purge (vide tant que MongoDB hors scope)
+6. `build_fact_archiving_event` — événements de purge (vide en périmètre Oracle-only : la source ne fournit pas de journal de purge)
 7. `build_features_asset` — calcule les scores d'archivabilité / ROI
 8. `build_dataset_asset_ml` — **consolide tout en une ligne par actif** (features techniques + sémantiques)
 9. `score_business_domain` — **classification ML par domaine** (partie B, intégrée au flow)
@@ -401,7 +400,7 @@ python -m src.prefect.flows.flow_oracle_raw
 python -m src.prefect.flows.flow_build_processed --run-id 5
 
 # Pipeline complet de bout en bout
-python -m src.prefect.flows.flow_full_pipeline
+python -m src.prefect.flows.flow_oracle_only
 
 # Contrôle de cohérence raw_oracle (run_id=5)
 psql -d pfe_data_ia -c "

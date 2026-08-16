@@ -10,14 +10,19 @@ On traduit les volumes de données en **impact financier** : combien coûte le s
 
 ---
 
-## Le modèle de coût (tarifs cloud réels AWS)
+## Le modèle de coût (tarifs cloud réels, source externe)
+
+Les tarifs proviennent de l'**API publique Azure Retail Prices** (module
+`src/extract/external/fetch_cloud_storage_prices.py`), et non plus de constantes
+codées en dur — ils sont donc réels et rejouables.
 
 | Type de stockage | Coût | Service |
 |---|---|---|
-| Actif | 0,276 $/Go/an | AWS S3 Standard |
-| Froid (archive) | 0,048 $/Go/an | AWS Glacier Deep Archive |
+| Actif | 0,211968 $/Go/an | Azure Hot LRS |
+| Froid (archive) | 0,0216 $/Go/an | Azure Archive LRS |
 
-Archiver une donnée la fait passer de 0,276 à 0,048 $/Go/an → **économie de 0,228 $/Go/an**, soit **233 $ par To archivé et par an**.
+Archiver une donnée la fait passer de 0,2120 à 0,0216 $/Go/an → **économie de
+0,1904 $/Go/an** (écart ×9,8), soit **≈ 195 $ par To archivé et par an**.
 
 ---
 
@@ -39,15 +44,15 @@ L'instance Oracle analysée (EP92U038) est une **base de démonstration** : seul
 
 **Ce qui compte, c'est la méthode et le taux**, pas le montant absolu sur la démo :
 
-> **233 $ économisés par To archivé et par an.**
+> **≈ 195 $ économisés par To archivé et par an.**
 
 Cette métrique se transpose directement à la production :
 
 | Volume archivable en production | Économie annuelle estimée |
 |---|---|
-| 1 To | 233 $/an |
-| 10 To | 2 335 $/an |
-| 100 To | 23 347 $/an |
+| 1 To | ≈ 195 $/an |
+| 10 To | ≈ 1 950 $/an |
+| 100 To | ≈ 19 500 $/an |
 
 ---
 
@@ -56,4 +61,4 @@ Cette métrique se transpose directement à la production :
 - Donne une **valeur économique chiffrée** au projet d'archivage
 - Montre une **réduction de coût de 80 %** sur le périmètre archivable
 - Fournit un **taux unitaire transposable** à n'importe quelle volumétrie production
-- Repose sur des **tarifs cloud publics et vérifiables** (AWS)
+- Repose sur des **tarifs cloud publics et vérifiables** (API Azure Retail Prices)

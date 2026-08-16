@@ -3,7 +3,7 @@
 Classification des actifs de données Oracle PeopleSoft EP92U038 par domaine métier
 (**justesse réelle ~75 %, validée humainement** — pas le 89 % d'accord avec le LLM),
 règles d'archivage **pilotées par le domaine** (rétention légale), et KPI/coûts sur
-une couche serving PostgreSQL. Extracteurs MongoDB présents mais hors périmètre du run courant.
+une couche serving PostgreSQL. Source unique : Oracle PeopleSoft EP92U038.
 
 > **Nature & portée :** prototype data-driven de bout en bout. La valeur vient des
 > **règles + supervision humaine** (le LLM n'est qu'une amorce d'annotation). Pour la
@@ -122,10 +122,6 @@ ORACLE_USER=SYSADM
 ORACLE_PASSWORD=change_me
 ORACLE_OWNER=SYSADM
 
-# ── MongoDB DDTMdbDemo (source) ───────────────────────────────────────
-MONGO_URI=mongodb://localhost:27017
-MONGO_DB_NAME=DDTMdbDemo
-
 # ── Pipeline ──────────────────────────────────────────────────────────
 LOG_LEVEL=INFO
 RUN_ID=          # laisser vide → UUID auto-généré
@@ -136,7 +132,7 @@ RUN_ID=          # laisser vide → UUID auto-généré
 ## 4. Initialisation de la base
 
 À exécuter **une seule fois** sur un environnement vierge.
-Crée les 5 schémas et toutes les tables/vues.
+Crée les 4 schémas et toutes les tables/vues.
 
 ```bash
 python -m src.prefect.flows.flow_init_db
@@ -146,11 +142,11 @@ python -m src.prefect.flows.flow_init_db
 
 ## 5. Pipeline complet
 
-Lance en séquence : extraction Oracle + Mongo → chargement raw →
+Lance en séquence : extraction Oracle → chargement raw →
 couche processed → scoring ML → refresh vues serving.
 
 ```bash
-python -m src.prefect.flows.flow_full_pipeline
+python -m src.prefect.flows.flow_oracle_only
 ```
 
 ---
@@ -163,18 +159,12 @@ python -m src.prefect.flows.flow_full_pipeline
 python -m src.prefect.flows.flow_oracle_raw
 ```
 
-Extrait les 4 catalogs PeopleSoft :
-`record_catalog`, `table_catalog`, `column_catalog`, `index_catalog`
+Extrait les 5 catalogues Oracle :
+`record_catalog`, `table_catalog`, `column_catalog`, `index_catalog`, `segment_access`
+(le 5ᵉ, signal d'accès, est branché mais reste vide tant que `SYSADM` n'a pas le
+`GRANT SELECT ON SYS.V_$SEGMENT_STATISTICS`).
 
-### 6b. Extraction MongoDB → raw_mongo
-
-```bash
-python -m src.prefect.flows.flow_mongo_raw
-```
-
-Extrait les 9 collections MongoDB.
-
-### 6c. Construction de la couche processed
+### 6b. Construction de la couche processed
 
 ```bash
 python -m src.prefect.flows.flow_build_processed
@@ -188,7 +178,7 @@ fact_asset_profile → fact_lineage_edge → fact_archiving_event →
 features_asset → dataset_asset_ml → score_business_domain
 ```
 
-### 6d. Refresh des vues matérialisées (serving)
+### 6c. Refresh des vues matérialisées (serving)
 
 ```bash
 python -m src.prefect.flows.flow_publish_serving
@@ -205,7 +195,9 @@ et écrit les résultats dans `serving.asset_business_domain_prediction` :
 
 1. **Passe 1 — keywords** : chaque ligne est comparée à `DOMAIN_TERMS`
    (base de termes dans `src/ml/domain_term_base.py`).
-   Si un domaine domine clairement → label assigné avec confiance 0.95.
+   Si un domaine domine clairement → label assigné avec une confiance **graduée
+   0,70–0,90** selon la force du signal (nombre d'occurrences + dominance sur le
+   2ᵉ domaine), et non plus un forfait fixe.
 2. **Passe 2 — modèle ML** : les lignes non classifiées par keywords
    passent dans le modèle de production (TF-IDF + features numériques).
 
@@ -303,7 +295,7 @@ python -m src.ml.reclassify_by_terms \
 |---|---|
 | `kw_domain` | Domaine gagnant (`finance`, `hr`, `supply_chain`…) |
 | `kw_label` | Label ML correspondant |
-| `kw_confidence` | `0.95` si classifié, vide sinon |
+| `kw_confidence` | confiance graduée `0,70–0,90` si classifié, vide sinon |
 | `classified` | `True` si les seuils sont atteints |
 | `is_focus_domain` | `True` pour supply_chain / procurement / risk / marketing |
 | `matched_terms` | Termes ayant déclenché la classification |
@@ -438,14 +430,13 @@ Projet/
 │   │   └── logging.py                   # Configuration Loguru
 │   ├── connectors/
 │   │   ├── postgres_client.py           # Client PostgreSQL (SQLAlchemy + retry)
-│   │   ├── oracle_client.py             # Client Oracle oracledb (thin mode)
-│   │   └── mongo_client.py              # Client MongoDB PyMongo
+│   │   └── oracle_client.py             # Client Oracle oracledb (thin mode)
 │   ├── extract/
-│   │   ├── oracle/                      # 4 extracteurs PeopleSoft
-│   │   └── mongo/                       # 9 extracteurs MongoDB
+│   │   ├── oracle/                      # 5 extracteurs (record/table/column/index/segment_access)
+│   │   ├── external/                    # API publique Azure Retail Prices
+│   │   └── web/                         # Scraping tarifaire (Backblaze B2)
 │   ├── load/
-│   │   ├── load_raw_oracle.py           # Chargeur raw_oracle (4 tables)
-│   │   └── load_raw_mongo.py            # Chargeur raw_mongo (9 tables)
+│   │   └── load_raw_oracle.py           # Chargeur raw_oracle (4 tables)
 │   ├── transform/
 │   │   ├── build_dim_asset.py
 │   │   ├── build_dim_field.py
@@ -464,21 +455,20 @@ Projet/
 │   │   ├── analyze_business_domain_errors.py
 │   │   └── build_relabeling_priority_set.py
 │   ├── prefect/flows/
-│   │   ├── flow_full_pipeline.py        # Pipeline complet
+│   │   ├── flow_oracle_only.py          # Pipeline complet (Oracle)
 │   │   ├── flow_init_db.py              # Initialisation DB
 │   │   ├── flow_oracle_raw.py           # Extraction Oracle
-│   │   ├── flow_mongo_raw.py            # Extraction MongoDB
 │   │   ├── flow_build_processed.py      # Couche processed
 │   │   └── flow_publish_serving.py      # Refresh vues serving
 │   └── export/
 │       └── export_dataset_asset_ml_for_labeling.py
 ├── sql/ddl/
-│   ├── 001_schemas.sql                  # Création des 5 schémas
+│   ├── 001_schemas.sql                  # Création des 4 schémas
 │   ├── 010_admin.sql                    # Table pipeline_run
 │   ├── 020_raw_oracle.sql               # Tables raw_oracle
-│   ├── 030_raw_mongo.sql                # Tables raw_mongo
 │   ├── 040_processed.sql                # Tables processed
 │   └── 050_serving.sql                  # Tables + vues serving
+├── sql/security/                        # pgcrypto (PII) + rôles moindre privilège
 ├── artifacts/
 │   ├── business_domain_model.joblib     # Modèle baseline
 │   ├── labeled_dataset_clean.csv        # Dataset d'entraînement nettoyé
@@ -503,8 +493,7 @@ Projet/
 | Schéma | Tables / Vues | Description |
 |---|---|---|
 | `admin` | `pipeline_run` | Suivi des runs (run_id, status, timestamps) |
-| `raw_oracle` | `record_catalog`, `table_catalog`, `column_catalog`, `index_catalog` | Données PeopleSoft brutes |
-| `raw_mongo` | 9 tables (une par collection) | Données MongoDB brutes |
+| `raw_oracle` | `record_catalog`, `table_catalog`, `column_catalog`, `index_catalog`, `segment_access` | Données PeopleSoft/Oracle brutes (5 catalogues) |
 | `processed` | `dim_asset`, `dim_field`, `bridge_asset_term`, `fact_asset_profile`, `fact_lineage_edge`, `fact_archiving_event`, `features_asset`, `dataset_asset_ml` | Données transformées |
 | `serving` | `asset_business_domain_prediction`, `mv_asset_inventory`, `mv_archivability_ranking`, `mv_roi_summary`, `v_asset_business_domain_scored` | Prédictions et KPIs |
 
@@ -527,8 +516,6 @@ Projet/
 | `ORACLE_USER` | `SYSADM` | | Utilisateur Oracle |
 | `ORACLE_PASSWORD` | — | **oui** | Mot de passe Oracle |
 | `ORACLE_OWNER` | `SYSADM` | | Schéma propriétaire Oracle |
-| `MONGO_URI` | `mongodb://localhost:27017` | | URI de connexion MongoDB |
-| `MONGO_DB_NAME` | `DDTMdbDemo` | | Nom de la base MongoDB |
 | `RUN_ID` | *(UUID auto)* | | ID de run — laisser vide pour auto-génération |
 
 ---

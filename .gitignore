@@ -40,3 +40,8 @@ xlmr_v3_50ep_bundle.zip
 # ---- OS ----
 Thumbs.db
 .DS_Store
+
+# Fichiers temporaires Word (verrous)
+~$*
+# Fichier accidentel vide
+docs/certification/Lie.txt

@@ -269,7 +269,7 @@ GROUP BY domain_label ORDER BY 2 DESC;
 | ~~Classification non décisionnelle~~ | ✅ **Corrigé** : le domaine pilote la rétention (`CONSERVATION_REGLEMENTAIRE`) |
 | ~~Périmètre pollué par 150 k objets logiques~~ | ✅ **Corrigé** : MV recentrée sur les tables physiques |
 | Signal d'accès (lecture) indisponible pour SYSADM (`ORA-00942`, sondé) | ✅ **Prêt à activer** : extracteur `segment_access` + 6ᵉ dimension `access_band` branchés (inertes) ; un `GRANT SELECT ON SYS.V_$SEGMENT_STATISTICS TO SYSADM` les active sans modif de code |
-| `purge_event_count = 0` (MongoDB hors scope) | Connecter `raw_mongo.archlog_purge` → signal d'usage |
+| `purge_event_count = 0` (périmètre Oracle-only : pas de journal de purge dans la source) | Signal d'usage à dériver de `ALL_TAB_MODIFICATIONS` / statistiques de segments |
 | Planchers de rétention codés par défaut (FR) | Externaliser dans une table éditable (par juridiction) |
 | Âge = inactivité de la table, pas âge de la donnée | `age_days` proxy : une table active peut contenir de la donnée hors rétention (et inversement) |
 | Double comptage ps_record + oracle_table | Le même fichier physique peut apparaître 2× (record PS + table Oracle) |

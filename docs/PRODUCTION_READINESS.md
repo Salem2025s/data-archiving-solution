@@ -49,7 +49,7 @@ Il **n'est pas, en l'état, apte à prendre seul des décisions d'archivage en p
 | # | Dimension | Niveau | Cible | État actuel (preuves) |
 |---|---|:--:|:--:|---|
 | 1 | **Architecture & données** | 🟢 N3 | N4 | Médaillon `raw→processed→serving`, idempotence DELETE+INSERT par `run_id`, hash SHA-256, `admin.pipeline_run`. Écart : contrats de qualité de données / validation de schéma. |
-| 2 | **Pipeline & orchestration** | 🟡 N2-3 | N4 | Flows Prefect (`flow_full_pipeline`), resume Oracle, tolérance par préfixe. Écart : serveur Prefect prod, infra-as-code, secrets gérés. |
+| 2 | **Pipeline & orchestration** | 🟡 N2-3 | N4 | Flows Prefect (`flow_oracle_only`), resume Oracle, tolérance par préfixe. Écart : serveur Prefect prod, infra-as-code, secrets gérés. |
 | 3 | **Classification ML** | 🟢 N3 | N4 | 2 passes prod (mots-clés + LinearSVC+Platt) + **XLM-R v3 ONNX** (feature gating, Focal Loss, ECE 0,011, SLA offsets). Interface de test Streamlit intégrée. Écart : **Finance rappel 0,84 < SLA 0,90**, non prouvé sur le physique. |
 | 4 | **Moteur de règles & décision** | 🟢 N3 | N4 | Data-driven, **domaine = input** (`CONSERVATION_REGLEMENTAIRE`), 6 dimensions NULL-safe. Écart : rétention = **défauts FR codés, non validés juridiquement**. |
 | 5 | **Sûreté de décision** | 🟡 N3 | N4 | **Phase 0 implémentée** : fail-safe `confidence < 0,60 → A_EVALUER`, approval queue, audit trail en base, masquage PII. Offsets SLA per-classe (Phase 1). Écart : réversibilité prouvée, gate d'approbation humaine non encore wired E2E. |

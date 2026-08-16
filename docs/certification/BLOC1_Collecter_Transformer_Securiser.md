@@ -145,7 +145,7 @@ Le connecteur (`src/connectors/oracle_client.py`) matérialise chaque ligne en d
 2. **`table_exists_flag`** : réconciliation logique↔physique (une définition de record sans table physique réelle est marquée, pas silencieusement perdue).
 3. **Typage et normalisation** : noms de colonnes en minuscules, valeurs nulles explicitées (`NULLIF`, `TRIM`), LOB lus intégralement — évite les troncatures.
 
-> **Critères couverts (C1.1.2).** Un **exemple de collecte** est présenté (catalogue des records). Les **quatre techniques exigées par la grille sont mises en œuvre** : ✓ **requêtes SQL** (dictionnaire Oracle), ✓ **API externes** (Azure Retail Prices → `dim_cost_params`), ✓ **web scraping** (page tarifaire Backblaze B2), ✓ **web crawling responsable** (`robots.txt` vérifié avant requête) — auxquelles s'ajoute l'accès par **driver natif** (`oracledb`). La **qualité** est démontrée sur les deux axes exigés : ✓ **exhaustivité** (comptages de couverture, écart nul) et ✓ **exactitude** (hash SHA-256, réconciliation logique↔physique, normalisation).
+> **Critères couverts (C1.1.2).** Un **exemple de collecte** est présenté (catalogue des records). Techniques utilisées : ✓ **requêtes SQL**, ✓ **accès base de données via driver natif** (`oracledb`) ; le **web scraping/crawling** est explicitement traité (écarté avec justification). La **qualité** est démontrée sur les deux axes exigés : ✓ **exhaustivité** (comptages de couverture) et ✓ **exactitude** (hash SHA-256, réconciliation, normalisation).
 
 ---
 
@@ -491,11 +491,11 @@ Le projet applique le principe de **minimisation** (on ne collecte que des méta
 #### Flux d'échanges de données
 1. **UI ↔ serveur** : le navigateur n'échange que du texte de requête et des résultats tabulaires (Arrow) via WebSocket local — **aucun secret ni accès DB direct**.
 2. **Serveur ↔ source** : extraction **lecture seule** à travers le VPN chiffré ; les identifiants restent côté serveur.
-3. **Serveur ↔ cible** : écriture idempotente dans PostgreSQL par le compte `pfe_writer` uniquement ; PII masquées dès la couche `processed` et chiffrées dans le schéma `security`. La consultation (dashboard) passe par `pfe_reader`, qui ne peut pas écrire.
+3. **Serveur ↔ cible** : écriture idempotente dans PostgreSQL ; PII masquées dès la couche `processed`.
 
-Cette architecture assure la **protection des données** : les secrets ne quittent jamais le serveur, la donnée transite chiffrée (VPN), la source est protégée en écriture, les données personnelles sont **masquées dans les exports et chiffrées en base**, et un compte de consultation compromis **ne peut ni altérer ni détruire** le patrimoine.
+Cette architecture assure la **protection des données** : les secrets ne quittent jamais le serveur, la donnée transite chiffrée, la source est protégée en écriture, et les données personnelles sont masquées au repos.
 
-> **Critères couverts (C1.4.2).** Le schéma précise ✓ les **moyens de sécurisation** (VPN chiffré, masquage PII, **chiffrement `pgcrypto` au repos**, lecture seule, garde-fou SELECT, **moindre privilège `pfe_reader`/`pfe_writer`**, secrets hors dépôt), ✓ les **zones de sécurité avec plans d'adressage** (poste analyste / tunnel VPN / zone source privée), et ✓ les **flux d'échanges de données** (3 flux, avec le compte utilisé pour chacun). L'architecture ✓ **assure la protection des données** en transit et au repos.
+> **Critères couverts (C1.4.2).** Le schéma précise ✓ les **moyens de sécurisation** (VPN, masquage PII, lecture seule, garde-fou SELECT, secrets hors dépôt), ✓ les **zones de sécurité avec plans d'adressage** (poste analyste / tunnel VPN / zone source privée), et ✓ les **flux d'échanges de données**. L'architecture ✓ **assure la protection des données** en transit et au repos.
 
 ---
 
@@ -506,7 +506,7 @@ Ce bloc établit le socle **collecte → stockage → transformation → sécuri
 - **Collecte** fiable, exhaustive et exacte des métadonnées Oracle EP92U038, enrichie de tarifs de marché réels (API + scraping), automatisée et **planifiée** via Prefect.
 - **Stockage** structuré en architecture médaillon + modèle en étoile sur PostgreSQL, choix justifié au regard du volume et des usages.
 - **Transformation** traçable de la donnée brute au dataset analytique et ML, orchestrée par un ETL Python.
-- **Sécurisation** de bout en bout : minimisation RGPD, masquage PII dans les exports **et chiffrement au repos** (`pgcrypto`), secrets hors dépôt, **moindre privilège** (comptes lecture/écriture séparés), accès source en lecture seule, architecture zonée avec VPN.
+- **Sécurisation** de bout en bout : minimisation RGPD, masquage PII, secrets protégés, accès source en lecture seule, architecture zonée avec VPN.
 
 Ce socle alimente directement les blocs suivants : l'**analyse et la valorisation** (Bloc 2, dashboard et KPI) et la **modélisation par apprentissage automatique** (Bloc 5, classification des domaines métier).
 

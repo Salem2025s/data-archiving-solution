@@ -45,7 +45,8 @@
 **Seuil de classification :**
 - Minimum **2 hits** dans un domaine
 - Ratio de dominance **≥ 3.0×** (le domaine gagnant a 3× plus de hits que le 2ème)
-- → `confidence = 0.95`, `model_version = "keyword_<domain>"`
+- → `confidence` **graduée 0,70–0,90** (base 0,70 + bonus d'occurrences + bonus de
+  dominance, bornée à 0,90), `model_version = "keyword_<domain>"`
 
 **Couverture :** 44 568 assets classifiés en passe 1 (26,6 %)
 
@@ -90,8 +91,8 @@ ProductionPreprocessor → LinearSVC (Platt calibration)
 
 | Feature | Modalités |
 |---|---|
-| `source_system` | `oracle`, `peoplesoft`, `mongodb` |
-| `asset_type` | `oracle_table`, `ps_record`, `mongo_collection` |
+| `source_system` | `oracle`, `peoplesoft` |
+| `asset_type` | `oracle_table`, `ps_record` |
 | `has_profile_data` | `True`, `False` |
 
 ### 3.4 Assemblage
@@ -115,7 +116,7 @@ scipy.sparse.hstack([tfidf_char, tfidf_word, numeric_scaled, ohe_encoded])
 |---|---|
 | `business_domain_predicted` | Domaine prédit (label) |
 | `business_domain_alt` | 2ème domaine le plus probable |
-| `confidence` | Probabilité calibrée [0, 1] (passe 2) ou `0.95` fixe (passe 1 keyword) |
+| `confidence` | Probabilité calibrée [0, 1] (passe 2) ou confiance graduée `0,70–0,90` (passe 1 keyword) |
 | `confidence_band` | `high` (≥ 0.85), `medium` (≥ 0.60), `low` (< 0.60) — 3 bandes (`_confidence_band`) |
 | `review_required` | `true` si bande `low`, **ou** prédiction `Other`, **ou** top-1/top-2 trop proches (marge ≤ 0.05) |
 | `model_version` | Passe 2 : version de l'artefact (`<pipeline_version>_<timestamp>`, ex. `v3.0_20260421_110952`). Passe 1 : `keyword_rule/<version>` |

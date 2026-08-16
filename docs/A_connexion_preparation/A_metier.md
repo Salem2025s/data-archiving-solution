@@ -120,4 +120,4 @@ C'est la **brique sur laquelle reposent toutes les autres parties** du PFE.
 
 - **Accès Oracle via VPN** : la source est sur le réseau interne de l'entreprise.
 - **Photo à un instant T** : chaque extraction est un instantané ; les volumes évoluent à chaque run.
-- **MongoDB hors scope** : les collections MongoDB (termes métier, historiques de purge) sont prévues dans l'architecture mais pas encore connectées dans cette phase.
+- **Source unique Oracle** : ce projet se limite à la source Oracle PeopleSoft EP92U038. Certains signaux (historiques de purge réels, termes métier externes) ne sont donc pas disponibles ; ils sont dérivés des seules métadonnées Oracle ou laissés vides et documentés comme tels.
