@@ -16,11 +16,12 @@ from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
-from docx.shared import Pt, RGBColor
+from docx.shared import Cm, Pt, RGBColor
 
 ACCENT = RGBColor(0x25, 0x63, 0xEB)      # bleu corporate
 GREY   = RGBColor(0x4B, 0x55, 0x63)
 CODE_BG = "F1F3F8"
+IMG_W = Cm(15.5)
 
 
 def _shade(cell, hex_color: str) -> None:
@@ -104,9 +105,28 @@ def _add_md_table(doc: Document, rows: list[str]) -> None:
             _add_runs_with_bold(wr[j].paragraphs[0], txt)
 
 
+def _add_image(doc: Document, path: Path, caption: str) -> None:
+    """Insère une image centrée avec sa légende en italique."""
+    if not path.exists():
+        p = doc.add_paragraph()
+        _add_runs_with_bold(p, f"[image introuvable : {path}]")
+        return
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.add_run().add_picture(str(path), width=IMG_W)
+    if caption:
+        cap = doc.add_paragraph()
+        cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = cap.add_run(caption)
+        run.italic = True
+        run.font.size = Pt(9)
+        run.font.color.rgb = GREY
+
+
 def convert(md_path: Path) -> Path:
     text = md_path.read_text(encoding="utf-8")
     lines = text.split("\n")
+    base_dir = md_path.parent
     doc = Document()
     _style_base(doc)
 
@@ -114,6 +134,16 @@ def convert(md_path: Path) -> Path:
     n = len(lines)
     while i < n:
         line = lines[i]
+
+        # Image Markdown ![légende](chemin)
+        m_img = re.match(r"^!\[(.*?)\]\((.*?)\)\s*$", line.strip())
+        if m_img:
+            caption, rel = m_img.group(1), m_img.group(2)
+            candidate = (base_dir / rel)
+            path = candidate if candidate.exists() else (Path.cwd() / rel)
+            _add_image(doc, path, caption)
+            i += 1
+            continue
 
         # Bloc de code / diagramme ```
         if line.strip().startswith("```"):
