@@ -1,0 +1,47 @@
+name: CI
+
+# Intégration continue : à chaque push / PR sur main, on lint (advisory) et on
+# exécute la suite de tests. Les tests tournent SANS base de données (isolés,
+# déterministes), donc la CI ne nécessite aucun service externe.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Lint (ruff — advisory)
+        continue-on-error: true
+        run: |
+          pip install ruff
+          ruff check src/ scripts/ tests/
+
+      - name: Run tests (pytest — gate)
+        run: pytest
+
+      - name: Regression guard — train/inférence parity
+        run: pytest tests/test_score_features.py -q

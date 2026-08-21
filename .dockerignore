@@ -1,0 +1,26 @@
+# Environnement et cache
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Secrets et données locales (jamais dans l'image)
+.env
+*.env
+!.env.example
+
+# Artefacts lourds (le modèle DL de 2,1 Go n'entre pas dans l'image de prod)
+artifacts/xlmr_v3/artifacts/model.onnx.data
+artifacts/**/tokenizer.json
+exports/
+LLM/
+*.onnx.data
+*.joblib.zip
+
+# Documentation et certification (hors runtime)
+docs/
+.github/
+.git/
+tests/
+*.md

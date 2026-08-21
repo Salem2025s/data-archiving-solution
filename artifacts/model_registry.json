@@ -1,0 +1,30 @@
+[
+  {
+    "version": "v3.4-human",
+    "algo": "LinearSVC+Platt",
+    "path": "LLM/artifacts_business_domain/production_pipeline_latest.joblib",
+    "sha256_16": "5502be7c3f83e34a",
+    "metrics": {
+      "macro_f1": 0.869,
+      "accuracy": 0.907,
+      "ece": null
+    },
+    "git_commit": "cb830dc",
+    "registered_at": "2026-08-20T17:22:55+00:00",
+    "stage": "production"
+  },
+  {
+    "version": "xlmr-v3",
+    "algo": "XLM-RoBERTa",
+    "path": "artifacts/xlmr_v3/artifacts/model.onnx",
+    "sha256_16": "420f0682a6763e03",
+    "metrics": {
+      "macro_f1": 0.802,
+      "accuracy": 0.838,
+      "ece": 0.011
+    },
+    "git_commit": "cb830dc",
+    "registered_at": "2026-08-20T17:22:55+00:00",
+    "stage": "staging"
+  }
+]
