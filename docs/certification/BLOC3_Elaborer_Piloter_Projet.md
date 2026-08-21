@@ -87,7 +87,7 @@ Je distingue le **projet réalisé** (prototype, solo) du **scénario de mise en
 | Phase | Projet réalisé (prototype) | Scénario de déploiement client |
 |---|---|---|
 | Rôles | 1 personne, plusieurs casquettes (data engineer, ML engineer, data analyst) | Équipe cible de 3-4 : chef de projet data, data engineer, ML engineer, analyste métier |
-| Charge | ~2 mois-homme (juin-juillet 2026) | ~4-6 mois-équipe pour une industrialisation |
+| Charge | ~5 mois calendaires (09/03 → fin 07/2026), à temps partiel | ~4-6 mois-équipe pour une industrialisation |
 
 #### Ressources matérielles et logistiques
 
@@ -99,13 +99,13 @@ Je distingue le **projet réalisé** (prototype, solo) du **scénario de mise en
 
 #### Chiffrage (coût et délai)
 
-Au stade prototype, le coût est essentiellement **humain** : ~2 mois-homme, l'infrastructure étant open-source et locale (coût marginal). Pour un déploiement client, le chiffrage indicatif : ~4-6 mois-équipe + une infrastructure d'hébergement modeste (le modèle de production LinearSVC pèse quelques Mo, pas d'exigence GPU en inférence batch). **Délai réalisé du prototype : 8 semaines** (2 juin → fin juillet 2026).
+Au stade prototype, le coût est essentiellement **humain**, l'infrastructure étant open-source et locale (coût marginal). Pour un déploiement client, le chiffrage indicatif : ~4-6 mois-équipe + une infrastructure d'hébergement modeste (le modèle de production LinearSVC pèse quelques Mo, pas d'exigence GPU en inférence batch). **Délai réalisé du prototype : ~5 mois** (09/03 → fin 07/2026), en travail à temps partiel.
 
 #### Analyse de faisabilité
 
 La faisabilité est **démontrée** : le prototype fonctionne de bout en bout sur des données réelles (167 260 actifs classés, coûts et ROI calculés, sécurité opérationnelle). Les risques identifiés — dépendance VPN, absence de vérité terrain — sont documentés et assortis de mesures (résilience réseau, garde-fou humain). Le choix d'outils open-source et d'un modèle de production léger garantit la **transposabilité** chez un client.
 
-> **Critères couverts (C3.1.2).** Le dimensionnement comporte **les ressources humaines** (solo réalisé vs équipe cible 3-4), **les ressources matérielles et logistiques** (poste, Docker/PostgreSQL, VPN, outils open-source), **un chiffrage coût/délai** (~2 mois-homme réalisés en 8 semaines ; ~4-6 mois-équipe pour l'industrialisation) et **une analyse de faisabilité** (prototype fonctionnel sur données réelles, risques maîtrisés, transposabilité assurée).
+> **Critères couverts (C3.1.2).** Le dimensionnement comporte **les ressources humaines** (solo réalisé vs équipe cible 3-4), **les ressources matérielles et logistiques** (poste, Docker/PostgreSQL, VPN, outils open-source), **un chiffrage coût/délai** (~5 mois calendaires à temps partiel ; ~4-6 mois-équipe pour l'industrialisation) et **une analyse de faisabilité** (prototype fonctionnel sur données réelles, risques maîtrisés, transposabilité assurée).
 
 ---
 
@@ -145,20 +145,20 @@ Cette structure fait office de **cahier des charges vivant** : les spécificatio
 
 J'ai conduit le projet en **Kanban** (flux continu), et non en Scrum. **Justification** : un projet exploratoire de data science, mené en solo, voit ses priorités évoluer au fil des découvertes (ex. le score d'archivabilité s'est révélé dégénéré, imposant une réorientation). Le flux continu du Kanban — *à faire → en cours → fait*, avec limitation du travail en cours — épouse cette réalité mieux que des sprints time-boxés, dont les rituels (daily, review, rétro) sont surdimensionnés pour une personne. **Bénéfices attendus** : visualisation permanente de l'avancement, souplesse de repriorisation, réduction du travail en cours simultané.
 
-L'outil de planification est un **tableau Kanban** jalonné par les échéances de certification, cohérent avec la méthodologie (flux + jalons), et matérialisé dans le suivi Git.
+L'outil de planification est un **tableau Kanban** jalonné par les échéances de certification, cohérent avec la méthodologie (flux + jalons), et matérialisé dans le suivi (runs pipeline en amont, historique Git à partir de juin).
 
-#### Découpage en phases (planning réel, issu de l'historique Git)
+#### Découpage en phases (planning réel)
 
-Le planning ci-dessous est **authentique** : il est reconstruit à partir des dates de commits réelles.
+Le projet a **débuté le 9 mars 2026**. Le planning ci-dessous est **authentique** : les premières phases sont datées par les runs réels journalisés dans `admin.pipeline_run`, les suivantes par l'historique Git (le dépôt ayant été formalisé en juin).
 
-| Phase | Période | Contenu |
-|---|---|---|
-| **P0 — Socle & collecte** | 02/06 | Pipeline initial, collecte Oracle, socle de tests, récit honnête |
-| **P1 — Analyse & valorisation** | 03/06 | Comparaison N-1, ROI Monte-Carlo (E2/E3) |
-| **P2 — Sûreté & fiabilité** | 05/06 | Fail-safe, audit trail, masquage PII ; calibration, SLA rappel, drift |
-| **P3 — Deep Learning** | 19/06 | Fine-tuning XLM-R v1/v3, page de test interactif |
-| **P4 — Sécurité & externalisation** | 17/07 | API Azure, scraping, pgcrypto, rôles, refonte dashboard |
-| **P5 — Certification** | 07-08/26 | Dossiers Bloc 1, 2, 3, 5 |
+| Phase | Période | Contenu | Jalons réels |
+|---|---|---|---|
+| **P0 — Cadrage & collecte** | 09/03 → 31/03 | Connexion Oracle, extraction des métadonnées, premiers cycles | runs 3 (13/03) et 4 (23/03) |
+| **P1 — Modélisation & analyse** | 04 → 05 | Modèle en étoile, classification, comparaison N-1, ROI Monte-Carlo | runs 5 (22/04) et 6 (31/05) |
+| **P2 — Sûreté & fiabilité** | début 06 | Fail-safe, audit trail, masquage PII ; calibration, SLA rappel, drift | commits `phase0`, `phase1` |
+| **P3 — Deep Learning** | 09-19/06 | Fine-tuning XLM-R v1/v3, page de test interactif | commits `xlmr` |
+| **P4 — Sécurité & externalisation** | 07-17/07 | API Azure, scraping, pgcrypto, rôles, refonte dashboard | commits `extract`, `security` |
+| **P5 — Certification** | 14/07 → 08/26 | Dossiers Blocs 1, 2, 3, 5 | commits `docs(certification)` |
 
 #### Répartition des activités (RACI — scénario de déploiement)
 
@@ -179,10 +179,10 @@ Le planning intègre l'accessibilité dès la conception : le livrable de restit
 
 #### Points de vigilance
 
-- **Chemin critique** : la disponibilité du VPN conditionne toute extraction Oracle — un blocage réseau gèle la collecte. Mesure : résilience réséau (retry, keepalive) et découplage (la couche analytique se recalcule sans VPN).
+- **Chemin critique** : la disponibilité du VPN conditionne toute extraction Oracle — un blocage réseau gèle la collecte. Mesure : résilience réseau (retry, keepalive) et découplage (la couche analytique se recalcule sans VPN).
 - **Compétence rare** : le fine-tuning de transformers (XLM-R) est une compétence spécialisée, point de fragilité si portée par une seule personne. Mesure : documentation + montée en compétences (C3.3.1).
 
-> **Critères couverts (C3.2.1).** **Le choix de la méthodologie (Kanban) est justifié** avec ses bénéfices (souplesse, visualisation, limitation du travail en cours) ; **l'outil (tableau Kanban jalonné) est compatible** avec elle. **Le planning est découpé en phases** (P0→P5, dates Git réelles) et **permet de visualiser les phases** (collecte, analyse, restitution). **Les tâches sont assignées selon les compétences (matrice RACI)** et **tiennent compte des personnes en situation de handicap** (accessibilité, postes aménageables). **Les points de vigilance sont soulignés** (chemin critique VPN, compétence rare transformer).
+> **Critères couverts (C3.2.1).** **Le choix de la méthodologie (Kanban) est justifié** avec ses bénéfices (souplesse, visualisation, limitation du travail en cours) ; **l'outil (tableau Kanban jalonné) est compatible** avec elle. **Le planning est découpé en phases** (P0→P5, dates réelles issues des runs pipeline puis de l'historique Git) et **permet de visualiser les phases** (collecte, analyse, restitution). **Les tâches sont assignées selon les compétences (matrice RACI)** et **tiennent compte des personnes en situation de handicap** (accessibilité, postes aménageables). **Les points de vigilance sont soulignés** (chemin critique VPN, compétence rare transformer).
 
 ---
 
@@ -194,15 +194,15 @@ Le suivi s'appuie sur **trois outils complémentaires**, cohérents avec le Kanb
 
 #### Outils de suivi
 
-1. **Git** — journal exhaustif de l'avancement (27 commits datés, messages structurés `feat/fix/docs`), qui matérialise le flux Kanban (chaque commit = une carte terminée).
-2. **`admin.pipeline_run`** — table de traçabilité des exécutions du pipeline (run_id, flow, statut `success`/`failed`, horodatages début/fin) : suivi opérationnel des traitements.
+1. **`admin.pipeline_run`** — table de traçabilité des exécutions (run_id, flow, statut `success`/`failed`, horodatages) : c'est le suivi des **phases amont** (mars-mai), avant la formalisation du dépôt.
+2. **Git** — journal de l'avancement à partir de juin (commits datés, messages structurés `feat/fix/docs`), qui matérialise le flux Kanban (chaque commit = une carte terminée).
 3. **Dashboard Streamlit** — tableau de bord vivant des indicateurs métier et de l'historique des runs.
 
 #### Indicateurs de suivi (argumentés)
 
 | Indicateur | Type | Ce qu'il pilote |
 |---|---|---|
-| Nb de commits / phase | Quantitatif | Avancement du développement |
+| Jalons atteints / phase (runs, commits) | Quantitatif | Avancement du développement |
 | Statut des runs (`success`/`failed`) | Quantitatif | Santé opérationnelle du pipeline |
 | Couverture de classification (% classés) | Quantitatif | Complétude de l'analyse |
 | Taux de revue (`review_required`) | Qualitatif | Qualité / fiabilité des résultats |
@@ -370,7 +370,7 @@ Face à des ressources limitées (projet solo), j'ai **priorisé la confidential
 Ce bloc démontre la **conduite de bout en bout** d'un projet data :
 
 - **Cadrer et dimensionner** : problématique, objectifs, cadre RGPD, contraintes et RSE clairement posés ; dimensionnement honnête (solo réalisé, équipe cible pour l'industrialisation) et faisabilité prouvée.
-- **Planifier et suivre** : méthodologie **Kanban** justifiée, planning **réel issu de l'historique Git** (6 phases), matrice RACI pour le déploiement, et un suivi outillé (Git + `pipeline_run` + dashboard) avec indicateurs argumentés.
+- **Planifier et suivre** : méthodologie **Kanban** justifiée, planning **réel** (6 phases, du 09/03 au 29/08), matrice RACI pour le déploiement, et un suivi outillé (Git + `pipeline_run` + dashboard) avec indicateurs argumentés.
 - **Constituer et piloter l'équipe** : plan de compétences, outils managériaux et un **cas d'arbitrage réel** (production LinearSVC vs XLM-R) tranché et documenté.
 - **Veiller et agir responsable** : veille technique et tarifaire outillée, et un plan d'actions RSE/sécurité/éthique **majoritairement déjà réalisé** (RGPD, moindre privilège, IA honnête, archivage vertueux).
 
@@ -380,7 +380,7 @@ La conduite du projet reflète le même principe que sa technique : **l'honnête
 
 ## Annexes (hors décompte de pages)
 
-- **A. Planning détaillé** : phases P0→P5 avec commits Git de référence.
+- **A. Planning détaillé** : phases P0→P5 avec jalons réels (runs pipeline + commits Git) et diagramme de Gantt.
 - **B. Matrice RACI** : équipe cible de déploiement.
 - **C. Grille de compétences** : actuelles vs à acquérir, plan de formation.
 - **D. Cas d'arbitrage** : fiche de décision LinearSVC vs XLM-R (chiffres comparés).
