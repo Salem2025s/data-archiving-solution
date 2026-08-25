@@ -188,7 +188,7 @@ def get_engine():
     )
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=900, show_spinner=False)
 def run_query(sql: str) -> pd.DataFrame:
     with get_engine().connect() as conn:
         return pd.read_sql(text(sql), conn)
@@ -202,7 +202,7 @@ def safe_query(sql: str) -> pd.DataFrame:
         return pd.DataFrame()
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=900, show_spinner=False)
 def run_query_params(sql: str, params: tuple[tuple, ...]) -> pd.DataFrame:
     """Parameterized query — params is a tuple of (name, value) pairs (hashable for cache)."""
     p = dict(params)
@@ -315,7 +315,7 @@ def run_command(label: str, module: str, extra_args: list[str] | None = None) ->
 
         if proc.returncode == 0:
             status.update(label=f"{label} — terminé ✅", state="complete")
-            run_query.clear()  # invalider le cache pour refléter les nouvelles données
+            st.cache_data.clear()  # invalide TOUT le cache data (run_query + run_query_params)
         else:
             status.update(label=f"{label} — échec (code {proc.returncode}) ❌", state="error")
 
@@ -353,6 +353,7 @@ st.sidebar.markdown(
 # Navigation (icône + libellé pour un rendu homogène)
 _NAV = {
     "🏠  Vue d'ensemble":  "Vue d'ensemble",
+    "🔎  Recherche":        "Recherche",
     "🗂️  Domaines":         "Domaines",
     "🔗  Clés partagées":   "Clés partagées",
     "📦  Archivage":        "Archivage",
@@ -368,7 +369,7 @@ section = _NAV[_nav_label]
 
 st.sidebar.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 st.sidebar.button("🔄  Rafraîchir les données", on_click=st.cache_data.clear,
-                  use_container_width=True)
+                  width='stretch')
 
 
 # ===========================================================================
@@ -441,7 +442,7 @@ if section == "Vue d'ensemble":
                 )
                 .properties(height=340)
             )
-            st.altair_chart(donut, use_container_width=True)
+            st.altair_chart(donut, width='stretch')
 
         with col_b:
             st.subheader("Volume stocké par domaine (Mo)")
@@ -462,7 +463,7 @@ if section == "Vue d'ensemble":
                 y=alt.Y("domain_label:N", sort="-x"),
                 text=alt.Text("total_size_mb:Q", format=",.0f"),
             )
-            st.altair_chart((_bv + _lv).properties(height=340), use_container_width=True)
+            st.altair_chart((_bv + _lv).properties(height=340), width='stretch')
 
     # ── Synthèse des recommandations d'archivage ─────────────────────────────
     if not archiving.empty:
@@ -504,13 +505,115 @@ if section == "Vue d'ensemble":
         )
         st.altair_chart(
             (strat_bars + strat_lbl).properties(height=max(200, len(by_strat) * 46)),
-            use_container_width=True,
+            width='stretch',
         )
 
 
 # ===========================================================================
 # 2. DOMAINES
 # ===========================================================================
+elif section == "Recherche":
+    page_header(
+        "Recherche de table",
+        "Retrouvez une table par son nom et consultez sa fiche complète",
+        "🔎",
+    )
+
+    query = st.text_input(
+        "Nom de la table (ou fragment)",
+        placeholder="ex. PS_JRNL, EMPLOYEES, VOUCHER…",
+    ).strip()
+    fc1, fc2 = st.columns(2)
+    bands = fc1.multiselect(
+        "Bande de confiance", ["high", "medium", "low"], default=[],
+        help="Filtrer par fiabilité de la classification",
+    )
+    review_choice = fc2.selectbox("Statut de revue", ["(tous)", "À réviser", "Validé"])
+
+    if not query and not bands and review_choice == "(tous)":
+        st.info(
+            "Saisissez un nom de table **ou** utilisez les filtres "
+            "(ex. « à réviser » pour lister toutes les tables incertaines)."
+        )
+        st.stop()
+
+    _where = ["s.run_id = (SELECT MAX(run_id) FROM processed.dim_asset)"]
+    _params: dict = {}
+    if query:
+        _where.append("s.technical_name ILIKE :pattern")
+        _params["pattern"] = f"%{query}%"
+    _safe_bands = [b for b in bands if b in ("high", "medium", "low")]
+    if _safe_bands:
+        _where.append("s.confidence_band IN (" + ",".join(f"'{b}'" for b in _safe_bands) + ")")
+    if review_choice == "À réviser":
+        _where.append("s.review_required = true")
+    elif review_choice == "Validé":
+        _where.append("s.review_required = false")
+
+    _SEARCH_SQL = f"""
+        SELECT s.technical_name,
+               s.business_domain_predicted AS domaine,
+               s.business_domain_alt       AS domaine_alt,
+               s.confidence, s.confidence_band,
+               s.review_required, s.review_reason,
+               inv.schema_name, inv.description,
+               inv.size_mb, inv.column_count, inv.row_count,
+               inv.archival_candidate_score, inv.roi_score
+        FROM serving.v_asset_business_domain_scored s
+        JOIN serving.mv_asset_inventory inv
+          ON inv.asset_id = s.asset_id AND inv.run_id = s.run_id
+        WHERE {" AND ".join(_where)}
+        ORDER BY s.technical_name
+        LIMIT 200
+    """
+    res = safe_query_params(_SEARCH_SQL, _params) if _params else safe_query(_SEARCH_SQL)
+    if res.empty:
+        st.warning("Aucune table ne correspond à ces critères.")
+        st.stop()
+
+    st.caption(
+        f"{len(res)} table(s) trouvée(s)"
+        + (" — affichage limité aux 200 premières" if len(res) == 200 else "")
+    )
+
+    picked = st.selectbox("Sélectionner une table pour voir sa fiche", res["technical_name"].tolist())
+    row = res[res["technical_name"] == picked].iloc[0]
+    band = str(row["confidence_band"])
+    band_icon = {"high": "🟢", "medium": "🟡", "low": "🔴"}.get(band, "⚪")
+
+    st.subheader(f"📄 {picked}")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Domaine prédit", str(row["domaine"]))
+    c2.metric("Confiance", f"{float(row['confidence'] or 0):.0%}", help=f"Bande : {band}")
+    c3.metric("Taille (Mo)", f"{float(row['size_mb'] or 0):.2f}")
+    c4.metric("Colonnes", int(row["column_count"] or 0))
+
+    if bool(row["review_required"]):
+        st.error(f"⚠️ À réviser avant toute décision — {row['review_reason'] or 'confiance insuffisante'}")
+    else:
+        st.success(f"{band_icon} Classification fiable ({band}) — exploitable")
+
+    with st.expander("Détails complets de la table"):
+        st.write({
+            "Domaine alternatif":       row["domaine_alt"],
+            "Schéma":                   row["schema_name"],
+            "Description":              row["description"] or "(aucune)",
+            "Nombre de lignes":         int(row["row_count"] or 0),
+            "Score d'archivabilité":    round(float(row["archival_candidate_score"] or 0), 1),
+            "Score ROI":                round(float(row["roi_score"] or 0), 1),
+        })
+
+    st.subheader("Tous les résultats")
+    st.dataframe(res, width="stretch", hide_index=True)
+    st.download_button(
+        "⬇️ Télécharger les résultats (CSV)",
+        res.to_csv(index=False).encode("utf-8"),
+        file_name=f"recherche_{query}.csv",
+        mime="text/csv",
+        width="stretch",
+    )
+
+
 elif section == "Domaines":
     page_header(
         "Profil par domaine métier",
@@ -523,6 +626,11 @@ elif section == "Domaines":
         st.stop()
 
     st.dataframe(profile, width="stretch", hide_index=True)
+    st.download_button(
+        "⬇️ Télécharger le profil par domaine (CSV)",
+        profile.to_csv(index=False).encode("utf-8"),
+        file_name="profil_par_domaine.csv", mime="text/csv",
+    )
 
     col_a, col_b = st.columns(2)
     with col_a:
@@ -555,7 +663,7 @@ elif section == "Domaines":
             y=alt.Y("domain_label:N", sort="-x"),
             text=alt.Text("avg_archival_score:Q", format=".2f"),
         )
-        st.altair_chart((_sc + _scl).properties(height=270), use_container_width=True)
+        st.altair_chart((_sc + _scl).properties(height=270), width='stretch')
     with col_b:
         st.subheader("Niveau de risque (hiérarchie de records PeopleSoft)")
         risk = profile[["domain_label", "avg_lineage_out", "risk_level"]].copy()
@@ -638,7 +746,7 @@ elif section == "Clés partagées":
     )
 
     st.subheader("Top 20 liens (nb records partagés)")
-    st.altair_chart((bars + labels).properties(height=500), use_container_width=True)
+    st.altair_chart((bars + labels).properties(height=500), width='stretch')
     st.dataframe(view, width="stretch", hide_index=True)
 
 
@@ -679,7 +787,7 @@ elif section == "Archivage":
                 y=alt.Y("recommended_strategy:N", sort="-x"),
                 text=alt.Text("volume_mb:Q", format=",.0f"),
             )
-            st.altair_chart((_bv + _lbv).properties(height=280), use_container_width=True)
+            st.altair_chart((_bv + _lbv).properties(height=280), width='stretch')
         with c2:
             st.subheader("Nb d'assets par stratégie")
             _bn = alt.Chart(by_strat).mark_bar(cornerRadiusEnd=3, color="#5ba85b").encode(
@@ -697,7 +805,7 @@ elif section == "Archivage":
                 y=alt.Y("recommended_strategy:N", sort="-x"),
                 text=alt.Text("nb_assets:Q", format=","),
             )
-            st.altair_chart((_bn + _lbn).properties(height=280), use_container_width=True)
+            st.altair_chart((_bn + _lbn).properties(height=280), width='stretch')
 
     with st.expander("📋 Politiques d'archivage (référentiel)"):
         st.dataframe(policies, width="stretch", hide_index=True)
@@ -733,6 +841,11 @@ elif section == "Archivage":
     )
     st.caption(f"{len(reco)} assets (top 300 par taille)")
     st.dataframe(reco, width="stretch", hide_index=True)
+    st.download_button(
+        "⬇️ Télécharger les recommandations (CSV)",
+        reco.to_csv(index=False).encode("utf-8"),
+        file_name="recommandations_archivage.csv", mime="text/csv",
+    )
 
 
 # ===========================================================================
@@ -762,7 +875,7 @@ elif section == "Coûts & ROI":
                     tooltip=["domain_label", "current_cost_usd_year", "cost_share_pct"],
                 )
             )
-            st.altair_chart(pie, use_container_width=True)
+            st.altair_chart(pie, width='stretch')
         with c2:
             st.subheader("Pareto des coûts")
             base = alt.Chart(cost).encode(
@@ -775,10 +888,15 @@ elif section == "Coûts & ROI":
             )
             st.altair_chart(
                 alt.layer(bars, line).resolve_scale(y="independent"),
-                use_container_width=True,
+                width='stretch',
             )
 
         st.dataframe(cost, width="stretch", hide_index=True)
+        st.download_button(
+            "⬇️ Télécharger les coûts par domaine (CSV)",
+            cost.to_csv(index=False).encode("utf-8"),
+            file_name="couts_par_domaine.csv", mime="text/csv",
+        )
 
     if not roi.empty:
         src = "observée" if (roi["growth_source"].iloc[0] == "observed") else "hypothèse"
@@ -810,7 +928,7 @@ elif section == "Coûts & ROI":
                     tooltip=["year_offset", "scénario", "coût_cumulé_usd"],
                 )
             )
-            st.altair_chart(line, use_container_width=True)
+            st.altair_chart(line, width='stretch')
         with cc2:
             st.caption("Économie nette cumulée — médiane + intervalle P10–P90 (Monte Carlo)")
             band = (
@@ -835,7 +953,7 @@ elif section == "Coûts & ROI":
                     ],
                 )
             )
-            st.altair_chart(band + median, use_container_width=True)
+            st.altair_chart(band + median, width='stretch')
 
         st.dataframe(roi, width="stretch", hide_index=True)
 
@@ -1166,9 +1284,9 @@ FROM serving.v_cost_by_domain ORDER BY cost_rank""", language="sql")
                 key="console_saved_pick", label_visibility="collapsed",
             )
             # NB : on modifie session_state[sql_key] AVANT la création du text_area
-            if lc2.button("📂 Charger", use_container_width=True) and picked != "—":
+            if lc2.button("📂 Charger", width='stretch') and picked != "—":
                 st.session_state[sql_key] = _bucket[picked]
-            if lc3.button("🗑️ Supprimer", use_container_width=True) and picked != "—":
+            if lc3.button("🗑️ Supprimer", width='stretch') and picked != "—":
                 _saved.get(_db_key, {}).pop(picked, None)
                 write_saved_queries(_saved)
                 st.success(f"Requête « {picked} » supprimée.")
@@ -1192,7 +1310,7 @@ FROM serving.v_cost_by_domain ORDER BY cost_rank""", language="sql")
         key="console_save_name", placeholder="ex. Top tables volumineuses",
         label_visibility="collapsed",
     )
-    if sv2.button("💾 Sauvegarder", use_container_width=True):
+    if sv2.button("💾 Sauvegarder", width='stretch'):
         _name = save_name.strip()
         if not _name:
             st.warning("Donne un nom à la requête avant de sauvegarder.")
@@ -1207,7 +1325,7 @@ FROM serving.v_cost_by_domain ORDER BY cost_rank""", language="sql")
     c1, c2, c3 = st.columns([2, 2, 6])
     max_rows = c1.number_input("Lignes max", min_value=10, max_value=5000,
                                 value=500, step=50, key="console_max_rows")
-    run_btn = c2.button("▶️ Exécuter", type="primary", use_container_width=True)
+    run_btn = c2.button("▶️ Exécuter", type="primary", width='stretch')
 
     if run_btn:
         sql_clean = sql_input.strip().rstrip(";")
@@ -1248,7 +1366,7 @@ FROM serving.v_cost_by_domain ORDER BY cost_rank""", language="sql")
                     df_res = df_res.head(int(max_rows))
                 st.success(f"✅ {len(df_res)} ligne(s) — {elapsed:.2f} s")
                 if not df_res.empty:
-                    st.dataframe(df_res, use_container_width=True, hide_index=True)
+                    st.dataframe(df_res, width='stretch', hide_index=True)
                     st.download_button(
                         "⬇️ Télécharger CSV",
                         df_res.to_csv(index=False).encode("utf-8"),
@@ -1287,7 +1405,7 @@ FROM serving.v_cost_by_domain ORDER BY cost_rank""", language="sql")
                     df_res = df_res.head(int(max_rows))
                 st.success(f"✅ {len(df_res)} ligne(s) — {elapsed:.2f} s")
                 if not df_res.empty:
-                    st.dataframe(df_res, use_container_width=True, hide_index=True)
+                    st.dataframe(df_res, width='stretch', hide_index=True)
                     st.download_button(
                         "⬇️ Télécharger CSV",
                         df_res.to_csv(index=False).encode("utf-8"),
@@ -1440,7 +1558,7 @@ elif section == "🤖 Test du modèle":
             key="pred__mode",
         )
 
-        submitted = st.form_submit_button("🔍 Prédire", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("🔍 Prédire", type="primary", width='stretch')
 
     apply_offsets: bool = mode_label.startswith("SLA")
 
@@ -1536,7 +1654,7 @@ elif section == "🤖 Test du modèle":
                     )
                     .properties(height=230)
                 )
-                st.altair_chart(chart, use_container_width=True)
+                st.altair_chart(chart, width='stretch')
 
                 # Détail JSON
                 with st.expander("Détail complet (JSON)"):
