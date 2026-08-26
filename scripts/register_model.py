@@ -19,6 +19,7 @@ import argparse
 import hashlib
 import json
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -98,6 +99,11 @@ def list_registry(_: argparse.Namespace) -> None:
 
 
 def main() -> None:
+    # Affichage robuste (★ + accents) même sur une console non-UTF-8 (Windows cp1252).
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
     ap = argparse.ArgumentParser(description="Registre de modèles ML")
     ap.add_argument("--list", action="store_true", help="afficher le registre")
     ap.add_argument("--model", type=str, help="chemin du modèle (.joblib / bundle)")
