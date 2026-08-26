@@ -10,12 +10,15 @@ __pycache__/
 *.env
 !.env.example
 
-# Artefacts lourds (le modèle DL de 2,1 Go n'entre pas dans l'image de prod)
-artifacts/xlmr_v3/artifacts/model.onnx.data
+# Artefacts lourds (les modèles DL de ~2 Go n'entrent pas dans l'image de prod ;
+# l'image sert le LinearSVC léger). `**` requis pour matcher les chemins imbriqués.
+**/*.onnx.data
+**/*.onnx
+artifacts/xlmr_v1/
+artifacts/xlmr_v3/
 artifacts/**/tokenizer.json
 exports/
 LLM/
-*.onnx.data
 *.joblib.zip
 
 # Documentation et certification (hors runtime)
