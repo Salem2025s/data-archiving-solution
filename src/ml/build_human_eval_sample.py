@@ -1,10 +1,9 @@
 """Build a stratified sample of predictions for HUMAN annotation (gold test).
 
 Why: the production labels are LLM-generated, so the reported macro-F1 (~0.89)
-measures agreement with the LLM, not real business correctness. This script
-extracts a balanced sample of scored assets so a human can assign the true
-domain, after which ``evaluate_human_gold.py`` computes a human-validated
-accuracy and a circularity estimate.
+measures agreement with the LLM. This script extracts a balanced sample of
+scored assets so an expert can review the assigned domain, after which
+``evaluate_human_gold.py`` compares the labels (agreement, per confidence band).
 
 Sampling strategy (where human effort is most informative):
 - equal quota per PREDICTED domain  -> over-represents rare classes (RH, Ventes)

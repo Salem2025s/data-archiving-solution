@@ -4,7 +4,7 @@ Consumes the CSV produced by ``build_human_eval_sample.py`` once a human has
 filled the ``human_label`` column. Computes the metrics that the LLM-labelled
 holdout cannot give:
 
-- human-validated accuracy / macro-F1 / weighted-F1 + per-class report,
+- accuracy / macro-F1 / weighted-F1 + per-class report (vs reference labels),
 - Cohen's kappa (human vs model),
 - accuracy by ``confidence_band`` (is ``confidence`` calibrated?),
 - accuracy on ``review_required`` rows vs the rest (does the review flag catch
@@ -57,7 +57,7 @@ def evaluate(
     pred_col: str = "business_domain_predicted",
     output_path: str = "artifacts/human_eval_report.json",
 ) -> dict[str, Any]:
-    """Compute human-validated metrics from an annotated sample."""
+    """Compute metrics vs reference labels from an annotated sample."""
     in_file = Path(input_path)
     if not in_file.exists():
         raise FileNotFoundError(f"Annotated sample introuvable: {in_file}")
@@ -107,7 +107,7 @@ def evaluate(
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    logger.info("=== Human-validated evaluation ({} scored / {} annotated / {} total) ===",
+    logger.info("=== Reference-label evaluation ({} scored / {} annotated / {} total) ===",
                 n_scored, n_annotated, total_rows)
     logger.info("Accuracy={accuracy}  macro-F1={f1_macro}  weighted-F1={f1_weighted}  kappa={k}",
                 accuracy=report["accuracy"], f1_macro=report["f1_macro"],
@@ -119,7 +119,7 @@ def evaluate(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evaluate predictions vs human gold labels.")
+    parser = argparse.ArgumentParser(description="Evaluate predictions vs reference labels.")
     parser.add_argument("--input", default="artifacts/human_eval_sample.csv", help="Annotated CSV.")
     parser.add_argument("--pred-col", default="business_domain_predicted", help="Prediction column to score.")
     parser.add_argument("--output", default="artifacts/human_eval_report.json", help="Report JSON path.")

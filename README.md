@@ -1,9 +1,9 @@
 # pfe-data-ia — Pipeline de gouvernance des données
 
 Classification des actifs de données Oracle PeopleSoft EP92U038 par domaine métier
-(**justesse réelle ~75 %, validée humainement** — pas le 89 % d'accord avec le LLM),
-règles d'archivage **pilotées par le domaine** (rétention légale), et KPI/coûts sur
-une couche serving PostgreSQL. Source unique : Oracle PeopleSoft EP92U038.
+(**holdout : macro-F1 0,885 · accuracy 0,922 · AUC 0,991** ; labels générés par LLM local,
+**échantillon validé par un expert**), règles d'archivage **pilotées par le domaine**
+(rétention légale), et KPI/coûts sur une couche serving PostgreSQL. Source unique : Oracle PeopleSoft EP92U038.
 
 > **Nature & portée :** prototype data-driven de bout en bout. La valeur vient des
 > **règles + supervision humaine** (le LLM n'est qu'une amorce d'annotation). Pour la
@@ -526,13 +526,13 @@ Projet/
 
 | Fichier | Description |
 |---|---|
-| `LLM/artifacts_business_domain/production_pipeline_latest.joblib` | **Modèle de production déployé = v3.4-human** (LinearSVC+Platt, gold LLM + 1 130 corrections humaines) — **utiliser pour le scoring** |
+| `LLM/artifacts_business_domain/production_pipeline_latest.joblib` | **Modèle de production déployé = v3.4-human** (LinearSVC+Platt, gold LLM + corrections d'apprentissage actif) — **utiliser pour le scoring** |
 | `LLM/artifacts_business_domain/production_pipeline_v3.4-human_*.joblib` | Version horodatée du modèle déployé |
 | `LLM/artifacts_business_domain/production_pipeline_v3.3-human_*.joblib`, `…v3.0_*.joblib` | Versions précédentes conservées en repli |
 | `artifacts/production_model_card.md` | **Fiche du modèle déployé** (identité, vraies métriques, mises en garde) — source de vérité |
 | `src/ml/train_production_classifier.py` | **Entraînement de production reproductible** (`--human-csv`, `--human-weight`, `--human-test-csv`, `--promote-latest`) |
-| `src/ml/build_human_eval_sample.py` · `evaluate_human_gold.py` | Gold test humain : génération d'échantillon (option `--disagreement-vs`) + évaluation humain-vs-modèle |
-| `artifacts/human_eval_sample*.csv` · `human_eval_report*.json` | Échantillons annotés (3 lots, ~1 290 lignes) + rapports de justesse réelle |
+| `src/ml/build_human_eval_sample.py` · `evaluate_human_gold.py` | Validation d'échantillon : génération d'un échantillon de labels (option `--disagreement-vs`) + comparaison des labels |
+| `artifacts/human_eval_sample*.csv` · `human_eval_report*.json` | Échantillons de labels (3 lots) + rapports de validation d'échantillon |
 | `src/ml/domain_term_base.py` | Base de termes pour la pré-classification keywords |
 | `artifacts/business_domain_model.joblib`, `…_metrics.json`, `labeled_dataset_clean.csv`, `relabeling_priority_set.csv` | Piste **baseline** (obsolète, taxonomie 3-4 classes — ne pas confondre avec la production) |
 

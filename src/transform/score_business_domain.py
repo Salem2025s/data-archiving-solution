@@ -196,7 +196,7 @@ _KEYWORD_DOMINANCE_RATIO = 3.0  # top domain must score >= N× the second-best
 # Confiance GRADUÉE (et non plus fixe) des règles mots-clés : elle reflète la
 # force de l'évidence (nb de correspondances + dominance sur le 2ᵉ domaine) et
 # reste bornée sous la certitude. Un flat 0.95 était surconfiant et plaçait
-# systématiquement ces lignes en bande "high" — non calibré vs. justesse réelle.
+# systématiquement ces lignes en bande "high" — non calibré vs. justesse observée.
 _KEYWORD_RULE_BASE_CONFIDENCE = 0.70  # base heuristique (bande "medium")
 _KEYWORD_RULE_MAX_CONFIDENCE = 0.90   # plafond honnête (cas les plus nets seulement)
 

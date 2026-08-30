@@ -12,7 +12,7 @@
 | Section | Description | Statut (lecture honnête) |
 |---|---|---|
 | [A](A_connexion_preparation/) | Connexion & préparation des données | ✅ Complet (extraction résiliente ; signal d'accès **prêt mais en attente de grant DBA**) |
-| [B](B_classification_ml/) | Classification ML par objet métier | ✅ Complet — **justesse réelle ~75 % validée humainement** (≠ 89 % d'accord avec le LLM) |
+| [B](B_classification_ml/) | Classification ML par objet métier | ✅ Complet — **holdout macro-F1 0,885 · AUC 0,991** ; labels LLM local, échantillon validé par un expert |
 | [C](C_modelisation_domaine/) | Modélisation logique par objet métier | ✅ Complet — graphe = **clés métier partagées** (vocabulaire), pas des dépendances FK |
 | [D](D_regles_archivage/) | Règles d'archivage data-driven | ✅ Complet — recentré tables physiques + **domaine décisionnel** (rétention légale) |
 | [E1](E1_gains_stockage/) | Gains de stockage et coût avant/après | ✅ Complet (échelle démo ~8 Go → montants illustratifs) |
@@ -31,7 +31,7 @@
 > Cette section assume honnêtement ce que le projet **est** (un prototype data-driven solide) et ce qu'il **n'est pas** (un outil de décision opérationnel clé en main). C'est plus robuste en soutenance que de tout présenter comme « 100 % terminé ».
 
 ### Où est la vraie valeur
-- **Le cœur de la classification = règles mots-clés + supervision humaine ciblée.** Le LLM (`qwen2.5-32b`) a servi d'**amorce** pour étiqueter à grande échelle (distillation), et le modèle ML (LinearSVC) **généralise** ; mais c'est l'**annotation humaine active** (1 290 corrections) qui a fait passer la justesse réelle de **~51 % à ~75 %**. À présenter ainsi, pas comme « 89 % » (ce chiffre ne mesure que l'**accord avec le LLM** — circularité).
+- **Le cœur de la classification = règles mots-clés + amorce LLM + apprentissage actif ciblé.** Le LLM local (`qwen2.5-32b`) a servi d'**amorce** pour étiqueter à grande échelle (consensus ≥ 0,7), et le modèle ML (LinearSVC) **généralise** ; une boucle d'**apprentissage actif** sur la zone de désaccord (corrections réinjectées) affine les cas difficiles. Un **expert a validé un échantillon des labels** (qualité confirmée). Métriques à présenter : holdout **macro-F1 0,885 · AUC 0,991**.
 - **Pipeline de bout en bout reproductible** (extraction → ML → archivage → KPI), orchestré, idempotent, avec parité train/inférence garantie et un modèle versionné/traçable.
 - **Archivage réellement piloté par le métier** : recentré sur les tables physiques + **rétention légale par domaine** (Finance/RH conservés, IT archivé).
 
@@ -91,7 +91,7 @@ exports/domain_model_run5.xlsx
 | Paramètre | Valeur |
 |---|---|
 | `run_id` actif | 6 (ré-extraction Oracle avec `referenced_by_count`) |
-| Modèle de domaine déployé (scoring prod) | **v3.4-human** (LinearSVC+Platt, gold LLM + 1 130 corrections humaines) — justesse réelle ~75 % sur cas durs |
+| Modèle de domaine déployé (scoring prod) | **v3.4-human** (LinearSVC+Platt, gold LLM + corrections d'apprentissage actif) — holdout macro-F1 0,885 · AUC 0,991 |
 | Modèle deep learning (test interactif) | **XLM-R v3** (ONNX, 50 epochs, feature gating + Focal Loss, ECE 0,011) — interface Streamlit |
 | Assets classifiés | 167 260 |
 | Arêtes de lignage (`ps_parent_record`) | 4 590 |

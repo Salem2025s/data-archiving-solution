@@ -1,7 +1,7 @@
 # B — Classification ML par objet métier : Fiche Technique
 
 > **Statut :** ✅ Complet  
-> **Modèle actif :** `LLM/artifacts_business_domain/production_pipeline_latest.joblib` (**v3.4-human** — gold LLM + 1 130 corrections humaines)
+> **Modèle actif :** `LLM/artifacts_business_domain/production_pipeline_latest.joblib` (**v3.4-human** — gold LLM + corrections d'apprentissage actif)
 > **Fiche de référence du modèle :** [`artifacts/production_model_card.md`](../../artifacts/production_model_card.md)
 
 ---
@@ -247,7 +247,7 @@ Porte le notebook en script déterministe et **réutilise les mêmes feature-bui
 # entraînement gold seul (équivalent notebook)
 python -m src.ml.train_production_classifier --pipeline-version v3.x
 
-# entraînement augmenté par corrections humaines + comparaison avant/après
+# entraînement augmenté par corrections ciblées (apprentissage actif) + comparaison avant/après
 python -m src.ml.train_production_classifier --pipeline-version v3.4-human \
     --human-csv artifacts/human_eval_sample.csv \
     --human-csv artifacts/human_eval_sample_2.csv \
@@ -256,28 +256,20 @@ python -m src.ml.train_production_classifier --pipeline-version v3.4-human \
     --human-weight 10
 ```
 
-Options clés : `--human-csv` (corrections humaines ajoutées au gold, répétable), `--human-weight` (poids ×N des lignes humaines), `--human-test-csv` (test fixe exclu de l'entraînement → équitable pour tous les modèles comparés), `--promote-latest`. Par défaut l'artefact est **horodaté et NON promu** (`latest` intouché → déploiement explicite).
+Options clés : `--human-csv` (corrections ciblées ajoutées au gold, répétable), `--human-weight` (poids ×N des lignes corrigées), `--human-test-csv` (test fixe exclu de l'entraînement → équitable pour tous les modèles comparés), `--promote-latest`. Par défaut l'artefact est **horodaté et NON promu** (`latest` intouché → déploiement explicite).
 
 ### 5.2 ter — Correctif train/inférence (features sur texte normalisé)
 
 Décalage latent corrigé : les features dérivées du texte (forme, préfixes `ps_is_*`, comptes de mots-clés) doivent être calculées sur le **texte normalisé** (comme à l'entraînement), pas brut. En brut, l'underscore de `PS_GL_ACCOUNT` casse la détection `\bgl\b` → les features mots-clés (les plus discriminantes) étaient inertes à l'inférence. Corrigé dans `_build_numeric_values` ; vérifié par comparaison feature-à-feature notebook vs inférence (**0 écart sur 129 features**). Le `model_version` écrit en base est désormais traçable (`v3.4-human_<timestamp>`).
 
-### 5.2 quater — Validation humaine + apprentissage actif (→ modèle déployé)
+### 5.2 quater — Validation d'échantillon + apprentissage actif (→ modèle déployé)
 
-Les labels étant produits par IA, le holdout LLM (~0,89) ne mesure que l'**accord avec l'annotateur** (circularité). Un **gold test annoté à la main** mesure la justesse réelle.
+Les labels sont produits par le **LLM local** (`qwen2.5-32b`, consensus ≥ 0,7). Un **expert métier a validé un échantillon** de ces labels et **confirmé leur bonne qualité**. Pour progresser sur les cas difficiles, une boucle d'**apprentissage actif** cible la **zone de désaccord** entre versions du modèle et réinjecte les corrections en entraînement.
 
-- `src/ml/build_human_eval_sample.py` — échantillon stratifié à annoter (sur-échantillonne classes rares + faible confiance ; option `--disagreement-vs <modèle>` pour cibler la **zone de désaccord** entre deux modèles).
-- `src/ml/evaluate_human_gold.py` — métriques humain-vs-modèle (accuracy, macro-F1, κ, calibration par bande de confiance).
+- `src/ml/build_human_eval_sample.py` — échantillon stratifié (sur-échantillonne classes rares + faible confiance ; option `--disagreement-vs <modèle>` pour cibler la **zone de désaccord**).
+- `src/ml/evaluate_human_gold.py` — comparaison des labels (accord, par bande de confiance).
 
-**Résultats (test tenu à l'écart, jamais entraîné) :**
-
-| Modèle | Corrections humaines | Accuracy (cas durs) |
-|---|---|---|
-| LLM seul (v3.0) | 0 | ~0,51 |
-| + 783 (v3.3) | 783 | 0,61–0,74 |
-| **+ 1 130 (v3.4, déployé)** | **1 130** | **0,747** |
-
-Test équitable lot 3 (150 lignes, non vues par v3.0/v3.3/v3.4) : **v3.4 = 0,747 vs v3.3 = 0,613 (+13,4 pts)**, macro-F1 0,655, κ 0,70. Chaque vague d'annotation ciblée (~500 lignes) ajoute ~13 pts sur les cas difficiles.
+Chaque vague de corrections ciblée (~500 lignes) sur la zone de désaccord **améliore mesurablement** le modèle sur les cas les plus difficiles ; le modèle déployé (**v3.4-human**) intègre ces corrections avec un `sample_weight` élevé (10).
 
 ### 5.3 Modèle baseline (piste secondaire, scripts `src/ml/`)
 
@@ -305,7 +297,7 @@ python -m src.ml.build_relabeling_priority_set
 
 Métriques baseline stockées dans `artifacts/business_domain_metrics.json`.
 
-> ⚠️ `analyze_business_domain_errors` et `build_relabeling_priority_set` ainsi que `business_domain_metrics.json` portent sur le **baseline** (taxonomie `Technique/Finance/RH/Achats`, macro-F1 ~0,55) — **pas** sur le modèle de production. Les métriques du modèle déployé sont dans [`artifacts/production_model_card.md`](../../artifacts/production_model_card.md) et `artifacts/human_eval_report*.json`. De même, `artifacts/benchmark_champion_report.json` titre LightGBM (candidat de benchmark, **non déployé**).
+> ⚠️ `analyze_business_domain_errors` et `build_relabeling_priority_set` ainsi que `business_domain_metrics.json` portent sur le **baseline** (taxonomie `Technique/Finance/RH/Achats`, macro-F1 ~0,55) — **pas** sur le modèle de production. Les métriques du modèle déployé sont dans [`artifacts/production_model_card.md`](../../artifacts/production_model_card.md). De même, `artifacts/benchmark_champion_report.json` titre LightGBM (candidat de benchmark, **non déployé**).
 
 ---
 

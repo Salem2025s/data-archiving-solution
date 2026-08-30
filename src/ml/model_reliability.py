@@ -4,7 +4,7 @@ Three production-grade quality signals computed after every scoring run:
 
 1. **Calibration** — does confidence=0.90 really mean 90% correct?
    Measures ECE (Expected Calibration Error) and per-band accuracy gaps.
-   An ECE > 0.05 on the human gold warrants recalibration.
+   An ECE > 0.05 on a reference sample warrants recalibration.
 
 2. **Recall SLA by regulated domain** — before any archiving action is
    authorised on Finance/RH/Achats/Ventes, their recall must meet the
@@ -232,7 +232,7 @@ def compute_and_persist_quality_report(
     if low_conf_pct > 0.15:
         alerts.append(f"calibration:low_confidence_pct={low_conf_pct:.1%}")
 
-    # --- Recall SLA (requires human gold — checked via existing eval reports) ---
+    # --- Recall SLA (requires a reference eval — checked via existing eval reports) ---
     sla_results: dict[str, Any] = {}
     sla_ok = True
     for report_path in [
@@ -268,7 +268,7 @@ def compute_and_persist_quality_report(
         break  # use most recent available report only
 
     if not sla_results:
-        alerts.append("sla:no_human_gold_available — SLA cannot be certified")
+        alerts.append("sla:no_reference_eval_available — SLA cannot be certified")
         sla_ok = False
 
     # --- Drift vs previous run ---
@@ -320,7 +320,7 @@ def compute_and_persist_quality_report(
 
 
 # ---------------------------------------------------------------------------
-# Calibration evaluation against human gold (call after human annotation)
+# Calibration evaluation against a reference sample (call after label validation)
 # ---------------------------------------------------------------------------
 
 def evaluate_calibration_with_gold(

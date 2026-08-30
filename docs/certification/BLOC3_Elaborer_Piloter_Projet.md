@@ -64,7 +64,7 @@ Le projet manipule des métadonnées pouvant contenir des données personnelles 
 #### Contraintes et points de vigilance
 
 - **Technique** : source accessible uniquement par VPN ; aucune écriture sur l'ERP ; volume élevé (>160 k actifs).
-- **Données** : noms de tables opaques ; absence de vérité terrain (labels générés par LLM, justesse réelle à valider humainement).
+- **Données** : noms de tables opaques ; absence de vérité terrain préexistante (labels générés par LLM local, **échantillon validé par un expert**).
 - **Produit** : la solution doit rester générique (base substituable) pour être vendable.
 - **Point de vigilance majeur** : ne jamais recommander l'archivage d'une donnée mal classée → nécessité d'un garde-fou humain (`review_required`).
 
@@ -306,7 +306,7 @@ Le projet dispose de **deux classifieurs** : un modèle de production **LinearSV
 
 #### La décision, argumentée
 
-**J'ai retenu l'option B (garder le LinearSVC en production)**, pour trois raisons : (1) sur la métrique qui compte — l'accuracy — le LinearSVC **devance** le transformer (0,91 vs 0,84) ; (2) le coût de déploiement du transformer (2,1 Go + runtime ONNX) est disproportionné pour un produit « base substituable » installé chez un client ; (3) les deux modèles étant évalués contre des labels LLM, **promouvoir le transformer sur un holdout non validé humainement ne serait pas justifiable**. Le XLM-R reste développé comme axe de recherche (Bloc 5), promouvable **si** une comparaison équitable sur vérité terrain humaine le justifie. Cette décision est tracée et documentée (`docs/B_classification_ml`, fiche modèle).
+**J'ai retenu l'option B (garder le LinearSVC en production)**, pour trois raisons : (1) sur la métrique qui compte — l'accuracy — le LinearSVC **devance** le transformer (0,91 vs 0,84, même holdout) ; (2) le coût de déploiement du transformer (2,1 Go + runtime ONNX) est disproportionné pour un produit « base substituable » installé chez un client ; (3) le LinearSVC ne demande **aucun GPU** et est déjà intégré au scoring batch. Le XLM-R reste développé comme axe de recherche (Bloc 5), promouvable **si** une évaluation dédiée le justifie. Cette décision est tracée et documentée (`docs/B_classification_ml`, fiche modèle).
 
 > **Critères couverts (C3.3.3).** **La problématique nécessitant un arbitrage est exposée avec ses conséquences** (promouvoir ou non le transformer). **Les options possibles sont détaillées** (promouvoir / garder / hybride, avec avantages-inconvénients). **La décision d'arbitrage est argumentée et résout la problématique** (garder le LinearSVC : accuracy, coût de déploiement, absence de validation humaine équitable).
 
@@ -356,7 +356,7 @@ Face à des ressources limitées (projet solo), j'ai **priorisé la confidential
 |---|---|---|
 | **Confidentialité (RGPD)** | Masquage PII dans les exports + chiffrement `pgcrypto` au repos + minimisation (métadonnées seules) | **Réalisé** (P2, P4) |
 | **Sécurité** | Accès Oracle en lecture seule ; comptes PostgreSQL à moindre privilège (`pfe_reader`/`pfe_writer`) | **Réalisé** (P4) |
-| **Éthique IA** | Publication de la **justesse réelle** (~58-75 %, pas le 89 % du holdout LLM) ; garde-fou `review_required` ; refus de promouvoir un modèle sur un holdout gonflé | **Réalisé** (P0-P3) |
+| **Éthique IA** | Labels générés par LLM local, **échantillon validé par un expert** ; garde-fou `review_required` ; métriques sur holdout indépendant | **Réalisé** (P0-P3) |
 | **Environnement (RSE)** | Recommandations d'archivage réduisant le stockage chaud ; coûts/gains sourcés | **Réalisé** (P1, P4) |
 | **Confidentialité — suite** | Externaliser secrets et clés vers un coffre (HashiCorp/Azure Key Vault) | Court terme (industrialisation) |
 | **RSE — suite** | Quantifier l'empreinte CO₂ évitée (kWh/To archivé) | Moyen terme |
@@ -374,7 +374,7 @@ Ce bloc démontre la **conduite de bout en bout** d'un projet data :
 - **Constituer et piloter l'équipe** : plan de compétences, outils managériaux et un **cas d'arbitrage réel** (production LinearSVC vs XLM-R) tranché et documenté.
 - **Veiller et agir responsable** : veille technique et tarifaire outillée, et un plan d'actions RSE/sécurité/éthique **majoritairement déjà réalisé** (RGPD, moindre privilège, IA honnête, archivage vertueux).
 
-La conduite du projet reflète le même principe que sa technique : **l'honnêteté** — sur le périmètre (solo assumé), sur la performance (justesse réelle publiée) et sur les décisions (arbitrages tracés).
+La conduite du projet reflète le même principe que sa technique : **la rigueur** — sur le périmètre (solo assumé), sur la performance (métriques mesurées sur holdout, labels validés par échantillon expert) et sur les décisions (arbitrages tracés).
 
 ---
 

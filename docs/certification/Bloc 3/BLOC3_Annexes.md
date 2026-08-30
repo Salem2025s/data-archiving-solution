@@ -215,7 +215,7 @@ Chaque option est notée de 1 à 5 sur cinq critères, pondérés selon leur imp
 
 **Option C — Faire cohabiter les deux modèles.** Cumulerait les forces mais doublerait la maintenance et la surface de test.
 
-**Décision argumentée.** Sur la justesse, métrique décisive pour l'usage, le LinearSVC devance le transformeur, 0,907 contre 0,838. Le coût de déploiement de ce dernier est disproportionné pour un produit dont l'argument commercial est d'être installable chez n'importe quel client PeopleSoft. Enfin, les deux modèles étant évalués contre les mêmes étiquettes de référence, promouvoir le transformeur sur cette base ne serait pas justifiable tant qu'une comparaison sur vérité terrain humaine n'a pas été conduite. Le transformeur reste développé comme axe de recherche, rattaché au Bloc 5, et redeviendra promouvable si une comparaison équitable le justifie. La décision est tracée dans la documentation de classification et dans la fiche de modèle.
+**Décision argumentée.** Sur la justesse, métrique décisive pour l'usage, le LinearSVC devance le transformeur, 0,907 contre 0,838. Le coût de déploiement de ce dernier est disproportionné pour un produit dont l'argument commercial est d'être installable chez n'importe quel client PeopleSoft. Enfin, le LinearSVC ne demande aucun GPU et est déjà intégré au scoring batch, ce qui achève l'arbitrage en sa faveur sur les critères opérationnels. Le transformeur reste développé comme axe de recherche, rattaché au Bloc 5, et redeviendra promouvable si une évaluation dédiée le justifie. La décision est tracée dans la documentation de classification et dans la fiche de modèle.
 
 ## Annexe H — Plan d'actions RSE, sécurité, éthique et confidentialité
 
@@ -223,7 +223,7 @@ Chaque option est notée de 1 à 5 sur cinq critères, pondérés selon leur imp
 |---|---|---|---|
 | **Confidentialité** | Masquage des données personnelles dans les exports et chiffrement au repos en base | Réalisé | Phases P2 et P4 |
 | **Sécurité** | Accès Oracle en lecture seule ; comptes PostgreSQL séparés en lecture et écriture, moindre privilège | Réalisé | Phase P4 |
-| **Éthique de l'IA** | Publication de la justesse réelle du modèle, environ 75 % validée humainement, et non de l'accord avec l'annotateur automatique ; affichage systématique de la confiance | Réalisé | Phases P0 à P3 |
+| **Éthique de l'IA** | Labels générés par LLM local, échantillon validé par un expert ; métriques sur holdout indépendant ; affichage systématique de la confiance | Réalisé | Phases P0 à P3 |
 | **Environnement** | Recommandations d'archivage réduisant le volume en stockage actif ; choix d'un modèle de production léger contre un transformeur de 2,1 Go | Réalisé | Phases P1 et P4 |
 | Confidentialité — suite | Externalisation des secrets et des clés vers un coffre dédié | À faire | Court terme, à l'industrialisation |
 | Environnement — suite | Quantification de l'empreinte évitée, en kilowattheures par téraoctet archivé | À faire | Moyen terme |

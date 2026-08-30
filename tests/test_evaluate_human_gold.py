@@ -1,4 +1,4 @@
-"""Tests for the human-gold evaluation metrics."""
+"""Tests for the reference-label evaluation metrics."""
 
 import csv
 

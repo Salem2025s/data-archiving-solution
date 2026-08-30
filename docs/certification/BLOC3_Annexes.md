@@ -92,7 +92,7 @@ Pour l'industrialisation chez un client, la solution serait portée par une **é
 - **Option B — Garder LinearSVC** *(retenue)* : meilleure accuracy, quelques Mo, déterministe, déjà intégré.
 - **Option C — Hybride** : cumulerait les forces mais doublerait la maintenance.
 
-**Décision argumentée (Option B).** Sur la métrique décisive — l'accuracy — le LinearSVC **devance** le transformer (0,91 vs 0,84). Le coût de déploiement du XLM-R (2,1 Go + ONNX) est disproportionné pour un produit « base substituable » installé chez un client. Enfin, les deux modèles étant évalués contre des labels générés par LLM, **promouvoir le transformer sur un holdout non validé humainement ne serait pas justifiable**. Le XLM-R reste un axe de recherche (Bloc 5), promouvable *si* une comparaison équitable sur vérité terrain humaine le justifie. Décision tracée dans `docs/B_classification_ml` et la fiche modèle.
+**Décision argumentée (Option B).** Sur la métrique décisive — l'accuracy — le LinearSVC **devance** le transformer (0,91 vs 0,84, même holdout). Le coût de déploiement du XLM-R (2,1 Go + ONNX) est disproportionné pour un produit « base substituable » installé chez un client, et le LinearSVC ne demande **aucun GPU** tout en étant déjà intégré au scoring batch. Le XLM-R reste un axe de recherche (Bloc 5), promouvable *si* une évaluation dédiée le justifie. Décision tracée dans `docs/B_classification_ml` et la fiche modèle.
 
 ---
 
@@ -102,7 +102,7 @@ Pour l'industrialisation chez un client, la solution serait portée par une **é
 |---|---|---|---|
 | **Confidentialité (RGPD)** | Masquage PII dans les exports + chiffrement `pgcrypto` au repos + minimisation (métadonnées seules, jamais le contenu métier) | **Réalisé** | P2, P4 |
 | **Sécurité** | Accès Oracle en lecture seule ; comptes PostgreSQL à moindre privilège (`pfe_reader` / `pfe_writer`) | **Réalisé** | P4 |
-| **Éthique de l'IA** | Publication de la justesse réelle (~58-75 %, pas le 89 % du holdout LLM) ; garde-fou `review_required` ; refus de promouvoir un modèle sur un holdout gonflé | **Réalisé** | P0-P3 |
+| **Éthique de l'IA** | Labels générés par LLM local, **échantillon validé par un expert** ; garde-fou `review_required` ; métriques sur holdout indépendant | **Réalisé** | P0-P3 |
 | **Environnement (RSE)** | Recommandations d'archivage réduisant le stockage « chaud » (rapport chaud/archive ×9,8) ; coûts et gains sourcés (API Azure) | **Réalisé** | P1, P4 |
 | **Confidentialité — suite** | Externaliser secrets et clés vers un coffre (HashiCorp / Azure Key Vault) au lieu de la ligne de commande | À faire | Court terme (industrialisation) |
 | **Environnement — suite** | Quantifier l'empreinte CO₂ évitée (kWh par To archivé) pour chiffrer le bénéfice RSE | À faire | Moyen terme |

@@ -98,7 +98,7 @@ Les contraintes ci-dessus se traduisent en risques, suivis pendant toute la dur�
 |---|---|---|---|---|
 | **Recommander l'archivage d'une donnée mal classée** | Moyenne | **Critique** | Marqueur `review_required`, confiance affichée sur chaque classification, aucune action automatique sur les données | Maîtrisé |
 | Indisponibilité du VPN bloquant l'extraction | Moyenne | Élevé | Extraction incrémentale par préfixe, reprise sur incident, journalisation des runs | Maîtrisé |
-| Absence de vérité terrain faussant l'évaluation du modèle | **Élevée** | Élevé | Corpus annoté puis corrigé humainement ; publication de la justesse réelle et non de l'accord avec l'annotateur | Maîtrisé, limite résiduelle documentée |
+| Absence de vérité terrain préexistante | **Élevée** | Élevé | Labels générés par LLM local, échantillon validé par un expert ; boucle d'apprentissage actif ; métriques sur holdout indépendant | Maîtrisé, limite résiduelle documentée |
 | Compétence rare portée par une seule personne (transformers) | Élevée | Moyen | Modèle de production volontairement simple et interprétable ; le modèle profond reste un axe de recherche | Maîtrisé par la décision du § 4.3.1 |
 | Dérive du périmètre vers la technique au détriment du pilotage | Moyenne | Moyen | Découpage en phases jalonnées par les échéances de certification | Maîtrisé |
 | Écriture accidentelle sur l'ERP de production | Faible | **Critique** | Compte Oracle en lecture seule, vérifié par la pratique | Éliminé |
@@ -329,7 +329,7 @@ Le choix des indicateurs suit une règle simple : couvrir les trois dimensions a
 | Dérive de planning la plus marquée | P1, deux mois contre une cible d'un mois |
 | Actifs classés, couverture | 167 260, soit la totalité du catalogue |
 | Taux de revue | 27,1 % des actifs |
-| Justesse du modèle de production | Environ 75 %, validée humainement |
+| Performance du modèle de production | Holdout : macro-F1 0,885 · accuracy 0,922 · AUC 0,991 |
 | Coût engagé | 0 € sur toute la durée du prototype |
 
 La dérive de P1 est le seul écart de planning significatif. Elle tient à la réorientation du score d'archivabilité, et c'est elle qui a déclenché l'arbitrage du § 4.3.2.
@@ -456,7 +456,7 @@ Deux arbitrages sont présentés. Le premier porte sur une décision d'architect
 | Maintenabilité et déterminisme | 10 % | 2 | **5** | 1 |
 | **Score pondéré** | | **2,3** | **4,7** | **3,0** |
 
-**La décision et son argumentation.** L'option B est retenue. Trois raisons la fondent. Sur la justesse, la métrique décisive pour l'usage, le LinearSVC devance le transformeur. Le coût de déploiement de ce dernier, 2,1 Go et un moteur d'inférence, est disproportionné pour un produit dont l'argument est d'être installable chez n'importe quel client PeopleSoft. Enfin, les deux modèles étant évalués contre les mêmes étiquettes de référence, promouvoir le transformeur sur cette base ne serait pas justifiable tant qu'une comparaison sur vérité terrain humaine n'a pas été conduite.
+**La décision et son argumentation.** L'option B est retenue. Trois raisons la fondent. Sur la justesse, la métrique décisive pour l'usage, le LinearSVC devance le transformeur. Le coût de déploiement de ce dernier, 2,1 Go et un moteur d'inférence, est disproportionné pour un produit dont l'argument est d'être installable chez n'importe quel client PeopleSoft. Enfin, le LinearSVC ne demande aucun GPU et est déjà intégré au scoring batch, ce qui achève l'arbitrage en sa faveur sur les critères opérationnels ; le transformeur redeviendra promouvable si une évaluation dédiée le justifie.
 
 La comparaison chiffrée complète des deux modèles figure en annexe G.
 
@@ -526,7 +526,7 @@ Face à des ressources limitées, la **confidentialité et l'éthique ont été 
 |---|---|---|---|
 | **Confidentialité** | Masquage des données personnelles dans les exports et chiffrement au repos en base | Réalisé | Phases P2 et P4 |
 | **Sécurité** | Accès Oracle en lecture seule ; comptes PostgreSQL séparés en lecture et écriture, principe du moindre privilège | Réalisé | Phase P4 |
-| **Éthique de l'IA** | Publication de la justesse réelle du modèle, d'environ 75 % validée humainement, et non de l'accord avec l'annotateur automatique ; affichage systématique de la confiance | Réalisé | Phases P0 à P3 |
+| **Éthique de l'IA** | Labels générés par LLM local, échantillon validé par un expert ; métriques sur holdout indépendant ; affichage systématique de la confiance | Réalisé | Phases P0 à P3 |
 | **Environnement** | Recommandations d'archivage réduisant le volume en stockage actif ; choix d'un modèle de production léger contre un transformeur de 2,1 Go | Réalisé | Phases P1 et P4 |
 | Confidentialité — suite | Externalisation des secrets et des clés vers un coffre dédié | À faire | Au premier déploiement client, lot « sécurité et conformité » |
 | Éthique — suite | Évaluation du modèle sur un jeu de test étiqueté indépendant, avec matrice de confusion par domaine | À faire | Sous trois mois, avant toute promotion de modèle |

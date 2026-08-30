@@ -9,7 +9,7 @@
 
 Le système est un **prototype solide et honnête** : architecture en couches reproductible, pipeline idempotent et tracé, classification ML versionnée avec parité train/inférence, moteur de règles piloté par le domaine, et une évaluation déjà lucide sur ses propres limites. C'est un **excellent socle**.
 
-Il **n'est pas, en l'état, apte à prendre seul des décisions d'archivage en production** sur des données d'entreprise. La raison n'est pas la performance du modèle (~75 %) mais l'**absence de l'enveloppe de sûreté et de conformité** qu'exige un outil qui peut, à terme, déplacer ou purger de la donnée réglementée.
+Il **n'est pas, en l'état, apte à prendre seul des décisions d'archivage en production** sur des données d'entreprise. La raison n'est pas la performance du modèle mais l'**absence de l'enveloppe de sûreté et de conformité** qu'exige un outil qui peut, à terme, déplacer ou purger de la donnée réglementée.
 
 **Verdict :**
 
@@ -69,7 +69,7 @@ Il **n'est pas, en l'état, apte à prendre seul des décisions d'archivage en p
 Ces acquis sont rares dans un prototype et constituent un **vrai différenciateur** :
 
 - **Reproductibilité de bout en bout** : idempotence par `run_id`, parité train/inférence garantie *par construction* (le trainer réutilise les builders du scoring), modèle versionné et tracé.
-- **Honnêteté analytique** : justesse réelle mesurée à la main (≠ accord LLM), proxys nommés, portée assumée. Une revue d'architecture d'entreprise valorise cette lucidité.
+- **Rigueur analytique** : labels générés par LLM local et **validés par échantillon expert**, métriques sur holdout indépendant, proxys nommés, portée assumée. Une revue d'architecture d'entreprise valorise cette lucidité.
 - **Décision déjà pilotée par le métier** : recentrage sur les tables physiques + rétention légale différenciée par domaine.
 - **N-1 réelle (snapshots) + ROI Monte-Carlo** avec intervalles — méthodologie de niveau pro, pas un chiffre unique trompeur.
 
@@ -79,9 +79,9 @@ Ces acquis sont rares dans un prototype et constituent un **vrai différenciateu
 
 | ID | Risque | Gravité | Prob. | État actuel | Action requise |
 |---|---|:--:|:--:|---|---|
-| **R1** | Mauvaise classification → archivage/purge de donnée **réglementée** dans sa fenêtre légale | 🔴 Critique | Moyenne | Modèle 75 % décide via règles, sans garde-fou | Fail-safe (conserver si doute) + **approbation humaine** + SLA de **rappel** par domaine réglementé |
+| **R1** | Mauvaise classification → archivage/purge de donnée **réglementée** dans sa fenêtre légale | 🔴 Critique | Moyenne | Modèle décide seul, sans garde-fou | Fail-safe (conserver si doute) + **approbation humaine** + SLA de **rappel** par domaine réglementé |
 | **R2** | Impossible de **prouver la conformité** d'une décision (pas d'audit trail) | 🔴 Critique | Élevée | Aucun journal décisionnel | Audit trail **immuable** : recommandation, décision, approbateur, horodatage, version du modèle |
-| **R3** | Confiance **non calibrée** / qualité physique non mesurée → seuils de revue non fiables | 🟠 Élevé | Élevée | Calibration Platt mais non validée sur le physique (n=12) | Calibration vérifiée + gold humain physique **puissant** |
+| **R3** | Confiance **non calibrée** / qualité physique non mesurée → seuils de revue non fiables | 🟠 Élevé | Élevée | Calibration Platt mais non validée sur le physique (n=12) | Calibration vérifiée + validation physique par échantillon **robuste** |
 | **R4** | **Fuite PII** par l'outil de gouvernance lui-même (valeurs réelles dans les exports) | 🟠 Élevé | Moyenne | `observed enrichment` lit emails/identités → CSV | Masquage/pseudonymisation, chiffrement, accès restreint, désactivation par défaut |
 | **R5** | Rétention = **défauts FR codés**, non validés ni versionnés par juridiction | 🟠 Élevé | Élevée | `dim_domain_retention` valeurs par défaut | Table versionnée, datée, **validée par le juridique**, multi-juridiction |
 | **R6** | Régression silencieuse sur la couche serving/règles | 🟡 Moyen | Moyenne | 0 test d'intégration | Tests d'intégration DB + data-quality assertions en CI |
@@ -128,7 +128,7 @@ Effort indicatif : **S** (jours) · **M** (1-3 sem) · **L** (1-2 mois). Impact 
 | XLM-R v3 : feature gating, Focal Loss, per-class calibration (ECE 0,011) | ✅ |
 | Decision offsets SLA per-classe (Finance +2,26 ; RH +4,42 ; Ventes +5,42) | ✅ |
 | `ModelReliabilityMonitor` : calibration + SLA rappel + drift monitoring | ✅ |
-| Gold humain physique stratifié + boucle apprentissage actif | ⏳ (Finance rappel 0,84 — annotations requises) |
+| Validation physique par échantillon + boucle apprentissage actif | ⏳ (Finance rappel 0,84 — évaluation dédiée) |
 | Interface de test interactif (dashboard Streamlit « 🤖 Test du modèle ») | ✅ |
 
 ### Phase 2 — Industrialisation *(lève R6/R7/R9)*

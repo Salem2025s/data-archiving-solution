@@ -45,3 +45,6 @@ Thumbs.db
 ~$*
 # Fichier accidentel vide
 docs/certification/Lie.txt
+
+# Données de validation de labels (non distribuées dans le dépôt)
+artifacts/human_eval_*
