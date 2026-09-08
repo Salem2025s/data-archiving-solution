@@ -1,7 +1,7 @@
 # pfe-data-ia — Pipeline de gouvernance des données
 
 Classification des actifs de données Oracle PeopleSoft EP92U038 par domaine métier
-(**holdout : macro-F1 0,885 · accuracy 0,922 · AUC 0,991** ; labels générés par LLM local,
+(**holdout 20 % : macro-F1 0,885 · accuracy 0,916 · AUC 0,991** ; labels générés par LLM local,
 **échantillon validé par un expert**), règles d'archivage **pilotées par le domaine**
 (rétention légale), et KPI/coûts sur une couche serving PostgreSQL. Source unique : Oracle PeopleSoft EP92U038.
 
@@ -328,6 +328,17 @@ python -m src.export.export_dataset_asset_ml_for_labeling \
 
 ## 10. Entraînement & analyse du modèle ML
 
+> **Modèle de production :** entraîné via [`src/ml/train_production_classifier.py`](src/ml/train_production_classifier.py)
+> (LinearSVC + Platt, 7 domaines métier), sérialisé en `production_pipeline_latest.joblib` — voir [§15a](#15a-modèle-de-production-scoring-pipeline--linearsvc).
+>
+> ```bash
+> python -m src.ml.train_production_classifier
+> ```
+>
+> La chaîne ci-dessous (`prepare_labeled_dataset` → `train_business_domain_classifier`) est la **piste baseline
+> obsolète** (ancienne taxonomie 6 classes : RH / Finance / Paie / Achats / Technique / Inconnu). Conservée pour
+> historique — **ne pas confondre avec la production**.
+
 ### Préparer le dataset labelisé
 
 Nettoie et normalise un fichier annoté (labels LLM ou manuels)
@@ -426,8 +437,9 @@ python -m src.transform.score_business_domain \
 Projet/
 ├── src/
 │   ├── config/
-│   │   ├── settings.py                  # Configuration Pydantic (settings centralisés)
-│   │   └── logging.py                   # Configuration Loguru
+│   │   └── settings.py                  # Configuration Pydantic (settings centralisés)
+│   ├── utils/
+│   │   └── logging_utils.py             # Configuration Loguru
 │   ├── connectors/
 │   │   ├── postgres_client.py           # Client PostgreSQL (SQLAlchemy + retry)
 │   │   └── oracle_client.py             # Client Oracle oracledb (thin mode)
@@ -532,7 +544,7 @@ Projet/
 | `artifacts/production_model_card.md` | **Fiche du modèle déployé** (identité, vraies métriques, mises en garde) — source de vérité |
 | `src/ml/train_production_classifier.py` | **Entraînement de production reproductible** (`--human-csv`, `--human-weight`, `--human-test-csv`, `--promote-latest`) |
 | `src/ml/build_human_eval_sample.py` · `evaluate_human_gold.py` | Validation d'échantillon : génération d'un échantillon de labels (option `--disagreement-vs`) + comparaison des labels |
-| `artifacts/human_eval_sample*.csv` · `human_eval_report*.json` | Échantillons de labels (3 lots) + rapports de validation d'échantillon |
+| `artifacts/human_eval_sample*.csv` · `human_eval_report*.json` | Échantillons de labels + rapports de validation — **fichiers locaux non versionnés** (exclus via `.gitignore`) |
 | `src/ml/domain_term_base.py` | Base de termes pour la pré-classification keywords |
 | `artifacts/business_domain_model.joblib`, `…_metrics.json`, `labeled_dataset_clean.csv`, `relabeling_priority_set.csv` | Piste **baseline** (obsolète, taxonomie 3-4 classes — ne pas confondre avec la production) |
 
@@ -553,7 +565,7 @@ Classifieur XLM-R large fine-tuné sur PeopleSoft avec feature gating, Focal Los
 | `artifacts/xlmr_v3/README.md` | Architecture, métriques, modes équilibré / SLA-strict |
 | `artifacts/xlmr_v1/` | Version v1 (température globale unique, sans offsets) — conservée pour comparaison |
 | `artifacts/calibration_report.json` | Rapport ECE avant/après calibration (v1 vs v3) |
-| `src/ml/model_reliability.py` | Phase 1 : calibration, SLA rappel, drift monitoring (`ModelReliabilityMonitor`) |
+| `src/ml/model_reliability.py` | Calibration (ECE), SLA de rappel, monitoring de dérive — fonctions `compute_and_persist_quality_report` / `evaluate_calibration_with_gold` |
 
 ```bash
 # Tester le modèle directement (standalone, sans base de données)

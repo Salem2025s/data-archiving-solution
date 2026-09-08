@@ -1,0 +1,7 @@
+﻿Configuration,Macro-F1 (holdout 20%),Delta vs reference
+Toutes les features (référence),0.8889,+0.0000
+sans TEXTE (char + word),0.5994,-0.2896
+sans NUMÉRIQUE (129 features),0.8812,-0.0077
+sans OHE (catégoriel),0.8893,+0.0003
+TEXTE seul,0.8812,-0.0077
+NUMÉRIQUE seul,0.5996,-0.2894
